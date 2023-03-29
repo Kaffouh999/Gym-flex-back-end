@@ -1,0 +1,16 @@
+# Define stages
+stages:
+  - build
+  - test
+
+# Define build job
+build:
+  stage: build
+  script:
+    - mvn clean package -DskipTests=true
+
+# Define test job
+test:
+  stage: test
+  script:
+    - mvn test
