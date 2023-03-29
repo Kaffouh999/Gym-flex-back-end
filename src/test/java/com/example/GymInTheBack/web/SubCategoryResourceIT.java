@@ -54,7 +54,7 @@ class SubCategoryResourceIT {
     @Autowired
     private MockMvc restSubCategoryMockMvc;
 
-    private SubCategory subCategorys;
+    private SubCategory subCategory;
 
     /**
      * Create an entity for this test.
@@ -100,7 +100,7 @@ class SubCategoryResourceIT {
 
     @BeforeEach
     public void initTest() {
-        subCategorys = createEntity(em);
+        subCategory = createEntity(em);
     }
 
     @Test
@@ -108,7 +108,7 @@ class SubCategoryResourceIT {
     void createSubCategory() throws Exception {
         int databaseSizeBeforeCreate = subCategoryRepository.findAll().size();
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
         restSubCategoryMockMvc
             .perform(
                 post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
@@ -127,8 +127,8 @@ class SubCategoryResourceIT {
     @Transactional
     void createSubCategoryWithExistingId() throws Exception {
         // Create the SubCategory with an existing ID
-        subCategorys.setId(1L);
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        subCategory.setId(1L);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         int databaseSizeBeforeCreate = subCategoryRepository.findAll().size();
 
@@ -149,10 +149,10 @@ class SubCategoryResourceIT {
     void checkNameIsRequired() throws Exception {
         int databaseSizeBeforeTest = subCategoryRepository.findAll().size();
         // set the field null
-        subCategorys.setName(null);
+        subCategory.setName(null);
 
         // Create the SubCategory, which fails.
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         restSubCategoryMockMvc
             .perform(
@@ -168,14 +168,14 @@ class SubCategoryResourceIT {
     @Transactional
     void getAllSubCategories() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         // Get all the subCategoryList
         restSubCategoryMockMvc
             .perform(get(ENTITY_API_URL + "?sort=id,desc"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(subCategorys.getId().intValue())))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(subCategory.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
     }
@@ -184,14 +184,14 @@ class SubCategoryResourceIT {
     @Transactional
     void getSubCategory() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         // Get the subCategory
         restSubCategoryMockMvc
-            .perform(get(ENTITY_API_URL_ID, subCategorys.getId()))
+            .perform(get(ENTITY_API_URL_ID, subCategory.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.id").value(subCategorys.getId().intValue()))
+            .andExpect(jsonPath("$.id").value(subCategory.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
     }
@@ -207,12 +207,12 @@ class SubCategoryResourceIT {
     @Transactional
     void putExistingSubCategory() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
         // Update the subCategory
-        SubCategory updatedSubCategory = subCategoryRepository.findById(subCategorys.getId()).get();
+        SubCategory updatedSubCategory = subCategoryRepository.findById(subCategory.getId()).get();
         // Disconnect from session so that the updates on updatedSubCategory are not directly saved in db
         em.detach(updatedSubCategory);
         updatedSubCategory.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
@@ -238,10 +238,10 @@ class SubCategoryResourceIT {
     @Transactional
     void putNonExistingSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -261,10 +261,10 @@ class SubCategoryResourceIT {
     @Transactional
     void putWithIdMismatchSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -284,10 +284,10 @@ class SubCategoryResourceIT {
     @Transactional
     void putWithMissingIdPathParamSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -303,13 +303,13 @@ class SubCategoryResourceIT {
     @Transactional
     void partialUpdateSubCategoryWithPatch() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
         // Update the subCategory using partial update
         SubCategory partialUpdatedSubCategory = new SubCategory();
-        partialUpdatedSubCategory.setId(subCategorys.getId());
+        partialUpdatedSubCategory.setId(subCategory.getId());
 
         partialUpdatedSubCategory.name(UPDATED_NAME);
 
@@ -333,13 +333,13 @@ class SubCategoryResourceIT {
     @Transactional
     void fullUpdateSubCategoryWithPatch() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
         // Update the subCategory using partial update
         SubCategory partialUpdatedSubCategory = new SubCategory();
-        partialUpdatedSubCategory.setId(subCategorys.getId());
+        partialUpdatedSubCategory.setId(subCategory.getId());
 
         partialUpdatedSubCategory.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
 
@@ -363,10 +363,10 @@ class SubCategoryResourceIT {
     @Transactional
     void patchNonExistingSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -386,10 +386,10 @@ class SubCategoryResourceIT {
     @Transactional
     void patchWithIdMismatchSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -409,10 +409,10 @@ class SubCategoryResourceIT {
     @Transactional
     void patchWithMissingIdPathParamSubCategory() throws Exception {
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
-        subCategorys.setId(count.incrementAndGet());
+        subCategory.setId(count.incrementAndGet());
 
         // Create the SubCategory
-        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategorys);
+        SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
@@ -430,13 +430,13 @@ class SubCategoryResourceIT {
     @Transactional
     void deleteSubCategory() throws Exception {
         // Initialize the database
-        subCategoryRepository.saveAndFlush(subCategorys);
+        subCategoryRepository.saveAndFlush(subCategory);
 
         int databaseSizeBeforeDelete = subCategoryRepository.findAll().size();
 
         // Delete the subCategory
         restSubCategoryMockMvc
-            .perform(delete(ENTITY_API_URL_ID, subCategorys.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, subCategory.getId()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
