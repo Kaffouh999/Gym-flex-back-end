@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class SubCategoryResourceIT {
+class SubCategoryResourceTest {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
     private static final String UPDATED_NAME = "BBBBBBBBBB";
@@ -67,7 +67,7 @@ class SubCategoryResourceIT {
         // Add required entity
         Category category;
         if (TestUtil.findAll(em, Category.class).isEmpty()) {
-            category = CategoryResourceIT.createEntity(em);
+            category = CategoryResourceTest.createEntity(em);
             em.persist(category);
             em.flush();
         } else {
@@ -88,7 +88,7 @@ class SubCategoryResourceIT {
         // Add required entity
         Category category;
         if (TestUtil.findAll(em, Category.class).isEmpty()) {
-            category = CategoryResourceIT.createUpdatedEntity(em);
+            category = CategoryResourceTest.createUpdatedEntity(em);
             em.persist(category);
             em.flush();
         } else {
