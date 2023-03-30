@@ -51,12 +51,12 @@ public class SubCategoryResource {
     @PostMapping("/sub-categories")
     public ResponseEntity<SubCategoryDTO> createSubCategory(@Valid @RequestBody SubCategoryDTO subCategoryDTO) throws URISyntaxException {
         log.debug("REST request to save SubCategory : {}", subCategoryDTO);
-        /*if (subCategoryDTO.getId() != null) {
+        if (subCategoryDTO.getId() != null) {
             throw new BadRequestAlertException("A new subCategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (subCategoryDTO.getName() == null || subCategoryDTO.getName().trim().equals("") ) {
             throw new BadRequestAlertException("A new subCategory should have a name", ENTITY_NAME, "namerequiered");
-        }*/
+        }
         SubCategoryDTO result = subCategoryService.save(subCategoryDTO);
         return ResponseEntity
             .created(new URI("/api/sub-categories/" + result.getId()))
