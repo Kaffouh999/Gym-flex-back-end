@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.example.GymInTheBack.dtos.EquipmentDTO;
+import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.EquipmentRepository;

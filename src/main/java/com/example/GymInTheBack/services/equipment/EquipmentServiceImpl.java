@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.example.GymInTheBack.dtos.EquipmentDTO;
+import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.repositories.EquipmentRepository;
 import com.example.GymInTheBack.services.mappers.EquipmentMapper;
