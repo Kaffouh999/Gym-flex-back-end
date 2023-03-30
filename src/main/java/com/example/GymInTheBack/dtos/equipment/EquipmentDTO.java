@@ -1,4 +1,4 @@
-package com.example.GymInTheBack.dtos;
+package com.example.GymInTheBack.dtos.equipment;
 
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
 

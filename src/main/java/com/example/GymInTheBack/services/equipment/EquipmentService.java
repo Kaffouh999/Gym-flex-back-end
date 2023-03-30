@@ -1,6 +1,6 @@
 package com.example.GymInTheBack.services.equipment;
 
-import com.example.GymInTheBack.dtos.EquipmentDTO;
+import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import java.util.List;
 import java.util.Optional;
 

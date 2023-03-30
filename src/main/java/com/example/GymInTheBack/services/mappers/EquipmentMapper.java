@@ -1,7 +1,7 @@
 package com.example.GymInTheBack.services.mappers;
 
 
-import com.example.GymInTheBack.dtos.EquipmentDTO;
+import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.SubCategory;
