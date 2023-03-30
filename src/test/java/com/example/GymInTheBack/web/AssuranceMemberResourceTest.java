@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-class AssuranceMemberResourceIT {
+class AssuranceMemberResourceTest {
 
     private static final Double DEFAULT_AMOUNT_PAYED = 1D;
     private static final Double UPDATED_AMOUNT_PAYED = 2D;
