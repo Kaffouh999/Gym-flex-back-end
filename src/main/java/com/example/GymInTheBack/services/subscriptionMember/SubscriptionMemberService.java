@@ -1,7 +1,7 @@
 package com.example.GymInTheBack.services.subscriptionMember;
 
 
-import com.example.GymInTheBack.dtos.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 
 import java.util.List;
 import java.util.Optional;

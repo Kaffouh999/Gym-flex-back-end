@@ -1,6 +1,6 @@
 package com.example.GymInTheBack.dtos.payment;
 
-import com.example.GymInTheBack.dtos.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 
 import java.io.Serializable;
