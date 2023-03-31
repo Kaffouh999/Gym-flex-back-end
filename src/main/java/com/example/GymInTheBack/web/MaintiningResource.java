@@ -31,8 +31,8 @@ public class MaintiningResource {
 
     private static final String ENTITY_NAME = "maintining";
 
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
+
+    private String applicationName="GymFlex";
 
     private final MaintiningService maintiningService;
 
@@ -55,6 +55,9 @@ public class MaintiningResource {
         log.debug("REST request to save Maintining : {}", maintiningDTO);
         if (maintiningDTO.getId() != null) {
             throw new BadRequestAlertException("A new maintining cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        if (maintiningDTO.getStartDate() == null) {
+            throw new BadRequestAlertException("A new maintining should have a start date", ENTITY_NAME, "startDateRequired");
         }
         MaintiningDTO result = maintiningService.save(maintiningDTO);
         return ResponseEntity
