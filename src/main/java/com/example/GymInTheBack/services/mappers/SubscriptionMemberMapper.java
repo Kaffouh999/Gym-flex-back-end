@@ -1,6 +1,6 @@
 package com.example.GymInTheBack.services.mappers;
 
-import com.example.GymInTheBack.dtos.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
 import com.example.GymInTheBack.entities.Member;

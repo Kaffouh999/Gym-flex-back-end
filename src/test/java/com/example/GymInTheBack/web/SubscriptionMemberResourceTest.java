@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.example.GymInTheBack.dtos.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.entities.Member;
 import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.entities.SubscriptionMember;

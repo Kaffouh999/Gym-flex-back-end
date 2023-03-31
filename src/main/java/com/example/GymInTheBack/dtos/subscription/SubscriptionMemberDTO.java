@@ -1,4 +1,4 @@
-package com.example.GymInTheBack.dtos;
+package com.example.GymInTheBack.dtos.subscription;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
