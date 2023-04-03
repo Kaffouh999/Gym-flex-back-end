@@ -20,10 +20,22 @@ public interface MaintiningMapper extends EntityMapper<MaintiningDTO, Maintining
     @Named("equipmentItemId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "firstUseDate",source = "firstUseDate")
+    @Mapping(target = "price",source = "price")
+    @Mapping(target = "amortization",source = "amortization")
+    @Mapping(target = "bareCode",source = "bareCode")
+    @Mapping(target = "safeMinValue",source = "safeMinValue")
+    @Mapping(target = "equipment",source = "equipment")
+    @Mapping(target = "gymBranch",source = "gymBranch")
     EquipmentItemDTO toDtoEquipmentItemId(EquipmentItem equipmentItem);
 
     @Named("memberId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "cin", source = "cin")
+    @Mapping(target = "age", source = "age")
+    @Mapping(target = "adress", source = "adress")
+    @Mapping(target = "gender", source = "gender")
+    @Mapping(target = "gymBranch", source = "gymBranch")
     MemberDTO toDtoMemberId(Member member);
 }

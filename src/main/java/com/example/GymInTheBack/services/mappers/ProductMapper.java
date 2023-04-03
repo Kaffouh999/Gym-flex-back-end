@@ -17,5 +17,8 @@ public interface ProductMapper extends EntityMapper<ProductDTO, Product> {
     @Named("subCategoryId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "category", source = "category")
     SubCategoryDTO toDtoSubCategoryId(SubCategory subCategory);
 }
