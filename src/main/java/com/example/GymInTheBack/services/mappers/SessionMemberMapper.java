@@ -23,15 +23,34 @@ public interface SessionMemberMapper extends EntityMapper<SessionMemberDTO, Sess
     @Named("subscriptionMemberId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "startDate", source = "startDate")
+    @Mapping(target = "codeSubscription", source = "codeSubscription")
+    @Mapping(target = "discountPercentage", source = "discountPercentage")
+    @Mapping(target = "member", source = "member")
+    @Mapping(target = "plan", source = "plan")
     SubscriptionMemberDTO toDtoSubscriptionMemberId(SubscriptionMember subscriptionMember);
 
     @Named("gymBranchId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "latitude", source = "latitude")
+    @Mapping(target = "longitude", source = "longitude")
+    @Mapping(target = "adress", source = "adress")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "openingDate", source = "openingDate")
+    @Mapping(target = "closingDate", source = "closingDate")
+    @Mapping(target = "sessionDurationAllowed", source = "sessionDurationAllowed")
     GymBranchDTO toDtoGymBranchId(GymBranch gymBranch);
 
     @Named("memberId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "cin", source = "cin")
+    @Mapping(target = "age", source = "age")
+    @Mapping(target = "adress", source = "adress")
+    @Mapping(target = "gender", source = "gender")
+    @Mapping(target = "gymBranch", source = "gymBranch")
     MemberDTO toDtoMemberId(Member member);
 }

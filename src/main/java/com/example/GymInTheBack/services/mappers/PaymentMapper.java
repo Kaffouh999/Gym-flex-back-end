@@ -20,10 +20,20 @@ public interface PaymentMapper extends EntityMapper<PaymentDTO, Payment> {
     @Named("subscriptionMemberId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "startDate", source = "startDate")
+    @Mapping(target = "codeSubscription", source = "codeSubscription")
+    @Mapping(target = "discountPercentage", source = "discountPercentage")
+    @Mapping(target = "member", source = "member")
+    @Mapping(target = "plan", source = "plan")
     SubscriptionMemberDTO toDtoSubscriptionMemberId(SubscriptionMember subscriptionMember);
 
     @Named("memberId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "cin", source = "cin")
+    @Mapping(target = "age", source = "age")
+    @Mapping(target = "adress", source = "adress")
+    @Mapping(target = "gender", source = "gender")
+    @Mapping(target = "gymBranch", source = "gymBranch")
     MemberDTO toDtoMemberId(Member member);
 }
