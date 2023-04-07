@@ -1,6 +1,8 @@
 package com.example.GymInTheBack.services.equipment;
 
 import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
+import com.example.GymInTheBack.entities.Equipment;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -53,4 +55,6 @@ public interface EquipmentService {
     void delete(Long id);
 
     void deleteImage(Long id);
+
+    Optional<Equipment> findById(Long id);
 }
