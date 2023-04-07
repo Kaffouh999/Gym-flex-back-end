@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.services.equipment;
 
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -80,5 +81,30 @@ public class EquipmentServiceImpl implements EquipmentService {
     public void delete(Long id) {
         log.debug("Request to delete Equipment : {}", id);
         equipmentRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteImage(Long id) {
+        Optional<Equipment> equipment = equipmentRepository.findById(id);
+        
+        if(equipment.get() != null) {
+            String urlImage = equipment.get().getImageUrl();
+            String extention = urlImage.substring(urlImage.lastIndexOf(".") + 1);
+            String imageName = equipment.get().getName();
+
+            // Path to the image file
+            String folderPath = "/home/youssef/Documents/GYmFlexDocuments/images/equipments/";
+
+            String imagePath = folderPath + imageName + "." + extention;
+            // Create a File object representing the image file
+            File imageFile = new File(imagePath);
+
+            // Delete the image file
+            if (imageFile.delete()) {
+                System.out.println("File deleted successfully.");
+            } else {
+                System.out.println("Failed to delete the file.");
+            }
+        }
     }
 }
