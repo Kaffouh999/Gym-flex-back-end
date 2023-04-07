@@ -1,11 +1,15 @@
 package com.example.GymInTheBack.web;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -17,12 +21,16 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class EquipmentResource {
 
     private final Logger log = LoggerFactory.getLogger(EquipmentResource.class);
@@ -167,10 +175,42 @@ public class EquipmentResource {
     @DeleteMapping("/equipment/{id}")
     public ResponseEntity<Void> deleteEquipment(@PathVariable Long id) {
         log.debug("REST request to delete Equipment : {}", id);
+        equipmentService.deleteImage(id);
         equipmentService.delete(id);
+
+
+
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PostMapping("/equipment/upload/{name}")
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam("file") MultipartFile file) {
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        try {
+            File uploadDir = new File("/home/youssef/Documents/GYmFlexDocuments/images/equipments");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            Path dest = uploadDir.toPath().resolve(name+"."+extension);
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "http://localhost:5051/images/equipments/"+dest.getFileName().toString());
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+
 }
