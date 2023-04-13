@@ -41,7 +41,7 @@ public class Member implements Serializable {
     @NotNull
     private GymBranch gymBranch;
 
-    @OneToOne(optional = false,cascade = CascadeType.ALL)
+    @OneToOne(optional = false)
     @NotNull
     private OnlineUser onlineUser;
 
