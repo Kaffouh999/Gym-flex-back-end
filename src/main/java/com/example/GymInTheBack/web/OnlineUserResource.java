@@ -1,16 +1,18 @@
 package com.example.GymInTheBack.web;
 
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
+import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
@@ -18,8 +20,10 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -37,9 +41,12 @@ public class OnlineUserResource {
 
     private final OnlineUserRepository onlineUserRepository;
 
-    public OnlineUserResource(OnlineUserService onlineUserService, OnlineUserRepository onlineUserRepository) {
+    private final IUploadService uploadService;
+
+    public OnlineUserResource(OnlineUserService onlineUserService, OnlineUserRepository onlineUserRepository , IUploadService uploadService) {
         this.onlineUserService = onlineUserService;
         this.onlineUserRepository = onlineUserRepository;
+        this.uploadService = uploadService;
     }
 
     /**
@@ -185,5 +192,50 @@ public class OnlineUserResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+
+    @PostMapping("/membersProfile/upload/{name}")
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam("file") MultipartFile file) {
+        String folerUrl = "/images/membersProfile/";
+
+        try {
+            String fileName = uploadService.handleFileUpload(name,folerUrl,file);
+            if(fileName == null){
+                throw  new IOException("Error uploading file");
+            }
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "http://localhost:5051"+folerUrl+fileName);
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("/membersProfile/upload/{id}")
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam("file") MultipartFile file) {
+        Optional<OnlineUser> onlineUser = onlineUserService.findById(id);
+        String imageUrl = onlineUser.get().getProfilePicture();
+        String folderUrl = "/images/membersProfile/";
+
+        try {
+            uploadService.deleteDocument(folderUrl, imageUrl);
+            String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+
+            if(fileName == null) {
+                throw new IOException("Error uploading file");
+            }
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "http://localhost:5051" + folderUrl + fileName);
+            return ResponseEntity.ok(response);
+
+        }catch (IOException e){
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

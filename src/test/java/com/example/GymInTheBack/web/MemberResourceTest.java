@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.entities.GymBranch;
 import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.services.mappers.MemberMapper;
 import jakarta.persistence.EntityManager;
@@ -74,6 +75,7 @@ class MemberResourceTest {
         Member member = new Member().cin(DEFAULT_CIN).age(DEFAULT_AGE).adress(DEFAULT_ADRESS).gender(DEFAULT_GENDER);
         // Add required entity
         GymBranch gymBranch;
+        OnlineUser onlineUser;
         if (TestUtil.findAll(em, GymBranch.class).isEmpty()) {
             gymBranch = GymBranchResourceTest.createEntity(em);
             em.persist(gymBranch);
@@ -81,7 +83,15 @@ class MemberResourceTest {
         } else {
             gymBranch = TestUtil.findAll(em, GymBranch.class).get(0);
         }
+        if (TestUtil.findAll(em, OnlineUser.class).isEmpty()) {
+            onlineUser = OnlineUserResourceTest.createEntity(em);
+            em.persist(onlineUser);
+            em.flush();
+        } else {
+            onlineUser = TestUtil.findAll(em, OnlineUser.class).get(0);
+        }
         member.setGymBranch(gymBranch);
+        member.setOnlineUser(onlineUser);
         return member;
     }
 
@@ -95,6 +105,7 @@ class MemberResourceTest {
         Member member = new Member().cin(UPDATED_CIN).age(UPDATED_AGE).adress(UPDATED_ADRESS).gender(UPDATED_GENDER);
         // Add required entity
         GymBranch gymBranch;
+        OnlineUser onlineUser;
         if (TestUtil.findAll(em, GymBranch.class).isEmpty()) {
             gymBranch = GymBranchResourceTest.createUpdatedEntity(em);
             em.persist(gymBranch);
@@ -102,7 +113,15 @@ class MemberResourceTest {
         } else {
             gymBranch = TestUtil.findAll(em, GymBranch.class).get(0);
         }
+        if (TestUtil.findAll(em, OnlineUser.class).isEmpty()) {
+            onlineUser = OnlineUserResourceTest.createEntity(em);
+            em.persist(onlineUser);
+            em.flush();
+        } else {
+            onlineUser = TestUtil.findAll(em, OnlineUser.class).get(0);
+        }
         member.setGymBranch(gymBranch);
+        member.setOnlineUser(onlineUser);
         return member;
     }
 

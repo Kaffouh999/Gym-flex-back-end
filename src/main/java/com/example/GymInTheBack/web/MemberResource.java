@@ -10,8 +10,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
+import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.services.member.MemberService;
+import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
@@ -37,11 +40,13 @@ public class MemberResource {
 
     private final MemberService memberService;
 
+    private final OnlineUserService onlineUserService;
     private final MemberRepository memberRepository;
 
-    public MemberResource(MemberService memberService, MemberRepository memberRepository) {
+    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService) {
         this.memberService = memberService;
         this.memberRepository = memberRepository;
+        this.onlineUserService = onlineUserService;
     }
 
     /**
@@ -54,6 +59,7 @@ public class MemberResource {
     @PostMapping("/members")
     public ResponseEntity<MemberDTO> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
         log.debug("REST request to save Member : {}", memberDTO);
+        OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
         if (memberDTO.getId() != null) {
             throw new BadRequestAlertException("A new member cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -65,6 +71,9 @@ public class MemberResource {
         }
         if (memberDTO.getGender() == null ) {
             throw new BadRequestAlertException("A new member must have gender", ENTITY_NAME, "genderrequired");
+        }
+        if(onlineUserDTO== null || onlineUserDTO.getId() == null ||onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
+            onlineUserService.save(onlineUserDTO);
         }
         MemberDTO result = memberService.save(memberDTO);
         return ResponseEntity

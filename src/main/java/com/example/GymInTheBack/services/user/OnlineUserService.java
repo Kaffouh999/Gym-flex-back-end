@@ -1,6 +1,8 @@
 package com.example.GymInTheBack.services.user;
 
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.OnlineUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,4 +54,6 @@ public interface OnlineUserService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    public Optional<OnlineUser> findById(Long id);
 }
