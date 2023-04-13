@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
 import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
@@ -80,5 +81,10 @@ public class OnlineUserServiceImpl implements OnlineUserService {
     public void delete(Long id) {
         log.debug("Request to delete OnlineUser : {}", id);
         onlineUserRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<OnlineUser> findById(Long id) {
+        return onlineUserRepository.findById(id);
     }
 }
