@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
+import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.repositories.EquipmentRepository;
 import com.example.GymInTheBack.services.equipment.EquipmentService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -203,6 +204,38 @@ public class EquipmentResource {
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "http://localhost:5051/"+dest.getFileName().toString());
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("/equipment/upload/{id}")
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam("file") MultipartFile file) {
+        Optional<Equipment> equipment = equipmentService.findById(id);
+        equipmentService.deleteImage(id);
+
+
+        int lastIndex = equipment.get().getImageUrl().lastIndexOf("/");
+        String name = equipment.get().getImageUrl().substring(lastIndex + 1);
+
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        try {
+            File uploadDir = new File("/home/youssef/Documents/GYmFlexDocuments/images/equipments");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            Path dest = uploadDir.toPath().resolve(name);
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "http://localhost:5051/images/equipments/"+dest.getFileName().toString());
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             Map<String, String> response = new HashMap<>();

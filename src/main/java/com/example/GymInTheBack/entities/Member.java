@@ -16,8 +16,7 @@ public class Member implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
@@ -41,6 +40,10 @@ public class Member implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     private GymBranch gymBranch;
+
+    @OneToOne(optional = false,cascade = CascadeType.ALL)
+    @NotNull
+    private OnlineUser onlineUser;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -119,6 +122,19 @@ public class Member implements Serializable {
 
     public Member gymBranch(GymBranch gymBranch) {
         this.setGymBranch(gymBranch);
+        return this;
+    }
+
+    public OnlineUser getOnlineUser() {
+        return onlineUser;
+    }
+
+    public void setOnlineUser(OnlineUser onlineUser) {
+        this.onlineUser = onlineUser;
+    }
+
+    public Member onlineUser(OnlineUser onlineUser) {
+        this.setOnlineUser(onlineUser);
         return this;
     }
 

@@ -89,13 +89,14 @@ public class EquipmentServiceImpl implements EquipmentService {
         
         if(equipment.get() != null) {
             String urlImage = equipment.get().getImageUrl();
-            String extention = urlImage.substring(urlImage.lastIndexOf(".") + 1);
-            String imageName = equipment.get().getName();
 
+
+            int lastIndex = urlImage.lastIndexOf("/");
+            String imageName = urlImage.substring(lastIndex + 1);
             // Path to the image file
             String folderPath = "C:\\youssef.com\\";
 
-            String imagePath = folderPath + imageName + "." + extention;
+            String imagePath = folderPath + imageName ;
             // Create a File object representing the image file
             File imageFile = new File(imagePath);
 
@@ -106,5 +107,10 @@ public class EquipmentServiceImpl implements EquipmentService {
                 System.out.println("Failed to delete the file.");
             }
         }
+    }
+
+    @Override
+    public Optional<Equipment> findById(Long id) {
+        return equipmentRepository.findById(id);
     }
 }

@@ -30,7 +30,7 @@ public class OnlineUserDTO implements Serializable {
 
     private String profilePicture;
 
-    private GymBranchDTO gymBranch;
+
 
     public Long getId() {
         return id;
@@ -88,13 +88,7 @@ public class OnlineUserDTO implements Serializable {
         this.profilePicture = profilePicture;
     }
 
-    public GymBranchDTO getGymBranch() {
-        return gymBranch;
-    }
 
-    public void setGymBranch(GymBranchDTO gymBranch) {
-        this.gymBranch = gymBranch;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -128,7 +122,6 @@ public class OnlineUserDTO implements Serializable {
             ", email='" + getEmail() + "'" +
             ", password='" + getPassword() + "'" +
             ", profilePicture='" + getProfilePicture() + "'" +
-            ", gymBranch=" + getGymBranch() +
             "}";
     }
 }

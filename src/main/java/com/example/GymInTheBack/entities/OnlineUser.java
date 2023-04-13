@@ -16,8 +16,7 @@ public class OnlineUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
@@ -45,8 +44,7 @@ public class OnlineUser implements Serializable {
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @ManyToOne
-    private GymBranch gymBranch;
+
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -141,18 +139,8 @@ public class OnlineUser implements Serializable {
         this.profilePicture = profilePicture;
     }
 
-    public GymBranch getGymBranch() {
-        return this.gymBranch;
-    }
 
-    public void setGymBranch(GymBranch gymBranch) {
-        this.gymBranch = gymBranch;
-    }
 
-    public OnlineUser gymBranch(GymBranch gymBranch) {
-        this.setGymBranch(gymBranch);
-        return this;
-    }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
