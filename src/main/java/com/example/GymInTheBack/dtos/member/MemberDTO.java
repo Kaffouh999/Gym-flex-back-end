@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.dtos.member;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
+import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -26,6 +27,9 @@ public class MemberDTO implements Serializable {
     private Boolean gender;
 
     private GymBranchDTO gymBranch;
+
+    @NotNull
+    private OnlineUserDTO onlineUser;
 
     public Long getId() {
         return id;
@@ -75,6 +79,14 @@ public class MemberDTO implements Serializable {
         this.gymBranch = gymBranch;
     }
 
+    public OnlineUserDTO getOnlineUser() {
+        return onlineUser;
+    }
+
+    public void setOnlineUser(OnlineUserDTO onlineUser) {
+        this.onlineUser = onlineUser;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -106,6 +118,7 @@ public class MemberDTO implements Serializable {
             ", adress='" + getAdress() + "'" +
             ", gender='" + getGender() + "'" +
             ", gymBranch=" + getGymBranch() +
+                ", onlineUser=" + getOnlineUser() +
             "}";
     }
 }

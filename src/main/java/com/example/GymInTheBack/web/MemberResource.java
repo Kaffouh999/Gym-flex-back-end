@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class MemberResource {
 
     private final Logger log = LoggerFactory.getLogger(MemberResource.class);

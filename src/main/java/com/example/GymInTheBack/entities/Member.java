@@ -41,6 +41,10 @@ public class Member implements Serializable {
     @NotNull
     private GymBranch gymBranch;
 
+    @OneToOne(optional = false,cascade = CascadeType.ALL)
+    @NotNull
+    private OnlineUser onlineUser;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -118,6 +122,19 @@ public class Member implements Serializable {
 
     public Member gymBranch(GymBranch gymBranch) {
         this.setGymBranch(gymBranch);
+        return this;
+    }
+
+    public OnlineUser getOnlineUser() {
+        return onlineUser;
+    }
+
+    public void setOnlineUser(OnlineUser onlineUser) {
+        this.onlineUser = onlineUser;
+    }
+
+    public Member onlineUser(OnlineUser onlineUser) {
+        this.setOnlineUser(onlineUser);
         return this;
     }
 
