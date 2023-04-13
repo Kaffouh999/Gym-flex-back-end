@@ -17,6 +17,8 @@ import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.repositories.EquipmentRepository;
 import com.example.GymInTheBack.services.equipment.EquipmentService;
+import com.example.GymInTheBack.services.mappers.EquipmentItemMapper;
+import com.example.GymInTheBack.services.mappers.EquipmentMapper;
 import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
@@ -44,14 +46,16 @@ public class EquipmentResource {
 
     private final EquipmentService equipmentService;
 
+    private final EquipmentMapper equipmentMapper;
     private final IUploadService uploadService;
 
     private final EquipmentRepository equipmentRepository;
 
-    public EquipmentResource(EquipmentService equipmentService, EquipmentRepository equipmentRepository,IUploadService uploadService) {
+    public EquipmentResource(EquipmentService equipmentService, EquipmentRepository equipmentRepository,IUploadService uploadService , EquipmentMapper equipmentMapper) {
         this.equipmentService = equipmentService;
         this.equipmentRepository = equipmentRepository;
         this.uploadService=uploadService;
+        this.equipmentMapper = equipmentMapper;
     }
 
     /**
@@ -198,44 +202,59 @@ public class EquipmentResource {
     }
 
     @PostMapping("/equipment/upload/{name}")
-    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam(value = "file",required = false) MultipartFile file) {
         String folerUrl = "/images/equipments/";
+        Map<String, String> response = new HashMap<>();
 
         try {
-           String fileName = uploadService.handleFileUpload(name,folerUrl,file);
-        if(fileName == null){
-            throw  new IOException("Error uploading file");
+            if(file != null) {
+                String fileName = uploadService.handleFileUpload(name, folerUrl, file);
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }
+                response.put("message", "http://localhost:5051/images/equipments/" + fileName);
+            }else{
+                response.put("message", "");
             }
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "http://localhost:5051/images/equipments/"+fileName);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @PutMapping("/equipment/upload/{id}")
-    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+        Map<String, String> response = new HashMap<>();
         Optional<Equipment> equipment = equipmentService.findById(id);
         String imageUrl = equipment.get().getImageUrl();
         String folderUrl = "/images/equipments/";
 
         try {
-            uploadService.deleteDocument(folderUrl, imageUrl);
-            String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+            if(file != null) {
+                uploadService.deleteDocument(folderUrl, imageUrl);
+                String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
 
-            if(fileName == null) {
-            throw new IOException("Error uploading file");
+                if (imageUrl == null || imageUrl.equals("")) {
+                    imageUrl = equipment.get().getName();
+                    fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+                }else {
+                    fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                }
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }else {
+                    equipment.get().setImageUrl("http://localhost:5051" + folderUrl + fileName);
+                    equipmentService.save(equipmentMapper.toDto(equipment.get()));
+                }
+                    response.put("message", "http://localhost:5051" + folderUrl + fileName);
+
+            }else{
+                response.put("message", "");
             }
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "http://localhost:5051" + folderUrl + fileName);
             return ResponseEntity.ok(response);
 
         }catch (IOException e){
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }

@@ -12,6 +12,7 @@ import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
+import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
 import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -40,14 +41,16 @@ public class OnlineUserResource {
 
     private final OnlineUserService onlineUserService;
 
+    private final OnlineUserMapper onlineUserMapper;
     private final OnlineUserRepository onlineUserRepository;
 
     private final IUploadService uploadService;
 
-    public OnlineUserResource(OnlineUserService onlineUserService, OnlineUserRepository onlineUserRepository , IUploadService uploadService) {
+    public OnlineUserResource(OnlineUserService onlineUserService, OnlineUserRepository onlineUserRepository , IUploadService uploadService , OnlineUserMapper onlineUserMapper) {
         this.onlineUserService = onlineUserService;
         this.onlineUserRepository = onlineUserRepository;
         this.uploadService = uploadService;
+        this.onlineUserMapper=onlineUserMapper;
     }
 
     /**
@@ -197,44 +200,64 @@ public class OnlineUserResource {
 
 
     @PostMapping("/membersProfile/upload/{name}")
-    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name ,  @RequestParam(value = "file",required = false) MultipartFile file) {
         String folerUrl = "/images/membersProfile/";
-
+        Map<String, String> response = new HashMap<>();
         try {
-            String fileName = uploadService.handleFileUpload(name,folerUrl,file);
-            if(fileName == null){
-                throw  new IOException("Error uploading file");
-            }
+            if(file != null) {
+                String fileName = uploadService.handleFileUpload(name, folerUrl, file);
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }
 
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "http://localhost:5051"+folerUrl+fileName);
+                response.put("message", "http://localhost:5051" + folerUrl + fileName);
+            }else{
+                response.put("message", "");
+            }
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     @PutMapping("/membersProfile/upload/{id}")
-    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+        Map<String, String> response = new HashMap<>();
+        String fileName;
         Optional<OnlineUser> onlineUser = onlineUserService.findById(id);
         String imageUrl = onlineUser.get().getProfilePicture();
         String folderUrl = "/images/membersProfile/";
 
-        try {
-            uploadService.deleteDocument(folderUrl, imageUrl);
-            String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
 
-            if(fileName == null) {
-                throw new IOException("Error uploading file");
+        try {
+            if(file != null){
+            uploadService.deleteDocument(folderUrl, imageUrl);
+
+            if (imageUrl == null || imageUrl.equals("")) {
+                imageUrl = onlineUser.get().getPassword() + "_" + onlineUser.get().getEmail();
+                fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+            }else {
+                fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
             }
-            Map<String, String> response = new HashMap<>();
+
+
+            if (fileName == null) {
+                throw new IOException("Error uploading file");
+            } else {
+                onlineUser.get().setProfilePicture("http://localhost:5051" + folderUrl + fileName);
+                onlineUserService.save(onlineUserMapper.toDto(onlineUser.get()));
+            }
+
             response.put("message", "http://localhost:5051" + folderUrl + fileName);
+        }else{
+
+                response.put("message", "");
+            }
             return ResponseEntity.ok(response);
 
         }catch (IOException e){
-            Map<String, String> response = new HashMap<>();
+             response = new HashMap<>();
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
