@@ -180,7 +180,13 @@ public class EquipmentResource {
     @DeleteMapping("/equipment/{id}")
     public ResponseEntity<Void> deleteEquipment(@PathVariable Long id) {
         log.debug("REST request to delete Equipment : {}", id);
-        equipmentService.deleteImage(id);
+        Optional<Equipment> equipment = equipmentRepository.findById(id);
+
+        if(equipment.get() != null) {
+            String folderUrl = "/images/equipments/";
+            String urlImage = equipment.get().getImageUrl();
+            uploadService.deleteDocument(folderUrl, urlImage);
+        }
         equipmentService.delete(id);
 
 

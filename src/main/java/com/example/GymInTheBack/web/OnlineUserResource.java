@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class OnlineUserResource {
 
     private final Logger log = LoggerFactory.getLogger(OnlineUserResource.class);

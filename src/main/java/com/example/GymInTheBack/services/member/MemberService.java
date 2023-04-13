@@ -2,6 +2,8 @@ package com.example.GymInTheBack.services.member;
 
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
+import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.OnlineUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +55,6 @@ public interface MemberService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    public Optional<Member> findById(Long id);
 }

@@ -80,4 +80,9 @@ public class MemberServiceImpl implements MemberService {
         log.debug("Request to delete Member : {}", id);
         memberRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<Member> findById(Long id) {
+        return memberRepository.findById(id);
+    }
 }
