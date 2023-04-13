@@ -93,7 +93,7 @@ public class EquipmentServiceImpl implements EquipmentService {
             String imageName = equipment.get().getName();
 
             // Path to the image file
-            String folderPath = "/home/youssef/Documents/GYmFlexDocuments/images/equipments/";
+            String folderPath = "C:\\youssef.com\\";
 
             String imagePath = folderPath + imageName + "." + extention;
             // Create a File object representing the image file

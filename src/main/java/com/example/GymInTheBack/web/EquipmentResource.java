@@ -191,7 +191,7 @@ public class EquipmentResource {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         try {
-            File uploadDir = new File("/home/youssef/Documents/GYmFlexDocuments/images/equipments");
+            File uploadDir = new File("C:\\youssef.com");
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
@@ -202,7 +202,7 @@ public class EquipmentResource {
 
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "http://localhost:5051/images/equipments/"+dest.getFileName().toString());
+            response.put("message", "http://localhost:5051/"+dest.getFileName().toString());
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             Map<String, String> response = new HashMap<>();
