@@ -11,9 +11,12 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.Member;
 import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.services.member.MemberService;
+import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
@@ -41,12 +44,14 @@ public class MemberResource {
     private final MemberService memberService;
 
     private final OnlineUserService onlineUserService;
+    private IUploadService uploadService;
     private final MemberRepository memberRepository;
 
-    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService) {
+    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService , IUploadService uploadService) {
         this.memberService = memberService;
         this.memberRepository = memberRepository;
         this.onlineUserService = onlineUserService;
+        this.uploadService=uploadService;
     }
 
     /**
@@ -73,7 +78,8 @@ public class MemberResource {
             throw new BadRequestAlertException("A new member must have gender", ENTITY_NAME, "genderrequired");
         }
         if(onlineUserDTO== null || onlineUserDTO.getId() == null ||onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
-            onlineUserService.save(onlineUserDTO);
+            onlineUserDTO = onlineUserService.save(onlineUserDTO);
+            memberDTO.setOnlineUser(onlineUserDTO);
         }
         MemberDTO result = memberService.save(memberDTO);
         return ResponseEntity
@@ -185,6 +191,13 @@ public class MemberResource {
     @DeleteMapping("/members/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
         log.debug("REST request to delete Member : {}", id);
+        Optional<Member> member = memberService.findById(id);
+
+        if(member.get() != null) {
+            String folderUrl = "/images/membersProfile/";
+            String urlImage = member.get().getOnlineUser().getProfilePicture();
+            uploadService.deleteDocument(folderUrl, urlImage);
+        }
         memberService.delete(id);
         return ResponseEntity
             .noContent()

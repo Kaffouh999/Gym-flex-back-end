@@ -88,6 +88,7 @@ public class EquipmentServiceImpl implements EquipmentService {
         Optional<Equipment> equipment = equipmentRepository.findById(id);
         
         if(equipment.get() != null) {
+
             String urlImage = equipment.get().getImageUrl();
 
 
