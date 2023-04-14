@@ -35,6 +35,14 @@ public class Plan implements Serializable {
     @Column(name = "price", nullable = false)
     private Double price;
 
+
+    @Column(name = "imageAds", nullable = true)
+    private String imageAds;
+
+
+    @Column(name = "ratingPer5", nullable = true)
+    private Float ratingPer5;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -102,7 +110,31 @@ public class Plan implements Serializable {
         this.price = price;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public String getImageAds() {
+        return imageAds;
+    }
+
+    public void setImageAds(String imageAds) {
+        this.imageAds = imageAds;
+    }
+    public Plan price(String imageAds) {
+        this.setImageAds(imageAds);
+        return this;
+    }
+
+    public Float getRatingPer5() {
+        return ratingPer5;
+    }
+
+    public void setRatingPer5(Float ratingPer5) {
+        this.ratingPer5 = ratingPer5;
+    }
+
+    public Plan price(Float ratingPer5) {
+        this.setRatingPer5(ratingPer5);
+        return this;
+    }
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
@@ -130,6 +162,8 @@ public class Plan implements Serializable {
             ", description='" + getDescription() + "'" +
             ", duration=" + getDuration() +
             ", price=" + getPrice() +
+                ", imageAds=" + getImageAds() +
+                ", ratingPer5=" + getRatingPer5() +
             "}";
     }
 }
