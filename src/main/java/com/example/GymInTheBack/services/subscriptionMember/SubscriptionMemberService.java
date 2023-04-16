@@ -2,7 +2,10 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
+import com.example.GymInTheBack.entities.SubscriptionMember;
+import com.google.zxing.WriterException;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +17,7 @@ public interface SubscriptionMemberService {
      * @param subscriptionMemberDTO the entity to save.
      * @return the persisted entity.
      */
-    SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO);
+    SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO) throws WriterException, NoSuchAlgorithmException;
 
     /**
      * Updates a subscriptionMember.
@@ -46,6 +49,8 @@ public interface SubscriptionMemberService {
      * @return the entity.
      */
     Optional<SubscriptionMemberDTO> findOne(Long id);
+
+    Optional<SubscriptionMemberDTO> findByCodeSubscription(String codeSubscription);
 
     /**
      * Delete the "id" subscriptionMember.

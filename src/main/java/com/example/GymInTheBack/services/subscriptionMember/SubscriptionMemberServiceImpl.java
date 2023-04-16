@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.services.subscriptionMember;
 
 
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
+import com.example.GymInTheBack.utils.QRCodeGenerator;
+import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -36,9 +39,12 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
     }
 
     @Override
-    public SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO) {
+    public SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO) throws NoSuchAlgorithmException {
         log.debug("Request to save SubscriptionMember : {}", subscriptionMemberDTO);
         SubscriptionMember subscriptionMember = subscriptionMemberMapper.toEntity(subscriptionMemberDTO);
+        String qrCode = QRCodeGenerator.generateUniqueCode();
+        System.out.println(qrCode.length());
+        subscriptionMember.setCodeSubscription(qrCode);
         subscriptionMember = subscriptionMemberRepository.save(subscriptionMember);
         return subscriptionMemberMapper.toDto(subscriptionMember);
     }
@@ -83,6 +89,11 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
     public Optional<SubscriptionMemberDTO> findOne(Long id) {
         log.debug("Request to get SubscriptionMember : {}", id);
         return subscriptionMemberRepository.findById(id).map(subscriptionMemberMapper::toDto);
+    }
+
+    @Override
+    public Optional<SubscriptionMemberDTO> findByCodeSubscription(String codeSubscription) {
+        return subscriptionMemberRepository.findByCodeSubscription(codeSubscription).map(subscriptionMemberMapper::toDto);
     }
 
     @Override

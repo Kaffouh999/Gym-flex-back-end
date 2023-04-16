@@ -3,6 +3,7 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberSe
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -54,8 +56,7 @@ public class SubscriptionMemberResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/subscription-members")
-    public ResponseEntity<SubscriptionMemberDTO> createSubscriptionMember(@Valid @RequestBody SubscriptionMemberDTO subscriptionMemberDTO)
-        throws URISyntaxException {
+    public ResponseEntity<SubscriptionMemberDTO> createSubscriptionMember(@Valid @RequestBody SubscriptionMemberDTO subscriptionMemberDTO) throws NoSuchAlgorithmException, URISyntaxException, WriterException {
         log.debug("REST request to save SubscriptionMember : {}", subscriptionMemberDTO);
         if (subscriptionMemberDTO.getId() != null) {
             throw new BadRequestAlertException("A new subscriptionMember cannot already have an ID", ENTITY_NAME, "idexists");
