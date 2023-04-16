@@ -1,5 +1,7 @@
 package com.example.GymInTheBack.dtos.plan;
 
+import jakarta.persistence.Column;
+
 import java.io.Serializable;
 import java.util.Objects;
 import javax.validation.constraints.*;
@@ -20,6 +22,12 @@ public class PlanDTO implements Serializable {
 
     @NotNull
     private Double price;
+
+
+    private String imageAds;
+
+
+    private Float ratingPer5;
 
     public Long getId() {
         return id;
@@ -61,6 +69,22 @@ public class PlanDTO implements Serializable {
         this.price = price;
     }
 
+    public String getImageAds() {
+        return imageAds;
+    }
+
+    public void setImageAds(String imageAds) {
+        this.imageAds = imageAds;
+    }
+
+    public Float getRatingPer5() {
+        return ratingPer5;
+    }
+
+    public void setRatingPer5(Float ratingPer5) {
+        this.ratingPer5 = ratingPer5;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -91,6 +115,8 @@ public class PlanDTO implements Serializable {
             ", description='" + getDescription() + "'" +
             ", duration=" + getDuration() +
             ", price=" + getPrice() +
+                ", imageAds=" + getImageAds() +
+                ", ratingPer5=" + getRatingPer5() +
             "}";
     }
 }

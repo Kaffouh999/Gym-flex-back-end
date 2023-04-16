@@ -12,6 +12,7 @@ import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,8 +70,9 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
     @Transactional(readOnly = true)
     public List<SubscriptionMemberDTO> findAll() {
         log.debug("Request to get all SubscriptionMembers");
+        Sort sort = Sort.by("id").ascending();
         return subscriptionMemberRepository
-            .findAll()
+            .findAll(sort)
             .stream()
             .map(subscriptionMemberMapper::toDto)
             .collect(Collectors.toCollection(LinkedList::new));
