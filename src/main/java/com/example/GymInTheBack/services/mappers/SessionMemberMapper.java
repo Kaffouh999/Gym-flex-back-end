@@ -52,5 +52,6 @@ public interface SessionMemberMapper extends EntityMapper<SessionMemberDTO, Sess
     @Mapping(target = "adress", source = "adress")
     @Mapping(target = "gender", source = "gender")
     @Mapping(target = "gymBranch", source = "gymBranch")
+    @Mapping(target = "onlineUser", source = "onlineUser")
     MemberDTO toDtoMemberId(Member member);
 }

@@ -2,6 +2,7 @@ package com.example.GymInTheBack.services.sessionMember;
 
 
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
+import com.example.GymInTheBack.entities.SessionMember;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +54,9 @@ public interface SessionMemberService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+
+    Integer entering(String qrCode);
+
+    List<SessionMember> alreadyIn(String qrCode);
 }

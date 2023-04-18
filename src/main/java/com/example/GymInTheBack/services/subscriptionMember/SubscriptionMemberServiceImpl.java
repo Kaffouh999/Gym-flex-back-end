@@ -2,12 +2,15 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
+import com.example.GymInTheBack.entities.SessionMember;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
@@ -28,11 +31,12 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
 
     private final SubscriptionMemberRepository subscriptionMemberRepository;
 
+
     private final SubscriptionMemberMapper subscriptionMemberMapper;
 
     public SubscriptionMemberServiceImpl(
-        SubscriptionMemberRepository subscriptionMemberRepository,
-        SubscriptionMemberMapper subscriptionMemberMapper
+            SubscriptionMemberRepository subscriptionMemberRepository,
+            SubscriptionMemberMapper subscriptionMemberMapper
     ) {
         this.subscriptionMemberRepository = subscriptionMemberRepository;
         this.subscriptionMemberMapper = subscriptionMemberMapper;
@@ -62,14 +66,14 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
         log.debug("Request to partially update SubscriptionMember : {}", subscriptionMemberDTO);
 
         return subscriptionMemberRepository
-            .findById(subscriptionMemberDTO.getId())
-            .map(existingSubscriptionMember -> {
-                subscriptionMemberMapper.partialUpdate(existingSubscriptionMember, subscriptionMemberDTO);
+                .findById(subscriptionMemberDTO.getId())
+                .map(existingSubscriptionMember -> {
+                    subscriptionMemberMapper.partialUpdate(existingSubscriptionMember, subscriptionMemberDTO);
 
-                return existingSubscriptionMember;
-            })
-            .map(subscriptionMemberRepository::save)
-            .map(subscriptionMemberMapper::toDto);
+                    return existingSubscriptionMember;
+                })
+                .map(subscriptionMemberRepository::save)
+                .map(subscriptionMemberMapper::toDto);
     }
 
     @Override
@@ -78,10 +82,10 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
         log.debug("Request to get all SubscriptionMembers");
         Sort sort = Sort.by("id").ascending();
         return subscriptionMemberRepository
-            .findAll(sort)
-            .stream()
-            .map(subscriptionMemberMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+                .findAll(sort)
+                .stream()
+                .map(subscriptionMemberMapper::toDto)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -100,5 +104,11 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
     public void delete(Long id) {
         log.debug("Request to delete SubscriptionMember : {}", id);
         subscriptionMemberRepository.deleteById(id);
+    }
+
+    @Override
+    public List<SubscriptionMember> entering(String qrCode) {
+        return subscriptionMemberRepository.entering(qrCode);
+
     }
 }
