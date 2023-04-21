@@ -16,4 +16,10 @@ import java.util.Optional;
 public interface SubscriptionMemberRepository extends JpaRepository<SubscriptionMember, Long> {
     List<SubscriptionMember> findAll(Sort sort);
     Optional<SubscriptionMember> findByCodeSubscription(String codeSubscription);
+
+    @Query("select e from SubscriptionMember e where codeSubscription = :qrCode and date_part('day', age( current_date , e.startDate)) <= e.plan.duration and date_part('day', age( current_date , e.startDate)) >= 0")
+    List<SubscriptionMember> entering(String qrCode);
+
+
+
 }

@@ -12,19 +12,23 @@ import javax.validation.constraints.NotNull;
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
 import com.example.GymInTheBack.repositories.SessionMemberRepository;
 import com.example.GymInTheBack.services.sessionMember.SessionMemberService;
+import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class SessionMemberResource {
 
     private final Logger log = LoggerFactory.getLogger(SessionMemberResource.class);
@@ -36,11 +40,16 @@ public class SessionMemberResource {
 
     private final SessionMemberService sessionMemberService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    private final SubscriptionMemberService subscriptionMemberService;
+
     private final SessionMemberRepository sessionMemberRepository;
 
-    public SessionMemberResource(SessionMemberService sessionMemberService, SessionMemberRepository sessionMemberRepository) {
+    public SessionMemberResource(SubscriptionMemberService subscriptionMemberService,SessionMemberService sessionMemberService, SessionMemberRepository sessionMemberRepository) {
         this.sessionMemberService = sessionMemberService;
         this.sessionMemberRepository = sessionMemberRepository;
+        this.subscriptionMemberService = subscriptionMemberService;
     }
 
     /**
@@ -161,6 +170,13 @@ public class SessionMemberResource {
         return ResponseUtil.wrapOrNotFound(sessionMemberDTO);
     }
 
+    @GetMapping("/session-members/entering/{qrCode}")
+    public ResponseEntity<Integer> entering(@PathVariable String qrCode) {
+        log.debug("REST request to get SessionMember : {}", qrCode);
+        Integer canEnter = sessionMemberService.entering(qrCode);
+
+        return ResponseEntity.ok().body(canEnter);
+    }
     /**
      * {@code DELETE  /session-members/:id} : delete the "id" sessionMember.
      *

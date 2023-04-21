@@ -29,13 +29,16 @@ public class SessionMember implements Serializable {
     @Column(name = "leaving_time")
     private ZonedDateTime leavingTime;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JsonIgnoreProperties(value = { "member", "plan" }, allowSetters = true)
     private SubscriptionMember subscriptionMember;
 
     @ManyToOne(optional = false)
     @NotNull
     private GymBranch gymBranch;
+
+    @ManyToOne(optional = true)
+    private Member managerSawNotif;
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "gymBranch" }, allowSetters = true)
