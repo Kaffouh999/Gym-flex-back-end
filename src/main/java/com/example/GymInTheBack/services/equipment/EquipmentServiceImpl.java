@@ -95,7 +95,7 @@ public class EquipmentServiceImpl implements EquipmentService {
             int lastIndex = urlImage.lastIndexOf("/");
             String imageName = urlImage.substring(lastIndex + 1);
             // Path to the image file
-            String folderPath = "/home/youssef/Documents/GYmFlexDocuments/images/equipments/";
+            String folderPath = "C:\\youssef.com\\";
 
             String imagePath = folderPath + imageName ;
             // Create a File object representing the image file
