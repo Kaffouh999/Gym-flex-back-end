@@ -37,6 +37,9 @@ public class SessionMember implements Serializable {
     @NotNull
     private GymBranch gymBranch;
 
+    @ManyToOne(optional = true)
+    private Member managerSawNotif;
+
     @ManyToOne
     @JsonIgnoreProperties(value = { "gymBranch" }, allowSetters = true)
     private Member managerAtTheTime;

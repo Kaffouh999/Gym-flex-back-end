@@ -18,8 +18,10 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -38,6 +40,8 @@ public class SessionMemberResource {
 
     private final SessionMemberService sessionMemberService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     private final SubscriptionMemberService subscriptionMemberService;
 
     private final SessionMemberRepository sessionMemberRepository;
@@ -170,6 +174,7 @@ public class SessionMemberResource {
     public ResponseEntity<Integer> entering(@PathVariable String qrCode) {
         log.debug("REST request to get SessionMember : {}", qrCode);
         Integer canEnter = sessionMemberService.entering(qrCode);
+
         return ResponseEntity.ok().body(canEnter);
     }
     /**

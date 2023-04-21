@@ -1,20 +1,27 @@
 package com.example.GymInTheBack.services.sessionMember;
 
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
+import com.example.GymInTheBack.entities.Notification;
 import com.example.GymInTheBack.entities.SessionMember;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SessionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SessionMemberMapper;
+import com.example.GymInTheBack.services.notification.NotificationService;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
+import com.example.GymInTheBack.utils.ReminderScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +35,17 @@ public class SessionMemberServiceImpl implements SessionMemberService {
     private final SessionMemberRepository sessionMemberRepository;
     private final SubscriptionMemberService subscriptionMemberService;
 
+    private final NotificationService notificationService;
     private final SessionMemberMapper sessionMemberMapper;
 
-    public SessionMemberServiceImpl(SessionMemberRepository sessionMemberRepository, SessionMemberMapper sessionMemberMapper , SubscriptionMemberService subscriptionMemberService) {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    public SessionMemberServiceImpl(SessionMemberRepository sessionMemberRepository, SessionMemberMapper sessionMemberMapper , SubscriptionMemberService subscriptionMemberService, NotificationService notificationService) {
         this.sessionMemberRepository = sessionMemberRepository;
         this.sessionMemberMapper = sessionMemberMapper;
         this.subscriptionMemberService = subscriptionMemberService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -102,12 +114,34 @@ public class SessionMemberServiceImpl implements SessionMemberService {
                 sessionMember.setGymBranch(subscriptionMemberentering.getMember().getGymBranch());
                 sessionMember.setManagerAtTheTime(subscriptionMemberentering.getMember());
                 sessionMemberRepository.save(sessionMember);
+
+                Long sessionDurationAllowed = sessionMember.getGymBranch().getSessionDurationAllowed().longValue();
+                LocalDateTime reminderTime = currentDate.toLocalDateTime().plusMinutes(sessionDurationAllowed);
+                String fullName = sessionMember.getSubscriptionMember().getMember().getOnlineUser().getLastName()+" "+ sessionMember.getSubscriptionMember().getMember().getOnlineUser().getLastName();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String message = "person with name "+fullName+" should leave , he entered at "+currentDate.toLocalDateTime().format(formatter);
+                Notification notification = new Notification();
+                notification.setMessage(message);
+                notification.setReaded(false);
+                notification.setAttachUrl(sessionMember.getSubscriptionMember().getMember().getOnlineUser().getProfilePicture());
+
+
+                Long numberNotifNotRead = notificationService.numNotifNotRead();
+                Runnable task = () -> {
+
+                    notificationService.save(notification);
+                    messagingTemplate.convertAndSend("/topic/shouldLeave", numberNotifNotRead);
+                };
+
+                ReminderScheduler.scheduleReminder(reminderTime, task);
+
                 return 1;
             } else  {
                 sessionMember = sessionMemberIn.get(0);
                 ZonedDateTime currentDate = ZonedDateTime.now();
                 sessionMember.setLeavingTime(currentDate);
                 sessionMemberRepository.save(sessionMember);
+
                 return 2;
             }
 
