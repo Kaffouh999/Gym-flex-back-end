@@ -2,6 +2,8 @@ package com.example.GymInTheBack.services.product;
 
 
 import com.example.GymInTheBack.dtos.product.ProductDTO;
+import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.entities.Product;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +55,6 @@ public interface ProductService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    public Optional<Product> findById(Long id);
 }

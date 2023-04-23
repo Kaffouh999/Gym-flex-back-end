@@ -1,28 +1,35 @@
 package com.example.GymInTheBack.web;
 
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.product.ProductDTO;
+import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.entities.Product;
 import com.example.GymInTheBack.repositories.ProductRepository;
+import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
+import com.example.GymInTheBack.services.mappers.ProductMapper;
 import com.example.GymInTheBack.services.product.ProductService;
+import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class ProductResource {
 
     private final Logger log = LoggerFactory.getLogger(ProductResource.class);
@@ -36,9 +43,15 @@ public class ProductResource {
 
     private final ProductRepository productRepository;
 
-    public ProductResource(ProductService productService, ProductRepository productRepository) {
+    private final ProductMapper productMapper;
+
+    private final IUploadService uploadService;
+
+    public ProductResource(ProductService productService, ProductRepository productRepository, IUploadService uploadService, ProductMapper productMapper) {
         this.productService = productService;
         this.productRepository = productRepository;
+        this.uploadService=uploadService;
+        this.productMapper=productMapper;
     }
 
     /**
@@ -176,4 +189,68 @@ public class ProductResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+    @PostMapping("/products/upload/{name}")
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name ,  @RequestParam(value = "file",required = false) MultipartFile file) {
+        String folderUrl = "/images/productsPictures/";
+        Map<String, String> response = new HashMap<>();
+        try {
+            if(file != null) {
+                String fileName = uploadService.handleFileUpload(name, folderUrl, file);
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }
+
+                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+            }else{
+                response.put("message", "");
+            }
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("/products/upload/{id}")
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+        Map<String, String> response = new HashMap<>();
+        String fileName;
+        Optional<Product> product=productService.findById(id);
+        String imageUrl = product.get().getImageUrl();
+        String folderUrl = "/images/productsPictures/";
+
+
+        try {
+            if(file != null){
+                uploadService.deleteDocument(folderUrl, imageUrl);
+
+                if (imageUrl == null || imageUrl.equals("")) {
+                    imageUrl = product.get().getName() + "_" + product.get().getSubCategory();
+                    fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+                }else {
+                    fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                }
+
+
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                } else {
+                    product.get().setImageUrl("http://localhost:5051" + folderUrl + fileName);
+                    productService.save(productMapper.toDto(product.get()));
+                }
+
+                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+            }else{
+
+                response.put("message", "");
+            }
+            return ResponseEntity.ok(response);
+
+        }catch (IOException e){
+            response = new HashMap<>();
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 }

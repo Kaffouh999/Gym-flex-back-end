@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.product.ProductDTO;
+import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.entities.Product;
 import com.example.GymInTheBack.repositories.ProductRepository;
 import com.example.GymInTheBack.services.mappers.ProductMapper;
@@ -80,5 +81,10 @@ public class ProductServiceImpl implements ProductService {
     public void delete(Long id) {
         log.debug("Request to delete Product : {}", id);
         productRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<Product> findById(Long id) {
+        return productRepository.findById(id);
     }
 }
