@@ -165,6 +165,13 @@ public class SubscriptionMemberResource {
         return ResponseUtil.wrapOrNotFound(subscriptionMemberDTO);
     }
 
+    @GetMapping("/subscription-members/qrcode/{qrCode}")
+    public ResponseEntity<SubscriptionMemberDTO> getSubscriptionMember(@PathVariable String qrCode) {
+        log.debug("REST request to get SubscriptionMember : {}", qrCode);
+        Optional<SubscriptionMemberDTO> subscriptionMemberDTO = subscriptionMemberService.findByCodeSubscription(qrCode);
+        return ResponseUtil.wrapOrNotFound(subscriptionMemberDTO);
+    }
+
     /**
      * {@code DELETE  /subscription-members/:id} : delete the "id" subscriptionMember.
      *
