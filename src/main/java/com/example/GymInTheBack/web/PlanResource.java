@@ -3,6 +3,7 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,6 +11,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
+import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.Plan;
+import com.example.GymInTheBack.entities.SubCategory;
+import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.PlanRepository;
 import com.example.GymInTheBack.services.plan.PlanService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -18,6 +23,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -174,8 +180,19 @@ public class PlanResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/plans/{id}")
-    public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
+    public ResponseEntity<Object> deletePlan(@PathVariable Long id) {
         log.debug("REST request to delete Plan : {}", id);
+        Plan plan = planRepository.findById(id).orElse(null);
+
+        if(!plan.getSubscriptionMemberList().isEmpty()){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String errorMessage = "Cannot delete plan with those associated Subscriptions  : ";
+            for(SubscriptionMember subscriptionMember : plan.getSubscriptionMemberList()){
+                errorMessage += " (" +subscriptionMember.getMember().getOnlineUser().getFirstName()+" "+ subscriptionMember.getStartDate().format(formatter) + " " + subscriptionMember.getPlan().getName() + ")";
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+
         planService.delete(id);
         return ResponseEntity
             .noContent()

@@ -3,6 +3,8 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,14 +12,16 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.payment.PaymentDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.repositories.PaymentRepository;
 import com.example.GymInTheBack.services.payment.PaymentService;
+import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,10 +40,12 @@ public class PaymentResource {
 
     private final PaymentService paymentService;
 
+    private final SubscriptionMemberService subscriptionMemberService;
     private final PaymentRepository paymentRepository;
 
-    public PaymentResource(PaymentService paymentService, PaymentRepository paymentRepository) {
+    public PaymentResource(PaymentService paymentService, SubscriptionMemberService subscriptionMemberService, PaymentRepository paymentRepository) {
         this.paymentService = paymentService;
+        this.subscriptionMemberService = subscriptionMemberService;
         this.paymentRepository = paymentRepository;
     }
 
@@ -51,17 +57,42 @@ public class PaymentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/payments")
-    public ResponseEntity<PaymentDTO> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
+    public ResponseEntity<PaymentDTO> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) throws URISyntaxException, NoSuchAlgorithmException, WriterException {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (paymentDTO.getPaymentDate() == null) {
-            throw new BadRequestAlertException("A new payment have paymentDate", ENTITY_NAME, "paymentdaterequired");
+            throw new BadRequestAlertException("A new payment should have paymentDate", ENTITY_NAME, "paymentdaterequired");
         }
         if (paymentDTO.getAmountPayed() == null) {
-            throw new BadRequestAlertException("A new payment ammountpayed", ENTITY_NAME, "amountpayedrequired");
+            throw new BadRequestAlertException("A new payment should have  ammountpayed", ENTITY_NAME, "amountpayedrequired");
         }
+        if (paymentDTO.getSubscriptionMember() == null || paymentDTO.getSubscriptionMember().getId() == null ) {
+            throw new BadRequestAlertException("A new payment should have  subscription", ENTITY_NAME, "subscriptionrequired");
+        }
+
+        ZonedDateTime dateNow = ZonedDateTime.now();
+        SubscriptionMemberDTO subscriptionMemberDTO = paymentDTO.getSubscriptionMember();
+        if(subscriptionMemberDTO.getEndDate() != null ) {
+
+            if(dateNow.isAfter( subscriptionMemberDTO.getEndDate() )){
+                subscriptionMemberDTO.setStartDate(dateNow);
+                ZonedDateTime endDate = dateNow.plusDays(subscriptionMemberDTO.getPlan().getDuration());
+                subscriptionMemberDTO.setEndDate(endDate);
+            }
+            else{
+                ZonedDateTime endDate = subscriptionMemberDTO.getEndDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
+                subscriptionMemberDTO.setEndDate(endDate);
+            }
+
+        }else{
+            ZonedDateTime endDate = subscriptionMemberDTO.getStartDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
+            subscriptionMemberDTO.setEndDate(endDate);
+        }
+
+        subscriptionMemberService.save(subscriptionMemberDTO);
+
         PaymentDTO result = paymentService.save(paymentDTO);
         return ResponseEntity
             .created(new URI("/api/payments/" + result.getId()))

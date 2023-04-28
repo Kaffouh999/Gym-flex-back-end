@@ -10,6 +10,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.category.CategoryDTO;
+import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.CategoryRepository;
 import com.example.GymInTheBack.services.category.CategoryService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -17,6 +19,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -171,9 +174,17 @@ public class CategoryResource {
      * @param id the id of the categoryDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/categories/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    @DeleteMapping(value = "/categories/{id}",produces = "text/plain")
+    public ResponseEntity<Object> deleteCategory(@PathVariable Long id) {
         log.debug("REST request to delete Category : {}", id);
+        Category category = categoryRepository.findById(id).orElse(null);
+        if(!category.getSubCategoryList().isEmpty()){
+            String errorMessage = "Cannot delete category with those associated subcategories : ";
+            for(SubCategory subCategory : category.getSubCategoryList()){
+                errorMessage += " -> " +subCategory.getName() ;
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
         categoryService.delete(id);
         return ResponseEntity
             .noContent()

@@ -25,6 +25,7 @@ public interface PaymentMapper extends EntityMapper<PaymentDTO, Payment> {
     @Mapping(target = "discountPercentage", source = "discountPercentage")
     @Mapping(target = "member", source = "member")
     @Mapping(target = "plan", source = "plan")
+    @Mapping(target = "endDate", source = "endDate")
     SubscriptionMemberDTO toDtoSubscriptionMemberId(SubscriptionMember subscriptionMember);
 
     @Named("memberId")

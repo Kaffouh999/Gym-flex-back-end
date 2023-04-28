@@ -10,6 +10,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
+import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.SubCategoryRepository;
 import com.example.GymInTheBack.services.subCategory.SubCategoryService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -17,6 +20,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -166,8 +170,18 @@ public class SubCategoryResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/sub-categories/{id}")
-    public ResponseEntity<Void> deleteSubCategory(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteSubCategory(@PathVariable Long id) {
         log.debug("REST request to delete SubCategory : {}", id);
+
+        SubCategory subCategory = subCategoryRepository.findById(id).orElse(null);
+        if(!subCategory.getEquipmentList().isEmpty()){
+            String errorMessage = "Cannot delete sub-category with those associated equipments : ";
+            for(Equipment equipment : subCategory.getEquipmentList()){
+                errorMessage += " -> " +equipment.getName() ;
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+
         subCategoryService.delete(id);
         return ResponseEntity
             .noContent()

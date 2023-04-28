@@ -4,6 +4,7 @@ package com.example.GymInTheBack.web;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -64,6 +65,11 @@ public class SubscriptionMemberResource {
         if (subscriptionMemberDTO.getStartDate() == null) {
             throw new BadRequestAlertException("A new subscriptionMember must have date start", ENTITY_NAME, "datestartresuired");
         }
+        if (subscriptionMemberDTO.getPlan() == null) {
+            throw new BadRequestAlertException("A new subscriptionMember must have plan", ENTITY_NAME, "planresuired");
+        }
+
+
         SubscriptionMemberDTO result = subscriptionMemberService.save(subscriptionMemberDTO);
         return ResponseEntity
             .created(new URI("/api/subscription-members/" + result.getId()))

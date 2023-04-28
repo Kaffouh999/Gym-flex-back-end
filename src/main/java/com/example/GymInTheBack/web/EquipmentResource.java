@@ -15,6 +15,8 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.entities.Equipment;
+import com.example.GymInTheBack.entities.EquipmentItem;
+import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.EquipmentRepository;
 import com.example.GymInTheBack.services.equipment.EquipmentService;
 import com.example.GymInTheBack.services.mappers.EquipmentItemMapper;
@@ -182,9 +184,15 @@ public class EquipmentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/equipment/{id}")
-    public ResponseEntity<Void> deleteEquipment(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteEquipment(@PathVariable Long id) {
         log.debug("REST request to delete Equipment : {}", id);
+
         Optional<Equipment> equipment = equipmentRepository.findById(id);
+        if(!equipment.get().getEquipmentItemList().isEmpty()){
+            String errorMessage = "Cannot delete equipment has associated equipment items .";
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
 
         if(equipment.get() != null) {
             String folderUrl = "/images/equipments/";

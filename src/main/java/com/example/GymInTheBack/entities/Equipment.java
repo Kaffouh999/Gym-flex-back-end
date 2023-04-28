@@ -1,9 +1,11 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.validation.constraints.*;
 
 /**
@@ -35,6 +37,10 @@ public class Equipment implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "category" }, allowSetters = true)
     private SubCategory subCategory;
+
+    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<EquipmentItem> equipmentItemList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -103,7 +109,10 @@ public class Equipment implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public List<EquipmentItem> getEquipmentItemList() {
+        return equipmentItemList;
+    }
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {

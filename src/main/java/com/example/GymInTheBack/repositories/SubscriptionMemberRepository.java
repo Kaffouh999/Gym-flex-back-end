@@ -17,7 +17,7 @@ public interface SubscriptionMemberRepository extends JpaRepository<Subscription
     List<SubscriptionMember> findAll(Sort sort);
     Optional<SubscriptionMember> findByCodeSubscription(String codeSubscription);
 
-    @Query("select e from SubscriptionMember e where codeSubscription = :qrCode and date_part('day', age( current_date , e.startDate)) <= e.plan.duration and date_part('day', age( current_date , e.startDate)) >= 0")
+    @Query("select e from SubscriptionMember e where codeSubscription = :qrCode and e.endDate is not null and  current_date between e.startDate and e.endDate")
     List<SubscriptionMember> entering(String qrCode);
 
 

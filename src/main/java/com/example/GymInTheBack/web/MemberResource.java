@@ -3,6 +3,7 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,9 +12,7 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
-import com.example.GymInTheBack.entities.Equipment;
-import com.example.GymInTheBack.entities.Member;
-import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.entities.*;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.services.member.MemberService;
 import com.example.GymInTheBack.services.upload.IUploadService;
@@ -24,6 +23,8 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.datetime.DateFormatter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -189,10 +190,29 @@ public class MemberResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/members/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteMember(@PathVariable Long id) {
         log.debug("REST request to delete Member : {}", id);
         Optional<Member> member = memberService.findById(id);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        if(!member.get().getAssuranceMemberList().isEmpty() || !member.get().getSubscriptionMemberList().isEmpty() ){
+            String errorMessage = "Cannot delete member has associated : ";
+            if(!member.get().getAssuranceMemberList().isEmpty()) {
+                errorMessage += " \n assurances items : ";
 
+                for (AssuranceMember assuranceMember : member.get().getAssuranceMemberList()) {
+                    errorMessage += " (" + assuranceMember.getStartDate().format(formatter) + " " + assuranceMember.getAssurancAgency() + ") ";
+                }
+            }
+            if(!member.get().getSubscriptionMemberList().isEmpty()) {
+                errorMessage += " \n subscriptions : ";
+
+                for (SubscriptionMember subscriptionMember : member.get().getSubscriptionMemberList()) {
+                    errorMessage += " (" +subscriptionMember.getMember().getOnlineUser().getFirstName()+" "+ subscriptionMember.getStartDate().format(formatter) + " " + subscriptionMember.getPlan().getName() + ")";
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
         if(member.get() != null) {
             String folderUrl = "/images/membersProfile/";
             String urlImage = member.get().getOnlineUser().getProfilePicture();

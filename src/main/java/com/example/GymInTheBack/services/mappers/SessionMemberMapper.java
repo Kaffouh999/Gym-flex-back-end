@@ -28,6 +28,7 @@ public interface SessionMemberMapper extends EntityMapper<SessionMemberDTO, Sess
     @Mapping(target = "discountPercentage", source = "discountPercentage")
     @Mapping(target = "member", source = "member")
     @Mapping(target = "plan", source = "plan")
+    @Mapping(target = "endDate", source = "endDate")
     SubscriptionMemberDTO toDtoSubscriptionMemberId(SubscriptionMember subscriptionMember);
 
     @Named("gymBranchId")

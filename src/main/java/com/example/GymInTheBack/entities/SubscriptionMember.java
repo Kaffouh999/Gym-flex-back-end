@@ -26,6 +26,10 @@ public class SubscriptionMember implements Serializable {
     @Column(name = "start_date", nullable = false)
     private ZonedDateTime startDate;
 
+
+    @Column(name = "start_end", nullable = true)
+    private ZonedDateTime endDate;
+
     @Column(name = "code_subscription")
     private String codeSubscription;
 
@@ -121,6 +125,17 @@ public class SubscriptionMember implements Serializable {
         return this;
     }
 
+    public ZonedDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(ZonedDateTime endDate) {
+        this.endDate = endDate;
+    }
+    public SubscriptionMember endDate(ZonedDateTime endDate) {
+        this.setEndDate(endDate);
+        return this;
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -146,6 +161,7 @@ public class SubscriptionMember implements Serializable {
         return "SubscriptionMember{" +
             "id=" + getId() +
             ", startDate='" + getStartDate() + "'" +
+                ", endDate='" + getEndDate() + "'" +
             ", codeSubscription='" + getCodeSubscription() + "'" +
             ", discountPercentage=" + getDiscountPercentage() +
             "}";

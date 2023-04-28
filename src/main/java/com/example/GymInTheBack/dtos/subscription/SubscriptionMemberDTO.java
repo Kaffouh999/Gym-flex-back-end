@@ -16,6 +16,8 @@ public class SubscriptionMemberDTO implements Serializable {
     @NotNull
     private ZonedDateTime startDate;
 
+
+    private ZonedDateTime endDate;
     private String codeSubscription;
 
     private Float discountPercentage;
@@ -72,6 +74,14 @@ public class SubscriptionMemberDTO implements Serializable {
         this.plan = plan;
     }
 
+    public ZonedDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(ZonedDateTime endDate) {
+        this.endDate = endDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -99,6 +109,7 @@ public class SubscriptionMemberDTO implements Serializable {
         return "SubscriptionMemberDTO{" +
             "id=" + getId() +
             ", startDate='" + getStartDate() + "'" +
+                ", endDate='" + getEndDate() + "'" +
             ", codeSubscription='" + getCodeSubscription() + "'" +
             ", discountPercentage=" + getDiscountPercentage() +
             ", member=" + getMember() +

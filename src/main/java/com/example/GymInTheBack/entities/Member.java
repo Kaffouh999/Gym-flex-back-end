@@ -1,8 +1,10 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.validation.constraints.*;
 
 /**
@@ -44,6 +46,14 @@ public class Member implements Serializable {
     @OneToOne(optional = false,cascade = CascadeType.MERGE)
     @NotNull
     private OnlineUser onlineUser;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<AssuranceMember> assuranceMemberList;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<SubscriptionMember> subscriptionMemberList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -138,7 +148,14 @@ public class Member implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public List<AssuranceMember> getAssuranceMemberList() {
+        return assuranceMemberList;
+    }
+
+    public List<SubscriptionMember> getSubscriptionMemberList() {
+        return subscriptionMemberList;
+    }
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
