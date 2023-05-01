@@ -1,17 +1,28 @@
 package com.example.GymInTheBack.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import javax.validation.constraints.*;
 
 /**
  * A OnlineUser.
  */
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "online_user")
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class OnlineUser implements Serializable {
+public class OnlineUser implements UserDetails {
 
     private static final long serialVersionUID = 1L;
 
@@ -44,9 +55,11 @@ public class OnlineUser implements Serializable {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
@@ -113,9 +126,45 @@ public class OnlineUser implements Serializable {
         this.email = email;
     }
 
-    public String getPassword() {
-        return this.password;
+
+
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
 
     public OnlineUser password(String password) {
         this.setPassword(password);
@@ -139,10 +188,15 @@ public class OnlineUser implements Serializable {
         this.profilePicture = profilePicture;
     }
 
+    public Role getRole() {
+        return role;
+    }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {

@@ -27,7 +27,7 @@ public class JacksonConfiguration {
         public void serialize(ZonedDateTime zonedDateTime, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
             Timestamp timestamp = Timestamp.valueOf(localDateTime);
-            jsonGenerator.writeObject(timestamp);
+            jsonGenerator.writeObject(localDateTime);
         }
     }
 
