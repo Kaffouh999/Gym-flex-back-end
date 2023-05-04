@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,9 +37,11 @@ public class AuthenticationController {
   @PostMapping("/refresh-token")
   public void refreshToken(
       HttpServletRequest request,
-      HttpServletResponse response
+      HttpServletResponse response,
+      @RequestBody Map<String, String> refreshToken
   ) throws IOException {
-    service.refreshToken(request, response);
+    service.refreshToken(request, response,
+            refreshToken.get("refresh_token"));
   }
 
 

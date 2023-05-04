@@ -69,15 +69,16 @@ public class AuthenticationService {
 
   public void refreshToken(
           HttpServletRequest request,
-          HttpServletResponse response
+          HttpServletResponse response,
+          String refreshToken
   ) throws IOException {
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    final String refreshToken;
+   // final String refreshToken;
     final String userEmail;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
       return;
     }
-    refreshToken = authHeader.substring(7);
+    //refreshToken = authHeader.substring(7);
     userEmail = jwtService.extractUsername(refreshToken);
     if (userEmail != null) {
       var user = this.repository.findByEmail(userEmail)
