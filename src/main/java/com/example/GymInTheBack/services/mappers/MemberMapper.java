@@ -41,5 +41,6 @@ public interface MemberMapper extends EntityMapper<MemberDTO, Member> {
     @Mapping(target = "email", source = "email")
     @Mapping(target = "password", source = "password")
     @Mapping(target = "profilePicture", source = "profilePicture")
+    @Mapping(target = "role", source = "role")
     OnlineUserDTO toDtoOnlineUserId(OnlineUser onlineUser);
 }

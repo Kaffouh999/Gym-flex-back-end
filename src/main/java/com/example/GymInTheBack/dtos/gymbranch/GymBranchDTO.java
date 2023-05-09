@@ -1,5 +1,7 @@
 package com.example.GymInTheBack.dtos.gymbranch;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -29,9 +31,11 @@ public class GymBranchDTO implements Serializable {
     private String phoneNumber;
 
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private ZonedDateTime openingDate;
 
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private ZonedDateTime closingDate;
 
     @NotNull

@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.dtos.user;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
+import com.example.GymInTheBack.entities.Role;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -30,6 +31,7 @@ public class OnlineUserDTO implements Serializable {
 
     private String profilePicture;
 
+    private Role role;
 
 
     public Long getId() {
@@ -88,7 +90,13 @@ public class OnlineUserDTO implements Serializable {
         this.profilePicture = profilePicture;
     }
 
+    public Role getRole() {
+        return role;
+    }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     @Override
     public boolean equals(Object o) {

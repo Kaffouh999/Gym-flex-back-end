@@ -232,12 +232,13 @@ public class OnlineUserResource {
 
         try {
             if(file != null){
-            uploadService.deleteDocument(folderUrl, imageUrl);
+
 
             if (imageUrl == null || imageUrl.equals("")) {
                 imageUrl = onlineUser.get().getPassword() + "_" + onlineUser.get().getEmail();
                 fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
             }else {
+                uploadService.deleteDocument(folderUrl, imageUrl);
                 fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
             }
 

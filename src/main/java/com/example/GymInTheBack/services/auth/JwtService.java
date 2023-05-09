@@ -1,5 +1,8 @@
 package com.example.GymInTheBack.services.auth;
 
+import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
+import com.example.GymInTheBack.services.user.OnlineUserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,12 +11,12 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -27,8 +30,14 @@ public class JwtService {
 
   private final TokenBlacklistService tokenBlacklistService;
 
-  public JwtService(TokenBlacklistService tokenBlacklistService) {
+  private final OnlineUserService onlineUserService;
+
+  private final OnlineUserMapper onlineUserMapper;
+
+  public JwtService(TokenBlacklistService tokenBlacklistService, OnlineUserService onlineUserService, OnlineUserMapper onlineUserMapper) {
     this.tokenBlacklistService = tokenBlacklistService;
+    this.onlineUserService = onlineUserService;
+    this.onlineUserMapper = onlineUserMapper;
   }
 
   public String getSecretKey() {
@@ -44,21 +53,40 @@ public class JwtService {
     return claimsResolver.apply(claims);
   }
 
-  public String generateToken(UserDetails userDetails) {
-    return generateToken(new HashMap<>(), userDetails);
+  public String generateToken(UserDetails userDetails,Long idUser) {
+    return generateToken(new HashMap<>(), userDetails, idUser);
   }
 
   public String generateToken(
       Map<String, Object> extraClaims,
       UserDetails userDetails
+          ,Long idUser
+
   ) {
-    return buildToken(extraClaims, userDetails, jwtExpiration);
+    Collection<String> authorities = userDetails.getAuthorities()
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
+    Map<String,Object> info = new HashMap<>();
+    info.put("authorities", authorities);
+    OnlineUser codedUser = onlineUserService.findById(idUser).get();
+    codedUser.setLogin(null);
+    codedUser.setPassword(null);
+
+    info.put("user", onlineUserMapper.toDto(codedUser));
+    return buildToken(info, userDetails, jwtExpiration);
   }
 
   public String generateRefreshToken(
       UserDetails userDetails
   ) {
-    return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+    Collection<String> authorities = userDetails.getAuthorities()
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
+    Map<String,Object> info = new HashMap<>();
+    info.put("authorities", authorities);
+    return buildToken(info, userDetails, refreshExpiration);
   }
 
   private String buildToken(
@@ -66,6 +94,7 @@ public class JwtService {
           UserDetails userDetails,
           long expiration
   ) {
+    System.out.println(extraClaims.toString());
     return Jwts
             .builder()
             .setClaims(extraClaims)

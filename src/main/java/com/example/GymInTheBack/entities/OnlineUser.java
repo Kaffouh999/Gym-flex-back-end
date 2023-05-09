@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.validation.constraints.*;
@@ -55,7 +56,7 @@ public class OnlineUser implements UserDetails {
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
     private Role role;
 
 
@@ -132,7 +133,35 @@ public class OnlineUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        List<SimpleGrantedAuthority> userauthorities= new ArrayList<>();
+        if(role != null) {
+            if (role.getAnalytics()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.ANALYTICS.name()));
+            }
+            if (role.getMembership()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.MEMBERSHIP.name()));
+            }
+            if (role.getPayments()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.PAYMENT.name()));
+            }
+            if (role.getInventory()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.INVENTORY.name()));
+            }
+            if (role.getTraining()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.TRAINING.name()));
+            }
+            if (role.getSettings()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.SETTINGS.name()));
+            }
+            if (role.getPreferences()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.PREFERENCES.name()));
+            }
+            if (role.getManageWebSite()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.MANAGEWEBSITE.name()));
+            }
+        }
+
+        return userauthorities;
     }
 
     @Override

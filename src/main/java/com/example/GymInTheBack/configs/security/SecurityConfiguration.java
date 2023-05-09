@@ -1,5 +1,6 @@
 package com.example.GymInTheBack.configs.security;
 
+import com.example.GymInTheBack.entities.Authority;
 import com.example.GymInTheBack.utils.auth.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -49,8 +50,14 @@ public class SecurityConfiguration {
           .permitAll()
             .requestMatchers("/ws/**")
             .permitAll()
-        .anyRequest()
-          .authenticated()
+            .requestMatchers("/api/members/**","/api/payments/**","/api/subscription-members/**","/api/plans/**","/api/assurance-members/**")
+            .hasAnyAuthority(Authority.MEMBERSHIP.name())
+            .requestMatchers("/api/categories/**","/api/sub-categories/**","/api/equipment/**","/api/equipment-items/**","/api/maintinings/**","/api/reforms/**")
+            .hasAnyAuthority(Authority.INVENTORY.name())
+           .anyRequest()
+            .authenticated()
+//complete roles configurations TODO
+
         .and()
           .sessionManagement()
           .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
