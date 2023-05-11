@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.services.equipmentItem;
 
 
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import com.example.GymInTheBack.dtos.equipmentItem.EquipmentItemDTO;
 import com.example.GymInTheBack.entities.EquipmentItem;
 import com.example.GymInTheBack.repositories.EquipmentItemRepository;
 import com.example.GymInTheBack.services.mappers.EquipmentItemMapper;
+import com.example.GymInTheBack.utils.QRCodeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,9 +34,11 @@ public class EquipmentItemServiceImpl implements EquipmentItemService {
     }
 
     @Override
-    public EquipmentItemDTO save(EquipmentItemDTO equipmentItemDTO) {
+    public EquipmentItemDTO save(EquipmentItemDTO equipmentItemDTO) throws NoSuchAlgorithmException {
         log.debug("Request to save EquipmentItem : {}", equipmentItemDTO);
         EquipmentItem equipmentItem = equipmentItemMapper.toEntity(equipmentItemDTO);
+        String qrCode = QRCodeGenerator.generateUniqueCode();
+        equipmentItem.setBareCode(qrCode);
         equipmentItem = equipmentItemRepository.save(equipmentItem);
         return equipmentItemMapper.toDto(equipmentItem);
     }

@@ -29,7 +29,7 @@ public class JacksonConfiguration {
         return module;
     }
 
-    private static class ZonedDateTimeSerializer extends JsonSerializer<ZonedDateTime> {
+    public static class ZonedDateTimeSerializer extends JsonSerializer<ZonedDateTime> {
         @Override
         public void serialize(ZonedDateTime zonedDateTime, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
@@ -37,7 +37,7 @@ public class JacksonConfiguration {
             jsonGenerator.writeObject(localDateTime);
         }
     }
-    private static class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
+    public static class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
         @Override
         public ZonedDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {

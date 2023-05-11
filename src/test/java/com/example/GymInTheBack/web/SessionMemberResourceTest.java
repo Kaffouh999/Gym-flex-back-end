@@ -18,9 +18,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
 import com.example.GymInTheBack.entities.GymBranch;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.entities.SessionMember;
+import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SessionMemberRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.SessionMemberMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +52,10 @@ class SessionMemberResourceTest {
 
     private static final String ENTITY_API_URL = "/api/session-members";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -81,6 +90,15 @@ class SessionMemberResourceTest {
         } else {
             gymBranch = TestUtil.findAll(em, GymBranch.class).get(0);
         }
+        SubscriptionMember subscriptionMember;
+        if (TestUtil.findAll(em, SubscriptionMember.class).isEmpty()) {
+            subscriptionMember = SubscriptionMemberResourceTest.createEntity(em);
+            em.persist(subscriptionMember);
+            em.flush();
+        } else {
+            subscriptionMember = TestUtil.findAll(em, SubscriptionMember.class).get(0);
+        }
+        sessionMember.setSubscriptionMember(subscriptionMember);
         sessionMember.setGymBranch(gymBranch);
         return sessionMember;
     }
@@ -107,8 +125,17 @@ class SessionMemberResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         sessionMember = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .membership(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -119,7 +146,7 @@ class SessionMemberResourceTest {
         SessionMemberDTO sessionMemberDTO = sessionMemberMapper.toDto(sessionMember);
         restSessionMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isCreated());
 
@@ -143,7 +170,7 @@ class SessionMemberResourceTest {
         // An entity with an existing ID cannot be created, so this API call must fail
         restSessionMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -164,7 +191,7 @@ class SessionMemberResourceTest {
 
         restSessionMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -180,7 +207,7 @@ class SessionMemberResourceTest {
 
         // Get all the sessionMemberList
         restSessionMemberMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(sessionMember.getId().intValue())))
@@ -196,7 +223,7 @@ class SessionMemberResourceTest {
 
         // Get the sessionMember
         restSessionMemberMockMvc
-            .perform(get(ENTITY_API_URL_ID, sessionMember.getId()))
+            .perform(get(ENTITY_API_URL_ID, sessionMember.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(sessionMember.getId().intValue()))
@@ -208,7 +235,7 @@ class SessionMemberResourceTest {
     @Transactional
     void getNonExistingSessionMember() throws Exception {
         // Get the sessionMember
-        restSessionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restSessionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -229,7 +256,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, sessionMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isOk());
@@ -255,7 +282,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, sessionMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -278,7 +305,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -300,7 +327,7 @@ class SessionMemberResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSessionMemberMockMvc
             .perform(
-                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
+                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -326,7 +353,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSessionMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSessionMember))
             )
             .andExpect(status().isOk());
@@ -356,7 +383,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSessionMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSessionMember))
             )
             .andExpect(status().isOk());
@@ -382,7 +409,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, sessionMemberDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -405,7 +432,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -428,7 +455,7 @@ class SessionMemberResourceTest {
         restSessionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL)
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(sessionMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
@@ -448,7 +475,7 @@ class SessionMemberResourceTest {
 
         // Delete the sessionMember
         restSessionMemberMockMvc
-            .perform(delete(ENTITY_API_URL_ID, sessionMember.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, sessionMember.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

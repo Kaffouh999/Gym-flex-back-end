@@ -12,8 +12,13 @@ import java.util.concurrent.atomic.AtomicLong;
 ;
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
 import com.example.GymInTheBack.entities.Plan;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.PlanRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.PlanMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +50,10 @@ class PlanResourceTest {
 
     private static final String ENTITY_API_URL = "/api/plans";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -86,8 +94,17 @@ class PlanResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         plan = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .membership(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -97,7 +114,7 @@ class PlanResourceTest {
         // Create the Plan
         PlanDTO planDTO = planMapper.toDto(plan);
         restPlanMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Plan in the database
@@ -121,7 +138,7 @@ class PlanResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restPlanMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Plan in the database
@@ -140,7 +157,7 @@ class PlanResourceTest {
         PlanDTO planDTO = planMapper.toDto(plan);
 
         restPlanMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isBadRequest());
 
         List<Plan> planList = planRepository.findAll();
@@ -158,7 +175,7 @@ class PlanResourceTest {
         PlanDTO planDTO = planMapper.toDto(plan);
 
         restPlanMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isBadRequest());
 
         List<Plan> planList = planRepository.findAll();
@@ -176,7 +193,7 @@ class PlanResourceTest {
         PlanDTO planDTO = planMapper.toDto(plan);
 
         restPlanMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isBadRequest());
 
         List<Plan> planList = planRepository.findAll();
@@ -191,7 +208,7 @@ class PlanResourceTest {
 
         // Get all the planList
         restPlanMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(plan.getId().intValue())))
@@ -209,7 +226,7 @@ class PlanResourceTest {
 
         // Get the plan
         restPlanMockMvc
-            .perform(get(ENTITY_API_URL_ID, plan.getId()))
+            .perform(get(ENTITY_API_URL_ID, plan.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(plan.getId().intValue()))
@@ -223,7 +240,7 @@ class PlanResourceTest {
     @Transactional
     void getNonExistingPlan() throws Exception {
         // Get the plan
-        restPlanMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restPlanMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -244,7 +261,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, planDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(planDTO))
             )
             .andExpect(status().isOk());
@@ -272,7 +289,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, planDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(planDTO))
             )
             .andExpect(status().isBadRequest());
@@ -295,7 +312,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(planDTO))
             )
             .andExpect(status().isBadRequest());
@@ -316,7 +333,7 @@ class PlanResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPlanMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Plan in the database
@@ -341,7 +358,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedPlan.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedPlan))
             )
             .andExpect(status().isOk());
@@ -373,7 +390,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedPlan.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedPlan))
             )
             .andExpect(status().isOk());
@@ -401,7 +418,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, planDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(planDTO))
             )
             .andExpect(status().isBadRequest());
@@ -424,7 +441,7 @@ class PlanResourceTest {
         restPlanMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(planDTO))
             )
             .andExpect(status().isBadRequest());
@@ -445,7 +462,7 @@ class PlanResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPlanMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(planDTO)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(planDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Plan in the database
@@ -463,7 +480,7 @@ class PlanResourceTest {
 
         // Delete the plan
         restPlanMockMvc
-            .perform(delete(ENTITY_API_URL_ID, plan.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, plan.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

@@ -18,8 +18,13 @@ import java.util.concurrent.atomic.AtomicLong;;
 import com.example.GymInTheBack.dtos.assuranceMember.AssuranceMemberDTO;
 import com.example.GymInTheBack.entities.AssuranceMember;
 import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.AssuranceMemberRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.AssuranceMemberMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +56,10 @@ class AssuranceMemberResourceTest {
 
     private static final String ENTITY_API_URL = "/api/assurance-members";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -120,8 +128,17 @@ class AssuranceMemberResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         assuranceMember = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .membership(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -132,7 +149,7 @@ class AssuranceMemberResourceTest {
         AssuranceMemberDTO assuranceMemberDTO = assuranceMemberMapper.toDto(assuranceMember);
         restAssuranceMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isCreated());
 
@@ -158,7 +175,7 @@ class AssuranceMemberResourceTest {
         // An entity with an existing ID cannot be created, so this API call must fail
         restAssuranceMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -179,7 +196,7 @@ class AssuranceMemberResourceTest {
 
         restAssuranceMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -199,7 +216,7 @@ class AssuranceMemberResourceTest {
 
         restAssuranceMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -219,7 +236,7 @@ class AssuranceMemberResourceTest {
 
         restAssuranceMemberMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -235,7 +252,7 @@ class AssuranceMemberResourceTest {
 
         // Get all the assuranceMemberList
         restAssuranceMemberMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(assuranceMember.getId().intValue())))
@@ -253,7 +270,7 @@ class AssuranceMemberResourceTest {
 
         // Get the assuranceMember
         restAssuranceMemberMockMvc
-            .perform(get(ENTITY_API_URL_ID, assuranceMember.getId()))
+            .perform(get(ENTITY_API_URL_ID, assuranceMember.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(assuranceMember.getId().intValue()))
@@ -292,7 +309,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, assuranceMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isOk());
@@ -320,7 +337,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, assuranceMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -343,7 +360,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -365,7 +382,7 @@ class AssuranceMemberResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAssuranceMemberMockMvc
             .perform(
-                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
+                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -391,7 +408,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedAssuranceMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAssuranceMember))
             )
             .andExpect(status().isOk());
@@ -427,7 +444,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedAssuranceMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAssuranceMember))
             )
             .andExpect(status().isOk());
@@ -455,7 +472,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, assuranceMemberDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -478,7 +495,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -501,7 +518,7 @@ class AssuranceMemberResourceTest {
         restAssuranceMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL)
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(assuranceMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
@@ -521,7 +538,7 @@ class AssuranceMemberResourceTest {
 
         // Delete the assuranceMember
         restAssuranceMemberMockMvc
-            .perform(delete(ENTITY_API_URL_ID, assuranceMember.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, assuranceMember.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

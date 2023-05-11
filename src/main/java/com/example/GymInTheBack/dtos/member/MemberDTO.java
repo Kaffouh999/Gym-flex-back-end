@@ -2,6 +2,7 @@ package com.example.GymInTheBack.dtos.member;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -79,6 +80,7 @@ public class MemberDTO implements Serializable {
         this.gymBranch = gymBranch;
     }
 
+    @JsonIgnoreProperties(value = "onlineUser")
     public OnlineUserDTO getOnlineUser() {
         return onlineUser;
     }

@@ -6,11 +6,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
+import com.example.GymInTheBack.dtos.mailing.ContactMailDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
-import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
+import com.example.GymInTheBack.repositories.RoleRepository;
+import com.example.GymInTheBack.services.auth.JwtService;
+import com.example.GymInTheBack.services.gymbranch.GymBranchService;
+import com.example.GymInTheBack.services.mailing.EmailService;
 import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
+import io.jsonwebtoken.Claims;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,15 +35,27 @@ public class OnlineUserServiceImpl implements OnlineUserService {
 
     private final OnlineUserMapper onlineUserMapper;
 
-    public OnlineUserServiceImpl(OnlineUserRepository onlineUserRepository, OnlineUserMapper onlineUserMapper) {
+    private final RoleRepository roleRepository;
+    private final GymBranchService gymBranchService;
+    private final JwtService jwtService;
+
+    private final EmailService emailService;
+
+    public OnlineUserServiceImpl(OnlineUserRepository onlineUserRepository, OnlineUserMapper onlineUserMapper, RoleRepository roleRepository, GymBranchService gymBranchService, JwtService jwtService, EmailService emailService) {
         this.onlineUserRepository = onlineUserRepository;
         this.onlineUserMapper = onlineUserMapper;
+        this.roleRepository = roleRepository;
+        this.gymBranchService = gymBranchService;
+        this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     @Override
     public OnlineUserDTO save(OnlineUserDTO onlineUserDTO) {
         log.debug("Request to save OnlineUser : {}", onlineUserDTO);
         OnlineUser onlineUser = onlineUserMapper.toEntity(onlineUserDTO);
+        Role userRole = roleRepository.findById(onlineUser.getRole().getId()).get();
+        onlineUser.setRole(userRole);
         onlineUser = onlineUserRepository.save(onlineUser);
         return onlineUserMapper.toDto(onlineUser);
     }
@@ -86,5 +106,60 @@ public class OnlineUserServiceImpl implements OnlineUserService {
     @Override
     public Optional<OnlineUser> findById(Long id) {
         return onlineUserRepository.findById(id);
+    }
+
+    @Override
+    public Boolean contactUs(ContactMailDTO contactMailDTO)  {
+
+
+        String subject = contactMailDTO.getSubject();
+        String name = contactMailDTO.getFullName();
+        String messageSent = contactMailDTO.getMessage();
+        String message = "<html><body><h2>mail from "+name+"</h2><br/><p>"+messageSent+"</p></body></html>";
+
+            if(contactMailDTO.getIdUser() != null) {
+                OnlineUser user = onlineUserRepository.findById(contactMailDTO.getIdUser()).get();
+                if(user != null) {
+                    String mailFrom = user.getMember().getGymBranch().getEmail();
+                    String mailTo = mailFrom;
+                    String appPassword = user.getMember().getGymBranch().getAppPasswordEmail();
+                    try {
+                        emailService.sendEmail(mailFrom, appPassword, mailTo, subject, message);
+                    } catch (MessagingException e) {
+
+                        return false;
+                    }
+                }else{
+                    return  false;
+                }
+            }else{
+                List<GymBranchDTO> gymBranchList = gymBranchService.findAll();
+                for(GymBranchDTO gym : gymBranchList){
+                    String mailFrom = gym.getEmail();
+                    String mailTo = mailFrom;
+                    String appPassword = gym.getAppPasswordEmail();
+                    try {
+                        emailService.sendEmail(mailFrom, appPassword, mailTo, subject, message);
+                    } catch (MessagingException e) {
+                        return false;
+                    }
+                }
+        }
+            return true;
+
+    }
+
+    public boolean validateMail(String validationKey){
+        String[] arr= validationKey.split("_");
+        Long idUser = Long.parseLong(arr[0]);
+        String validationToken = arr[1];
+        OnlineUser user = onlineUserRepository.findById(idUser).get();
+        if(user != null && validationKey == user.getValidationKey()){
+            user.setValidationKey(null);
+            onlineUserRepository.save(user);
+            return true;
+        }
+
+        return  false;
     }
 }

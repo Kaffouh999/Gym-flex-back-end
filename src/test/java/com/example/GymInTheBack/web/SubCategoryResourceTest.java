@@ -7,13 +7,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
 import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.SubCategoryRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.SubCategoryMapper;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +43,10 @@ class SubCategoryResourceTest {
 
     private static final String ENTITY_API_URL = "/api/sub-categories";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -99,8 +107,17 @@ class SubCategoryResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         subCategory = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -111,7 +128,7 @@ class SubCategoryResourceTest {
         SubCategoryDTO subCategoryDTO = subCategoryMapper.toDto(subCategory);
         restSubCategoryMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isCreated());
 
@@ -135,7 +152,7 @@ class SubCategoryResourceTest {
         // An entity with an existing ID cannot be created, so this API call must fail
         restSubCategoryMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -156,7 +173,7 @@ class SubCategoryResourceTest {
 
         restSubCategoryMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -172,7 +189,7 @@ class SubCategoryResourceTest {
 
         // Get all the subCategoryList
         restSubCategoryMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(subCategory.getId().intValue())))
@@ -188,7 +205,7 @@ class SubCategoryResourceTest {
 
         // Get the subCategory
         restSubCategoryMockMvc
-            .perform(get(ENTITY_API_URL_ID, subCategory.getId()))
+            .perform(get(ENTITY_API_URL_ID, subCategory.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(subCategory.getId().intValue()))
@@ -200,7 +217,7 @@ class SubCategoryResourceTest {
     @Transactional
     void getNonExistingSubCategory() throws Exception {
         // Get the subCategory
-        restSubCategoryMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restSubCategoryMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -221,7 +238,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, subCategoryDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isOk());
@@ -247,7 +264,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, subCategoryDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -270,7 +287,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -291,7 +308,7 @@ class SubCategoryResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the SubCategory in the database
@@ -316,7 +333,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSubCategory.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSubCategory))
             )
             .andExpect(status().isOk());
@@ -346,7 +363,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSubCategory.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSubCategory))
             )
             .andExpect(status().isOk());
@@ -372,7 +389,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, subCategoryDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -395,7 +412,7 @@ class SubCategoryResourceTest {
         restSubCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -417,7 +434,7 @@ class SubCategoryResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restSubCategoryMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(subCategoryDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -436,7 +453,7 @@ class SubCategoryResourceTest {
 
         // Delete the subCategory
         restSubCategoryMockMvc
-            .perform(delete(ENTITY_API_URL_ID, subCategory.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, subCategory.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

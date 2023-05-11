@@ -4,6 +4,7 @@ import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.utils.auth.AuthenticationRequest;
 import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
 import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,8 @@ public class AuthenticationController {
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
       @RequestBody RegisterRequest request
-  ) {
-    return ResponseEntity.ok(service.register(request));
+  ) throws MessagingException {
+    return ResponseEntity.ok(service.register(request,null));
   }
   @PostMapping("/authenticate")
   public ResponseEntity<AuthenticationResponse> authenticate(

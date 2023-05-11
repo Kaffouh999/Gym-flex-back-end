@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.services.auth;
 
 import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.repositories.OnlineUserRepository;
 import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
 import com.example.GymInTheBack.services.user.OnlineUserService;
 import io.jsonwebtoken.Claims;
@@ -30,13 +31,14 @@ public class JwtService {
 
   private final TokenBlacklistService tokenBlacklistService;
 
-  private final OnlineUserService onlineUserService;
+
+  private final OnlineUserRepository onlineUserRepository;
 
   private final OnlineUserMapper onlineUserMapper;
 
-  public JwtService(TokenBlacklistService tokenBlacklistService, OnlineUserService onlineUserService, OnlineUserMapper onlineUserMapper) {
+  public JwtService(TokenBlacklistService tokenBlacklistService,  OnlineUserRepository onlineUserRepository, OnlineUserMapper onlineUserMapper) {
     this.tokenBlacklistService = tokenBlacklistService;
-    this.onlineUserService = onlineUserService;
+    this.onlineUserRepository = onlineUserRepository;
     this.onlineUserMapper = onlineUserMapper;
   }
 
@@ -69,9 +71,9 @@ public class JwtService {
             .collect(Collectors.toList());
     Map<String,Object> info = new HashMap<>();
     info.put("authorities", authorities);
-    OnlineUser codedUser = onlineUserService.findById(idUser).get();
-    codedUser.setLogin(null);
-    codedUser.setPassword(null);
+    OnlineUser codedUser = onlineUserRepository.findById(idUser).get();
+    codedUser.setLogin("");
+    codedUser.setPassword("");
 
     info.put("user", onlineUserMapper.toDto(codedUser));
     return buildToken(info, userDetails, jwtExpiration);
@@ -89,7 +91,7 @@ public class JwtService {
     return buildToken(info, userDetails, refreshExpiration);
   }
 
-  private String buildToken(
+  public String buildToken(
           Map<String, Object> extraClaims,
           UserDetails userDetails,
           long expiration

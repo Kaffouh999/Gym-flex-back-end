@@ -56,10 +56,13 @@ public class OnlineUser implements UserDetails {
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Role role;
 
+    @OneToOne(mappedBy = "onlineUser")
+    private Member member;
 
+    private String validationKey;//null when email is validated
 // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -127,36 +130,48 @@ public class OnlineUser implements UserDetails {
         this.email = email;
     }
 
+    public Member getMember() {
+        return member;
+    }
 
+    public void setMember(Member member) {
+        this.member = member;
+    }
 
+    public String getValidationKey() {
+        return validationKey;
+    }
 
+    public void setValidationKey(String validationKey) {
+        this.validationKey = validationKey;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> userauthorities= new ArrayList<>();
         if(role != null) {
-            if (role.getAnalytics()) {
+            if (role.getAnalytics()!= null && role.getAnalytics() ) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.ANALYTICS.name()));
             }
-            if (role.getMembership()) {
+            if (role.getMembership() != null && role.getMembership()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.MEMBERSHIP.name()));
             }
-            if (role.getPayments()) {
+            if (role.getPayments() != null && role.getPayments()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.PAYMENT.name()));
             }
-            if (role.getInventory()) {
+            if (role.getInventory() != null && role.getInventory()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.INVENTORY.name()));
             }
-            if (role.getTraining()) {
+            if (role.getTraining() != null && role.getTraining()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.TRAINING.name()));
             }
-            if (role.getSettings()) {
+            if (role.getSettings() != null && role.getSettings()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.SETTINGS.name()));
             }
-            if (role.getPreferences()) {
+            if (role.getPreferences() != null && role.getPreferences()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.PREFERENCES.name()));
             }
-            if (role.getManageWebSite()) {
+            if (role.getManageWebSite() != null && role.getManageWebSite()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.MANAGEWEBSITE.name()));
             }
         }

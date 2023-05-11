@@ -174,7 +174,7 @@ public class SubCategoryResource {
         log.debug("REST request to delete SubCategory : {}", id);
 
         SubCategory subCategory = subCategoryRepository.findById(id).orElse(null);
-        if(!subCategory.getEquipmentList().isEmpty()){
+        if(subCategory.getEquipmentList() != null && !subCategory.getEquipmentList().isEmpty()){
             String errorMessage = "Cannot delete sub-category with those associated equipments : ";
             for(Equipment equipment : subCategory.getEquipmentList()){
                 errorMessage += " -> " +equipment.getName() ;

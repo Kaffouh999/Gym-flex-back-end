@@ -1,32 +1,31 @@
 package com.example.GymInTheBack.web;
 
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.Plan;
-import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.PlanRepository;
+import com.example.GymInTheBack.services.mappers.PlanMapper;
 import com.example.GymInTheBack.services.plan.PlanService;
+import com.example.GymInTheBack.services.upload.UploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -42,11 +41,14 @@ public class PlanResource {
     private String applicationName = "GymFlex";
 
     private final PlanService planService;
-
+    private final UploadService uploadService;
+    private final PlanMapper planMapper;
     private final PlanRepository planRepository;
 
-    public PlanResource(PlanService planService, PlanRepository planRepository) {
+    public PlanResource(PlanService planService, UploadService uploadService, PlanMapper planMapper, PlanRepository planRepository) {
         this.planService = planService;
+        this.uploadService = uploadService;
+        this.planMapper = planMapper;
         this.planRepository = planRepository;
     }
 
@@ -184,7 +186,7 @@ public class PlanResource {
         log.debug("REST request to delete Plan : {}", id);
         Plan plan = planRepository.findById(id).orElse(null);
 
-        if(!plan.getSubscriptionMemberList().isEmpty()){
+        if(plan.getSubscriptionMemberList()!= null && !plan.getSubscriptionMemberList().isEmpty()){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             String errorMessage = "Cannot delete plan with those associated Subscriptions  : ";
             for(SubscriptionMember subscriptionMember : plan.getSubscriptionMemberList()){
@@ -193,10 +195,77 @@ public class PlanResource {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
 
+
+        if(plan != null) {
+            String folderUrl = "/images/plans/";
+            String urlImage = plan.getImageAds();
+            uploadService.deleteDocument(folderUrl, urlImage);
+        }
+
         planService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+
+    @PostMapping("/plans/upload/{name}")
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam(value = "file",required = false) MultipartFile file) {
+        String folerUrl = "/images/plans/";
+        Map<String, String> response = new HashMap<>();
+
+        try {
+            if(file != null) {
+                String fileName = uploadService.handleFileUpload(name, folerUrl, file);
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }
+                response.put("message", "http://localhost:5051/images/plans/" + fileName);
+            }else{
+                response.put("message", "");
+            }
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("/plans/upload/{id}")
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+        Map<String, String> response = new HashMap<>();
+        Optional<PlanDTO> plan = planService.findOne(id);
+        String imageUrl = plan.get().getImageAds();
+        String folderUrl = "/images/plans/";
+
+        try {
+            if(file != null) {
+                uploadService.deleteDocument(folderUrl, imageUrl);
+                String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+
+                if (imageUrl == null || imageUrl.equals("")) {
+                    imageUrl = plan.get().getName();
+                    fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+                }else {
+                    fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                }
+                if (fileName == null) {
+                    throw new IOException("Error uploading file");
+                }else {
+                    plan.get().setImageAds("http://localhost:5051" + folderUrl + fileName);
+                    planService.save(plan.get());
+                }
+                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+
+            }else{
+                response.put("message", "");
+            }
+            return ResponseEntity.ok(response);
+
+        }catch (IOException e){
+            response.put("message", "Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

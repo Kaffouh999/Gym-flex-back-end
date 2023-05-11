@@ -17,11 +17,15 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.GymInTheBack.dtos.maintining.MaintiningDTO;
-import com.example.GymInTheBack.entities.EquipmentItem;
-import com.example.GymInTheBack.entities.Maintining;
-import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.*;
 import com.example.GymInTheBack.repositories.MaintiningRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
+import com.example.GymInTheBack.services.auth.JwtService;
 import com.example.GymInTheBack.services.mappers.MaintiningMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationRequest;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +58,7 @@ class MaintiningResourceTest {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static Random random = new Random();
+    private static String token="";
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
@@ -63,6 +72,11 @@ class MaintiningResourceTest {
 
     @Autowired
     private MockMvc restMaintiningMockMvc;
+
+
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     private Maintining maintining;
 
@@ -129,8 +143,17 @@ class MaintiningResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         maintining = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        MaintiningResourceTest.token = authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -140,7 +163,7 @@ class MaintiningResourceTest {
         // Create the Maintining
         MaintiningDTO maintiningDTO = maintiningMapper.toDto(maintining);
         restMaintiningMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Maintining in the database
@@ -163,7 +186,7 @@ class MaintiningResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restMaintiningMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Maintining in the database
@@ -182,7 +205,7 @@ class MaintiningResourceTest {
         MaintiningDTO maintiningDTO = maintiningMapper.toDto(maintining);
 
         restMaintiningMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
             .andExpect(status().isBadRequest());
 
         List<Maintining> maintiningList = maintiningRepository.findAll();
@@ -197,7 +220,7 @@ class MaintiningResourceTest {
 
         // Get all the maintiningList
         restMaintiningMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(maintining.getId().intValue())))
@@ -214,7 +237,7 @@ class MaintiningResourceTest {
 
         // Get the maintining
         restMaintiningMockMvc
-            .perform(get(ENTITY_API_URL_ID, maintining.getId()))
+            .perform(get(ENTITY_API_URL_ID, maintining.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(maintining.getId().intValue()))
@@ -227,7 +250,7 @@ class MaintiningResourceTest {
     @Transactional
     void getNonExistingMaintining() throws Exception {
         // Get the maintining
-        restMaintiningMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restMaintiningMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -248,7 +271,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, maintiningDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isOk());
@@ -275,7 +298,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, maintiningDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isBadRequest());
@@ -298,7 +321,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isBadRequest());
@@ -319,7 +342,7 @@ class MaintiningResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restMaintiningMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(maintiningDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Maintining in the database
@@ -344,7 +367,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedMaintining.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedMaintining))
             )
             .andExpect(status().isOk());
@@ -375,7 +398,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedMaintining.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedMaintining))
             )
             .andExpect(status().isOk());
@@ -402,7 +425,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, maintiningDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isBadRequest());
@@ -425,7 +448,7 @@ class MaintiningResourceTest {
         restMaintiningMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isBadRequest());
@@ -447,7 +470,7 @@ class MaintiningResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restMaintiningMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(maintiningDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -466,7 +489,7 @@ class MaintiningResourceTest {
 
         // Delete the maintining
         restMaintiningMockMvc
-            .perform(delete(ENTITY_API_URL_ID, maintining.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, maintining.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

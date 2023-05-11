@@ -50,10 +50,12 @@ public class SecurityConfiguration {
           .permitAll()
             .requestMatchers("/ws/**")
             .permitAll()
-            .requestMatchers("/api/members/**","/api/payments/**","/api/subscription-members/**","/api/plans/**","/api/assurance-members/**")
+            .requestMatchers("/api/members/**","/api/payments/**","/api/subscription-members/**","/api/plans/**","/api/assurance-members/**,/api/membersProfile/**")
             .hasAnyAuthority(Authority.MEMBERSHIP.name())
             .requestMatchers("/api/categories/**","/api/sub-categories/**","/api/equipment/**","/api/equipment-items/**","/api/maintinings/**","/api/reforms/**")
             .hasAnyAuthority(Authority.INVENTORY.name())
+            .requestMatchers("/api/web/**")
+            .permitAll()
            .anyRequest()
             .authenticated()
 //complete roles configurations TODO

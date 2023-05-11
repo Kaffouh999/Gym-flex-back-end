@@ -8,6 +8,7 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.mailing.ContactMailDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.OnlineUser;
@@ -18,6 +19,7 @@ import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -235,7 +237,7 @@ public class OnlineUserResource {
 
 
             if (imageUrl == null || imageUrl.equals("")) {
-                imageUrl = onlineUser.get().getPassword() + "_" + onlineUser.get().getEmail();
+                imageUrl = onlineUser.get().getEmail();
                 fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
             }else {
                 uploadService.deleteDocument(folderUrl, imageUrl);
@@ -262,5 +264,20 @@ public class OnlineUserResource {
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+    @PostMapping("/web/contact")
+    public ResponseEntity<Object> contact(@RequestBody ContactMailDTO contactMail) throws MessagingException {
+           if( onlineUserService.contactUs(contactMail)){
+             return   ResponseEntity.status(HttpStatus.OK).body(true);
+           }else{
+              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+           }
+    }
+    @GetMapping("/web/verify/{validationkey}")
+    public ResponseEntity<Object> contact(@PathVariable String validationkey) throws MessagingException {
+      if( onlineUserService.validateMail(validationkey)){
+          return  ResponseEntity.status(HttpStatus.OK).body(true);
+      }
+      return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
 }

@@ -1,12 +1,14 @@
 package com.example.GymInTheBack.services.plan;
 
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
+import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.repositories.PlanRepository;
 import com.example.GymInTheBack.services.mappers.PlanMapper;
@@ -81,4 +83,7 @@ public class PlanServiceImpl implements PlanService {
         log.debug("Request to delete Plan : {}", id);
         planRepository.deleteById(id);
     }
+
+
+
 }

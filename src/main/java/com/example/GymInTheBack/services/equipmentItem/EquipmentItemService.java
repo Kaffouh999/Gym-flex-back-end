@@ -1,6 +1,8 @@
 package com.example.GymInTheBack.services.equipmentItem;
 
 import com.example.GymInTheBack.dtos.equipmentItem.EquipmentItemDTO;
+
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +14,7 @@ public interface EquipmentItemService {
      * @param equipmentItemDTO the entity to save.
      * @return the persisted entity.
      */
-    EquipmentItemDTO save(EquipmentItemDTO equipmentItemDTO);
+    EquipmentItemDTO save(EquipmentItemDTO equipmentItemDTO) throws NoSuchAlgorithmException;
 
     /**
      * Updates a equipmentItem.

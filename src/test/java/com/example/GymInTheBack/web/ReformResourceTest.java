@@ -5,13 +5,13 @@ import static com.example.GymInTheBack.web.TestUtil.sameInstant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,8 +20,13 @@ import com.example.GymInTheBack.dtos.reform.ReformDTO;
 import com.example.GymInTheBack.entities.EquipmentItem;
 import com.example.GymInTheBack.entities.Member;
 import com.example.GymInTheBack.entities.Reform;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.ReformRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.ReformMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +44,17 @@ class ReformResourceTest {
 
     private static final ZonedDateTime DEFAULT_DECISION_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_DECISION_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
+    private static final LocalDateTime RECEIVED_UPDATED_DECISION_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0).toLocalDateTime();
 
     private static final String DEFAULT_COMMENT = "AAAAAAAAAA";
     private static final String UPDATED_COMMENT = "BBBBBBBBBB";
 
     private static final String ENTITY_API_URL = "/api/reforms";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -62,6 +71,7 @@ class ReformResourceTest {
     private MockMvc restReformMockMvc;
 
     private Reform reform;
+    private String expectedDate;
 
     /**
      * Create an entity for this test.
@@ -126,8 +136,21 @@ class ReformResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         reform = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
+
+        LocalDateTime RECEIVED_DEFAULT_DECISION_DATE = DEFAULT_DECISION_DATE.toLocalDateTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        expectedDate = RECEIVED_DEFAULT_DECISION_DATE.format(formatter);
     }
 
     @Test
@@ -137,7 +160,7 @@ class ReformResourceTest {
         // Create the Reform
         ReformDTO reformDTO = reformMapper.toDto(reform);
         restReformMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Reform in the database
@@ -159,7 +182,7 @@ class ReformResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restReformMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Reform in the database
@@ -175,11 +198,11 @@ class ReformResourceTest {
 
         // Get all the reformList
         restReformMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(reform.getId().intValue())))
-            .andExpect(jsonPath("$.[*].decisionDate").value(hasItem(sameInstant(DEFAULT_DECISION_DATE))))
+            .andExpect(jsonPath("$.[*].decisionDate").value(hasItem(expectedDate)))
             .andExpect(jsonPath("$.[*].comment").value(hasItem(DEFAULT_COMMENT)));
     }
 
@@ -191,19 +214,20 @@ class ReformResourceTest {
 
         // Get the reform
         restReformMockMvc
-            .perform(get(ENTITY_API_URL_ID, reform.getId()))
+            .perform(get(ENTITY_API_URL_ID, reform.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(reform.getId().intValue()))
-            .andExpect(jsonPath("$.decisionDate").value(sameInstant(DEFAULT_DECISION_DATE)))
-            .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT));
+            .andExpect(jsonPath("$.decisionDate").value(expectedDate))
+            .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
+                .andDo(print());
     }
 
     @Test
     @Transactional
     void getNonExistingReform() throws Exception {
         // Get the reform
-        restReformMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restReformMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -224,7 +248,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, reformDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isOk());
@@ -250,7 +274,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, reformDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isBadRequest());
@@ -273,7 +297,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isBadRequest());
@@ -294,7 +318,7 @@ class ReformResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restReformMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(reformDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Reform in the database
@@ -319,7 +343,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedReform.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedReform))
             )
             .andExpect(status().isOk());
@@ -336,20 +360,20 @@ class ReformResourceTest {
     @Transactional
     void fullUpdateReformWithPatch() throws Exception {
         // Initialize the database
-        reformRepository.saveAndFlush(reform);
+        Reform newReform = reformRepository.saveAndFlush(reform);
 
         int databaseSizeBeforeUpdate = reformRepository.findAll().size();
 
         // Update the reform using partial update
         Reform partialUpdatedReform = new Reform();
-        partialUpdatedReform.setId(reform.getId());
+        partialUpdatedReform.setId(newReform.getId());
 
         partialUpdatedReform.decisionDate(UPDATED_DECISION_DATE).comment(UPDATED_COMMENT);
 
         restReformMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedReform.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedReform))
             )
             .andExpect(status().isOk());
@@ -375,7 +399,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, reformDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isBadRequest());
@@ -398,7 +422,7 @@ class ReformResourceTest {
         restReformMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isBadRequest());
@@ -420,7 +444,7 @@ class ReformResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restReformMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(reformDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(reformDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -439,7 +463,7 @@ class ReformResourceTest {
 
         // Delete the reform
         restReformMockMvc
-            .perform(delete(ENTITY_API_URL_ID, reform.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, reform.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

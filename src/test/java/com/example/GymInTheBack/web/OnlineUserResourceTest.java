@@ -11,9 +11,15 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
+import com.example.GymInTheBack.entities.EquipmentItem;
 import com.example.GymInTheBack.entities.OnlineUser;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +68,10 @@ class OnlineUserResourceTest {
     @Autowired
     private OnlineUserMapper onlineUserMapper;
 
+    private static String token="";
+
+    @Autowired
+    private AuthenticationService authenticationService;
     @Autowired
     private EntityManager em;
 
@@ -84,6 +94,8 @@ class OnlineUserResourceTest {
             .email(DEFAULT_EMAIL)
             .password(DEFAULT_PASSWORD)
             .profilePicture(DEFAULT_PROFILE_PICTURE);
+
+
         return onlineUser;
     }
 
@@ -105,8 +117,17 @@ class OnlineUserResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         onlineUser = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        OnlineUserResourceTest.token =  authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -116,7 +137,7 @@ class OnlineUserResourceTest {
         // Create the OnlineUser
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isCreated());
 
         // Validate the OnlineUser in the database
@@ -142,7 +163,7 @@ class OnlineUserResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the OnlineUser in the database
@@ -161,7 +182,7 @@ class OnlineUserResourceTest {
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
 
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         List<OnlineUser> onlineUserList = onlineUserRepository.findAll();
@@ -179,7 +200,7 @@ class OnlineUserResourceTest {
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
 
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         List<OnlineUser> onlineUserList = onlineUserRepository.findAll();
@@ -197,7 +218,7 @@ class OnlineUserResourceTest {
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
 
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         List<OnlineUser> onlineUserList = onlineUserRepository.findAll();
@@ -215,7 +236,7 @@ class OnlineUserResourceTest {
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
 
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         List<OnlineUser> onlineUserList = onlineUserRepository.findAll();
@@ -233,7 +254,7 @@ class OnlineUserResourceTest {
         OnlineUserDTO onlineUserDTO = onlineUserMapper.toDto(onlineUser);
 
         restOnlineUserMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isBadRequest());
 
         List<OnlineUser> onlineUserList = onlineUserRepository.findAll();
@@ -248,7 +269,7 @@ class OnlineUserResourceTest {
 
         // Get all the onlineUserList
         restOnlineUserMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(onlineUser.getId().intValue())))
@@ -268,7 +289,7 @@ class OnlineUserResourceTest {
 
         // Get the onlineUser
         restOnlineUserMockMvc
-            .perform(get(ENTITY_API_URL_ID, onlineUser.getId()))
+            .perform(get(ENTITY_API_URL_ID, onlineUser.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(onlineUser.getId().intValue()))
@@ -284,7 +305,7 @@ class OnlineUserResourceTest {
     @Transactional
     void getNonExistingOnlineUser() throws Exception {
         // Get the onlineUser
-        restOnlineUserMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restOnlineUserMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -311,7 +332,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, onlineUserDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isOk());
@@ -341,7 +362,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, onlineUserDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isBadRequest());
@@ -364,7 +385,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isBadRequest());
@@ -385,7 +406,7 @@ class OnlineUserResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restOnlineUserMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the OnlineUser in the database
@@ -410,7 +431,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedOnlineUser.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedOnlineUser))
             )
             .andExpect(status().isOk());
@@ -449,7 +470,7 @@ class OnlineUserResourceTest {
 
         restOnlineUserMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedOnlineUser.getId())
+                patch(ENTITY_API_URL_ID, partialUpdatedOnlineUser.getId()).header("Authorization", "Bearer " + token)
                     .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedOnlineUser))
             )
@@ -480,7 +501,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, onlineUserDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isBadRequest());
@@ -503,7 +524,7 @@ class OnlineUserResourceTest {
         restOnlineUserMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isBadRequest());
@@ -525,7 +546,7 @@ class OnlineUserResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restOnlineUserMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(onlineUserDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -544,7 +565,7 @@ class OnlineUserResourceTest {
 
         // Delete the onlineUser
         restOnlineUserMockMvc
-            .perform(delete(ENTITY_API_URL_ID, onlineUser.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, onlineUser.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

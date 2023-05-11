@@ -3,6 +3,7 @@ package com.example.GymInTheBack.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +12,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.example.GymInTheBack.dtos.role.RoleDTO;
 import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.RoleRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.RoleMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +62,10 @@ public class RoleResourceTest {
 
     private static final String ENTITY_API_URL = "/api/roles";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -83,6 +91,7 @@ public class RoleResourceTest {
      */
     public static Role createEntity(EntityManager em) {
         Role role = Role.builder()
+
                 .name(DEFAULT_NAME)
                 .description(DEFAULT_DESCRIPTION)
                 .analytics(DEFAULT_ANALYTICS)
@@ -120,8 +129,17 @@ public class RoleResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         role = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -131,7 +149,7 @@ public class RoleResourceTest {
         // Create the Role
         RoleDTO roleDTO = roleMapper.toDto(role);
         restRoleMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
                 .andExpect(status().isCreated());
 
         // Validate the Role in the database
@@ -160,7 +178,7 @@ public class RoleResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restRoleMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
                 .andExpect(status().isBadRequest());
 
         // Validate the Role in the database
@@ -177,19 +195,19 @@ public class RoleResourceTest {
     @Transactional
     void getAllRoles() throws Exception {
         // Initialize the database
-        roleRepository.saveAndFlush(role);
+        Role roleUser = roleRepository.saveAndFlush(role);
 
         // Get all the roleList
         restRoleMockMvc
-                .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+                .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(role.getId().intValue())))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(roleUser.getId().intValue())))
                 .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
                 .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
                 .andExpect(jsonPath("$.[*].analytics").value(hasItem(DEFAULT_ANALYTICS.booleanValue())))
                 .andExpect(jsonPath("$.[*].membership").value(hasItem(DEFAULT_MEMBERSHIP.booleanValue())))
-                .andExpect(jsonPath("$.[*].payment").value(hasItem(DEFAULT_MEMBERSHIP.booleanValue())))
+                .andExpect(jsonPath("$.[*].payments").value(hasItem(DEFAULT_MEMBERSHIP.booleanValue())))
                 .andExpect(jsonPath("$.[*].inventory").value(hasItem(DEFAULT_INVENTORY.booleanValue())))
                 .andExpect(jsonPath("$.[*].training").value(hasItem(DEFAULT_TRAINING.booleanValue())))
                 .andExpect(jsonPath("$.[*].settings").value(hasItem(DEFAULT_SETTINGS.booleanValue())))
@@ -202,25 +220,26 @@ public class RoleResourceTest {
     @Transactional
     void getRole() throws Exception {
         // Initialize the database
-        roleRepository.saveAndFlush(role);
+        Role newRole = roleRepository.saveAndFlush(role);
 
         // Get the role
         restRoleMockMvc
-                .perform(get(ENTITY_API_URL_ID, role.getId()))
+                .perform(get(ENTITY_API_URL_ID, newRole.getId()).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(role.getId().intValue()))
-                .andExpect(jsonPath("$.[*].name").value(DEFAULT_NAME))
-                .andExpect(jsonPath("$.[*].description").value(DEFAULT_DESCRIPTION))
-                .andExpect(jsonPath("$.[*].analytics").value(DEFAULT_ANALYTICS.booleanValue()))
-                .andExpect(jsonPath("$.[*].membership").value(DEFAULT_MEMBERSHIP.booleanValue()))
-                .andExpect(jsonPath("$.[*].payment").value(DEFAULT_MEMBERSHIP.booleanValue()))
-                .andExpect(jsonPath("$.[*].inventory").value(DEFAULT_INVENTORY.booleanValue()))
-                .andExpect(jsonPath("$.[*].training").value(DEFAULT_TRAINING.booleanValue()))
-                .andExpect(jsonPath("$.[*].settings").value(DEFAULT_SETTINGS.booleanValue()))
-                .andExpect(jsonPath("$.[*].preferences").value(DEFAULT_PREFERENCES.booleanValue()))
-                .andExpect(jsonPath("$.[*].manageWebSite").value(DEFAULT_MANAGE_WEB.booleanValue())
-                );
+                .andExpect(jsonPath("$.id").value(newRole.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
+                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+                .andExpect(jsonPath("$.analytics").value(DEFAULT_ANALYTICS.booleanValue()))
+                .andExpect(jsonPath("$.membership").value(DEFAULT_MEMBERSHIP.booleanValue()))
+                .andExpect(jsonPath("$.payments").value(DEFAULT_MEMBERSHIP.booleanValue()))
+                .andExpect(jsonPath("$.inventory").value(DEFAULT_INVENTORY.booleanValue()))
+                .andExpect(jsonPath("$.training").value(DEFAULT_TRAINING.booleanValue()))
+                .andExpect(jsonPath("$.settings").value(DEFAULT_SETTINGS.booleanValue()))
+                .andExpect(jsonPath("$.preferences").value(DEFAULT_PREFERENCES.booleanValue()))
+                .andExpect(jsonPath("$.manageWebSite").value(DEFAULT_MANAGE_WEB.booleanValue())
+
+                ).andDo(print());
     }
 
 
@@ -228,22 +247,23 @@ public class RoleResourceTest {
     @Transactional
     void getNonExistingRole() throws Exception {
         // Get the role
-        restRoleMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restRoleMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
     @Transactional
     void putExistingCategory() throws Exception {
         // Initialize the database
-        roleRepository.saveAndFlush(role);
+        Role userRole = roleRepository.saveAndFlush(role);
 
         int databaseSizeBeforeUpdate = roleRepository.findAll().size();
 
         // Update the role
-        Role updatedRole = roleRepository.findById(role.getId()).get();
+        Role updatedRole = roleRepository.findById(userRole.getId()).get();
         // Disconnect from session so that the updates on updatedRole are not directly saved in db
         em.detach(updatedRole);
         updatedRole=Role.builder()
+                .id(updatedRole.getId())
                 .name(UPDATED_NAME)
                 .description(UPDATED_DESCRIPTION)
                 .analytics(UPDATED_ANALYTICS)
@@ -260,7 +280,7 @@ public class RoleResourceTest {
         restRoleMockMvc
                 .perform(
                         put(ENTITY_API_URL_ID, roleDTO.getId())
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                                 .content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isOk());
@@ -269,15 +289,15 @@ public class RoleResourceTest {
         List<Role> roleList = roleRepository.findAll();
         assertThat(roleList).hasSize(databaseSizeBeforeUpdate);
         Role testRole = roleList.get(roleList.size() - 1);
-        assertThat(testRole.getName()).isEqualTo(DEFAULT_NAME);
-        assertThat(testRole.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
-        assertThat(testRole.getAnalytics()).isEqualTo(DEFAULT_ANALYTICS);
-        assertThat(testRole.getMembership()).isEqualTo(DEFAULT_MEMBERSHIP);
-        assertThat(testRole.getPayments()).isEqualTo(DEFAULT_PAYMENT);
-        assertThat(testRole.getInventory()).isEqualTo(DEFAULT_INVENTORY);
-        assertThat(testRole.getSettings()).isEqualTo(DEFAULT_SETTINGS);
-        assertThat(testRole.getPreferences()).isEqualTo(DEFAULT_PREFERENCES);
-        assertThat(testRole.getManageWebSite()).isEqualTo(DEFAULT_MANAGE_WEB);
+        assertThat(testRole.getName()).isEqualTo(UPDATED_NAME);
+        assertThat(testRole.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testRole.getAnalytics()).isEqualTo(UPDATED_ANALYTICS);
+        assertThat(testRole.getMembership()).isEqualTo(UPDATED_MEMBERSHIP);
+        assertThat(testRole.getPayments()).isEqualTo(UPDATED_PAYMENT);
+        assertThat(testRole.getInventory()).isEqualTo(UPDATED_INVENTORY);
+        assertThat(testRole.getSettings()).isEqualTo(UPDATED_SETTINGS);
+        assertThat(testRole.getPreferences()).isEqualTo(UPDATED_PREFERENCES);
+        assertThat(testRole.getManageWebSite()).isEqualTo(UPDATED_MANAGE_WEB);
     }
 
     @Test
@@ -293,7 +313,7 @@ public class RoleResourceTest {
         restRoleMockMvc
                 .perform(
                         put(ENTITY_API_URL_ID, roleDTO.getId())
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                                 .content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isBadRequest());
@@ -316,7 +336,7 @@ public class RoleResourceTest {
         restRoleMockMvc
                 .perform(
                         put(ENTITY_API_URL_ID, count.incrementAndGet())
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                                 .content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isBadRequest());
@@ -337,7 +357,7 @@ public class RoleResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restRoleMockMvc
-                .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
+                .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(roleDTO)))
                 .andExpect(status().isMethodNotAllowed());
 
         // Validate the Role in the database
@@ -362,7 +382,7 @@ public class RoleResourceTest {
         restRoleMockMvc
                 .perform(
                         patch(ENTITY_API_URL_ID, roleDTO.getId())
-                                .contentType("application/merge-patch+json")
+                                .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                                 .content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isBadRequest());
@@ -385,7 +405,7 @@ public class RoleResourceTest {
         restRoleMockMvc
                 .perform(
                         patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                                .contentType("application/merge-patch+json")
+                                .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                                 .content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isBadRequest());
@@ -407,7 +427,7 @@ public class RoleResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restRoleMockMvc
                 .perform(
-                        patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(roleDTO))
+                        patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(roleDTO))
                 )
                 .andExpect(status().isMethodNotAllowed());
 
@@ -420,13 +440,13 @@ public class RoleResourceTest {
     @Transactional
     void deleteRole() throws Exception {
         // Initialize the database
-        roleRepository.saveAndFlush(role);
+        Role userRole = roleRepository.saveAndFlush(role);
 
         int databaseSizeBeforeDelete = roleRepository.findAll().size();
 
         // Delete the role
         restRoleMockMvc
-                .perform(delete(ENTITY_API_URL_ID, role.getId()).accept(MediaType.APPLICATION_JSON))
+                .perform(delete(ENTITY_API_URL_ID, userRole.getId()).accept(MediaType.TEXT_PLAIN_VALUE).header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

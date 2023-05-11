@@ -188,7 +188,7 @@ public class EquipmentResource {
         log.debug("REST request to delete Equipment : {}", id);
 
         Optional<Equipment> equipment = equipmentRepository.findById(id);
-        if(!equipment.get().getEquipmentItemList().isEmpty()){
+        if( equipment.get().getEquipmentItemList() != null && !equipment.get().getEquipmentItemList().isEmpty()){
             String errorMessage = "Cannot delete equipment has associated equipment items .";
 
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);

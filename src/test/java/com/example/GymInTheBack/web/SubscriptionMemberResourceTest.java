@@ -18,9 +18,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.entities.Member;
 import com.example.GymInTheBack.entities.Plan;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +54,10 @@ class SubscriptionMemberResourceTest {
 
     private static final String ENTITY_API_URL = "/api/subscription-members";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -136,8 +144,17 @@ class SubscriptionMemberResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         subscriptionMember = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .membership(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -149,7 +166,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 post(ENTITY_API_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isCreated());
@@ -176,7 +193,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 post(ENTITY_API_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -199,7 +216,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 post(ENTITY_API_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -216,7 +233,7 @@ class SubscriptionMemberResourceTest {
 
         // Get all the subscriptionMemberList
         restSubscriptionMemberMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(subscriptionMember.getId().intValue())))
@@ -233,7 +250,7 @@ class SubscriptionMemberResourceTest {
 
         // Get the subscriptionMember
         restSubscriptionMemberMockMvc
-            .perform(get(ENTITY_API_URL_ID, subscriptionMember.getId()))
+            .perform(get(ENTITY_API_URL_ID, subscriptionMember.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(subscriptionMember.getId().intValue()))
@@ -246,7 +263,7 @@ class SubscriptionMemberResourceTest {
     @Transactional
     void getNonExistingSubscriptionMember() throws Exception {
         // Get the subscriptionMember
-        restSubscriptionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restSubscriptionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -270,7 +287,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, subscriptionMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isOk());
@@ -297,7 +314,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, subscriptionMemberDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -320,7 +337,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -343,7 +360,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 put(ENTITY_API_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
@@ -370,7 +387,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSubscriptionMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSubscriptionMember))
             )
             .andExpect(status().isOk());
@@ -404,7 +421,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedSubscriptionMember.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedSubscriptionMember))
             )
             .andExpect(status().isOk());
@@ -431,7 +448,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, subscriptionMemberDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -454,7 +471,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isBadRequest());
@@ -477,7 +494,7 @@ class SubscriptionMemberResourceTest {
         restSubscriptionMemberMockMvc
             .perform(
                 patch(ENTITY_API_URL)
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(subscriptionMemberDTO))
             )
             .andExpect(status().isMethodNotAllowed());
@@ -497,7 +514,7 @@ class SubscriptionMemberResourceTest {
 
         // Delete the subscriptionMember
         restSubscriptionMemberMockMvc
-            .perform(delete(ENTITY_API_URL_ID, subscriptionMember.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, subscriptionMember.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

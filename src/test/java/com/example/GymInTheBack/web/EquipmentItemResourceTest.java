@@ -20,8 +20,13 @@ import com.example.GymInTheBack.dtos.equipmentItem.EquipmentItemDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.EquipmentItem;
 import com.example.GymInTheBack.entities.GymBranch;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.EquipmentItemRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.EquipmentItemMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +59,10 @@ class EquipmentItemResourceTest {
 
     private static final String ENTITY_API_URL = "/api/equipment-items";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -145,8 +153,17 @@ class EquipmentItemResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         equipmentItem = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token=authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -157,7 +174,7 @@ class EquipmentItemResourceTest {
         EquipmentItemDTO equipmentItemDTO = equipmentItemMapper.toDto(equipmentItem);
         restEquipmentItemMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isCreated());
 
@@ -184,7 +201,7 @@ class EquipmentItemResourceTest {
         // An entity with an existing ID cannot be created, so this API call must fail
         restEquipmentItemMockMvc
             .perform(
-                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -201,7 +218,7 @@ class EquipmentItemResourceTest {
 
         // Get all the equipmentItemList
         restEquipmentItemMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(equipmentItem.getId().intValue())))
@@ -220,7 +237,7 @@ class EquipmentItemResourceTest {
 
         // Get the equipmentItem
         restEquipmentItemMockMvc
-            .perform(get(ENTITY_API_URL_ID, equipmentItem.getId()))
+            .perform(get(ENTITY_API_URL_ID, equipmentItem.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(equipmentItem.getId().intValue()))
@@ -235,7 +252,7 @@ class EquipmentItemResourceTest {
     @Transactional
     void getNonExistingEquipmentItem() throws Exception {
         // Get the equipmentItem
-        restEquipmentItemMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restEquipmentItemMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -261,7 +278,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, equipmentItemDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isOk());
@@ -290,7 +307,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, equipmentItemDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isBadRequest());
@@ -313,7 +330,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isBadRequest());
@@ -335,7 +352,7 @@ class EquipmentItemResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restEquipmentItemMockMvc
             .perform(
-                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
+                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -361,7 +378,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedEquipmentItem.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedEquipmentItem))
             )
             .andExpect(status().isOk());
@@ -399,7 +416,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedEquipmentItem.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedEquipmentItem))
             )
             .andExpect(status().isOk());
@@ -428,7 +445,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, equipmentItemDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isBadRequest());
@@ -451,7 +468,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isBadRequest());
@@ -474,7 +491,7 @@ class EquipmentItemResourceTest {
         restEquipmentItemMockMvc
             .perform(
                 patch(ENTITY_API_URL)
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(equipmentItemDTO))
             )
             .andExpect(status().isMethodNotAllowed());
@@ -494,7 +511,7 @@ class EquipmentItemResourceTest {
 
         // Delete the equipmentItem
         restEquipmentItemMockMvc
-            .perform(delete(ENTITY_API_URL_ID, equipmentItem.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, equipmentItem.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

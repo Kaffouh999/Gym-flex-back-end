@@ -3,6 +3,7 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public class EquipmentItemResource {
      */
     @PostMapping("/equipment-items")
     public ResponseEntity<EquipmentItemDTO> createEquipmentItem(@Valid @RequestBody EquipmentItemDTO equipmentItemDTO)
-        throws URISyntaxException {
+            throws URISyntaxException, NoSuchAlgorithmException {
         log.debug("REST request to save EquipmentItem : {}", equipmentItemDTO);
         if (equipmentItemDTO.getId() != null) {
             throw new BadRequestAlertException("A new equipmentItem cannot already have an ID", ENTITY_NAME, "idexists");

@@ -12,8 +12,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.CategoryRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.CategoryMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +58,10 @@ class CategoryResourceTest {
     @Autowired
     private CategoryMapper categoryMapper;
 
+    private static String token="";
+
+    @Autowired
+    private AuthenticationService authenticationService;
     @Autowired
     private EntityManager em;
 
@@ -92,8 +101,17 @@ class CategoryResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         category = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        CategoryResourceTest.token = authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -103,7 +121,7 @@ class CategoryResourceTest {
         // Create the Category
         CategoryDTO categoryDTO = categoryMapper.toDto(category);
         restCategoryMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Category in the database
@@ -127,7 +145,7 @@ class CategoryResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restCategoryMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Category in the database
@@ -146,7 +164,7 @@ class CategoryResourceTest {
         CategoryDTO categoryDTO = categoryMapper.toDto(category);
 
         restCategoryMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isBadRequest());
 
         List<Category> categoryList = categoryRepository.findAll();
@@ -164,7 +182,7 @@ class CategoryResourceTest {
         CategoryDTO categoryDTO = categoryMapper.toDto(category);
 
         restCategoryMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isBadRequest());
 
         List<Category> categoryList = categoryRepository.findAll();
@@ -182,7 +200,7 @@ class CategoryResourceTest {
         CategoryDTO categoryDTO = categoryMapper.toDto(category);
 
         restCategoryMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isBadRequest());
 
         List<Category> categoryList = categoryRepository.findAll();
@@ -197,7 +215,7 @@ class CategoryResourceTest {
 
         // Get all the categoryList
         restCategoryMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(category.getId().intValue())))
@@ -215,7 +233,7 @@ class CategoryResourceTest {
 
         // Get the category
         restCategoryMockMvc
-            .perform(get(ENTITY_API_URL_ID, category.getId()))
+            .perform(get(ENTITY_API_URL_ID, category.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(category.getId().intValue()))
@@ -229,7 +247,7 @@ class CategoryResourceTest {
     @Transactional
     void getNonExistingCategory() throws Exception {
         // Get the category
-        restCategoryMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restCategoryMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -254,7 +272,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, categoryDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isOk());
@@ -282,7 +300,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, categoryDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -305,7 +323,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -326,7 +344,7 @@ class CategoryResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCategoryMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Category in the database
@@ -351,7 +369,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedCategory.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCategory))
             )
             .andExpect(status().isOk());
@@ -387,7 +405,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedCategory.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCategory))
             )
             .andExpect(status().isOk());
@@ -415,7 +433,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, categoryDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -438,7 +456,7 @@ class CategoryResourceTest {
         restCategoryMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isBadRequest());
@@ -460,7 +478,7 @@ class CategoryResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCategoryMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(categoryDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(categoryDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -479,7 +497,7 @@ class CategoryResourceTest {
 
         // Delete the category
         restCategoryMockMvc
-            .perform(delete(ENTITY_API_URL_ID, category.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, category.getId()).accept(MediaType.TEXT_PLAIN_VALUE).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item

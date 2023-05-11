@@ -1,5 +1,9 @@
 package com.example.GymInTheBack.web;
 
+import com.example.GymInTheBack.entities.Role;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -12,6 +16,7 @@ import jakarta.persistence.criteria.Root;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
@@ -30,6 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class TestUtil {
 
     private static final ObjectMapper mapper = createObjectMapper();
+    @Autowired
+    private static AuthenticationService authenticationService;
 
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -200,6 +207,8 @@ public final class TestUtil {
         TypedQuery<T> allQuery = em.createQuery(all);
         return allQuery.getResultList();
     }
+
+
 
     private TestUtil() {}
 }

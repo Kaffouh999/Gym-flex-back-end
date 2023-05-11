@@ -180,7 +180,7 @@ public class CategoryResource {
     public ResponseEntity<Object> deleteCategory(@PathVariable Long id) {
         log.debug("REST request to delete Category : {}", id);
         Category category = categoryRepository.findById(id).orElse(null);
-        if(!category.getSubCategoryList().isEmpty()){
+        if(category.getSubCategoryList() != null && !category.getSubCategoryList().isEmpty()){
             String errorMessage = "Cannot delete category with those associated subcategories : ";
             for(SubCategory subCategory : category.getSubCategoryList()){
                 errorMessage += " -> " +subCategory.getName() ;

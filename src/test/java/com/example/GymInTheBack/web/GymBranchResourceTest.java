@@ -17,8 +17,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
 import com.example.GymInTheBack.entities.GymBranch;
+import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.GymBranchRepository;
+import com.example.GymInTheBack.services.auth.AuthenticationService;
 import com.example.GymInTheBack.services.mappers.GymBranchMapper;
+import com.example.GymInTheBack.utils.auth.AuthenticationResponse;
+import com.example.GymInTheBack.utils.auth.RegisterRequest;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +73,10 @@ class GymBranchResourceTest {
 
     private static final String ENTITY_API_URL = "/api/gym-branches";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+    private static String token="";
 
+    @Autowired
+    private AuthenticationService authenticationService;
     private static Random random = new Random();
     private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
@@ -129,8 +137,17 @@ class GymBranchResourceTest {
     }
 
     @BeforeEach
-    public void initTest() {
+    public void initTest() throws MessagingException {
         gymBranch = createEntity(em);
+        RegisterRequest request = new RegisterRequest("testFirstName","testLastName","testLogin","test@gmail.com","testPassword");
+
+        Role roleUser = Role.builder()
+                .name("ClientVisiter")
+                .description("For client that visit our site and sign up")
+                .inventory(true)
+                .build();
+        AuthenticationResponse authenticationResponse = authenticationService.register(request,roleUser);
+        token = authenticationResponse.getAccessToken();
     }
 
     @Test
@@ -140,7 +157,7 @@ class GymBranchResourceTest {
         // Create the GymBranch
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isCreated());
 
         // Validate the GymBranch in the database
@@ -170,7 +187,7 @@ class GymBranchResourceTest {
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the GymBranch in the database
@@ -189,7 +206,7 @@ class GymBranchResourceTest {
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
 
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         List<GymBranch> gymBranchList = gymBranchRepository.findAll();
@@ -207,7 +224,7 @@ class GymBranchResourceTest {
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
 
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         List<GymBranch> gymBranchList = gymBranchRepository.findAll();
@@ -225,7 +242,7 @@ class GymBranchResourceTest {
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
 
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         List<GymBranch> gymBranchList = gymBranchRepository.findAll();
@@ -243,7 +260,7 @@ class GymBranchResourceTest {
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
 
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         List<GymBranch> gymBranchList = gymBranchRepository.findAll();
@@ -261,7 +278,7 @@ class GymBranchResourceTest {
         GymBranchDTO gymBranchDTO = gymBranchMapper.toDto(gymBranch);
 
         restGymBranchMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isBadRequest());
 
         List<GymBranch> gymBranchList = gymBranchRepository.findAll();
@@ -276,7 +293,7 @@ class GymBranchResourceTest {
 
         // Get all the gymBranchList
         restGymBranchMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .perform(get(ENTITY_API_URL + "?sort=id,desc").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(gymBranch.getId().intValue())))
@@ -300,7 +317,7 @@ class GymBranchResourceTest {
 
         // Get the gymBranch
         restGymBranchMockMvc
-            .perform(get(ENTITY_API_URL_ID, gymBranch.getId()))
+            .perform(get(ENTITY_API_URL_ID, gymBranch.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(gymBranch.getId().intValue()))
@@ -320,7 +337,7 @@ class GymBranchResourceTest {
     @Transactional
     void getNonExistingGymBranch() throws Exception {
         // Get the gymBranch
-        restGymBranchMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restGymBranchMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -351,7 +368,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, gymBranchDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isOk());
@@ -385,7 +402,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, gymBranchDTO.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isBadRequest());
@@ -408,7 +425,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isBadRequest());
@@ -429,7 +446,7 @@ class GymBranchResourceTest {
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restGymBranchMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the GymBranch in the database
@@ -459,7 +476,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedGymBranch.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedGymBranch))
             )
             .andExpect(status().isOk());
@@ -507,7 +524,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedGymBranch.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(partialUpdatedGymBranch))
             )
             .andExpect(status().isOk());
@@ -541,7 +558,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, gymBranchDTO.getId())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isBadRequest());
@@ -564,7 +581,7 @@ class GymBranchResourceTest {
         restGymBranchMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
-                    .contentType("application/merge-patch+json")
+                    .contentType("application/merge-patch+json").header("Authorization", "Bearer " + token)
                     .content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isBadRequest());
@@ -586,7 +603,7 @@ class GymBranchResourceTest {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restGymBranchMockMvc
             .perform(
-                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").header("Authorization", "Bearer " + token).content(TestUtil.convertObjectToJsonBytes(gymBranchDTO))
             )
             .andExpect(status().isMethodNotAllowed());
 
@@ -605,7 +622,7 @@ class GymBranchResourceTest {
 
         // Delete the gymBranch
         restGymBranchMockMvc
-            .perform(delete(ENTITY_API_URL_ID, gymBranch.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, gymBranch.getId()).header("Authorization", "Bearer " + token).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
