@@ -2,6 +2,7 @@ package com.example.GymInTheBack.services.payment;
 
 
 import com.example.GymInTheBack.dtos.payment.PaymentDTO;
+import com.example.GymInTheBack.entities.Payment;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +54,5 @@ public interface PaymentService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+    List<PaymentDTO> findByMemberId(Long memberId);
 }

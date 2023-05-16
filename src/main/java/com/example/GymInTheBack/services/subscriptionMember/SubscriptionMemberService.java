@@ -2,12 +2,14 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.google.zxing.WriterException;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 public interface SubscriptionMemberService {
@@ -60,5 +62,7 @@ public interface SubscriptionMemberService {
     void delete(Long id);
 
    List<SubscriptionMember> entering(String qrCode);
+
+    List<SubscriptionWithPaymentsDTO>  findByMemberId(Long userId);
 
 }

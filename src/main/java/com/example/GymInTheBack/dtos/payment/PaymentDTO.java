@@ -2,6 +2,7 @@ package com.example.GymInTheBack.dtos.payment;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.member.MemberDTO;
+import jakarta.persistence.Column;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -13,6 +14,9 @@ import javax.validation.constraints.*;
 public class PaymentDTO implements Serializable {
 
     private Long id;
+
+
+    private Double shouldPay;
 
     @NotNull
     private Double amountPayed;
@@ -78,6 +82,14 @@ public class PaymentDTO implements Serializable {
             return false;
         }
         return Objects.equals(this.id, paymentDTO.id);
+    }
+
+    public Double getShouldPay() {
+        return shouldPay;
+    }
+
+    public void setShouldPay(Double shouldPay) {
+        this.shouldPay = shouldPay;
     }
 
     @Override

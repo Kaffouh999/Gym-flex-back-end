@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -194,6 +196,11 @@ public class PaymentResource {
         return ResponseUtil.wrapOrNotFound(paymentDTO);
     }
 
+    @GetMapping("/web/payments/{id}")
+    public List<PaymentDTO> getPaymentByMember(@PathVariable Long id) {
+        log.debug("REST request to get Payment : {}", id);
+        return paymentService.findAll();
+    }
     /**
      * {@code DELETE  /payments/:id} : delete the "id" payment.
      *
@@ -201,8 +208,32 @@ public class PaymentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/payments/{id}")
-    public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
+            public ResponseEntity<Object> deletePayment(@PathVariable Long id) throws NoSuchAlgorithmException, WriterException {
         log.debug("REST request to delete Payment : {}", id);
+
+        PaymentDTO paymentDTO = paymentService.findOne(id).get();
+        Long planDuration = paymentDTO.getSubscriptionMember().getPlan().getDuration();
+
+        SubscriptionMemberDTO subscriptionMemberDTO = paymentDTO.getSubscriptionMember();
+        ZonedDateTime dateEnd = subscriptionMemberDTO.getEndDate();
+        ZonedDateTime dateNow = ZonedDateTime.now();
+        ZonedDateTime updatedDate;
+        long differenceDays = ChronoUnit.DAYS.between(dateNow, dateEnd);
+        if(dateEnd.isAfter( dateNow ) && differenceDays>0){
+
+            if(differenceDays > planDuration){
+                updatedDate= dateEnd.minusDays(planDuration);
+            }
+            else{
+                 updatedDate= dateEnd.minusDays(differenceDays);
+            }
+
+        }else{
+            String errorMessage = "Cannot delete this payment , it's already consumed ";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+        subscriptionMemberDTO.setEndDate(updatedDate);
+        subscriptionMemberService.save(subscriptionMemberDTO);
         paymentService.delete(id);
         return ResponseEntity
             .noContent()

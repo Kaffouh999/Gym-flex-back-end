@@ -1,10 +1,12 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import javax.validation.constraints.*;
 
 /**
@@ -44,6 +46,10 @@ public class SubscriptionMember implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     private Plan plan;
+
+    @OneToMany(mappedBy = "subscriptionMember")
+    @JsonIgnoreProperties(value = "subscriptionMember")
+    private List<Payment> paymentList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -136,6 +142,15 @@ public class SubscriptionMember implements Serializable {
         this.setEndDate(endDate);
         return this;
     }
+
+    public List<Payment> getPaymentList() {
+        return paymentList;
+    }
+
+    public void setPaymentList(List<Payment> paymentList) {
+        this.paymentList = paymentList;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override

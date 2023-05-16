@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -135,6 +136,7 @@ public class Member implements Serializable {
         return this;
     }
 
+    @JsonIgnoreProperties(value = "member")
     public OnlineUser getOnlineUser() {
         return onlineUser;
     }

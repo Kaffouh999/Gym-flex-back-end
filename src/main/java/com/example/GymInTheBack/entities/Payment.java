@@ -22,6 +22,10 @@ public class Payment implements Serializable {
     @Column(name = "id")
     private Long id;
 
+
+    @Column(name = "should_pay")
+    private Double shouldPay;
+
     @NotNull
     @Column(name = "amount_payed", nullable = false)
     private Double amountPayed;
@@ -106,8 +110,19 @@ public class Payment implements Serializable {
         this.setPayedMember(member);
         return this;
     }
+    public Payment shouldPay(Double shouldPay) {
+        this.setShouldPay(shouldPay);
+        return this;
+    }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public Double getShouldPay() {
+        return shouldPay;
+    }
+
+    public void setShouldPay(Double shouldPay) {
+        this.shouldPay = shouldPay;
+    }
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {

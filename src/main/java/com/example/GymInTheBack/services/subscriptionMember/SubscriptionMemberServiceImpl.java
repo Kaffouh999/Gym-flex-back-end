@@ -2,20 +2,19 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 
 import java.security.NoSuchAlgorithmException;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
-import com.example.GymInTheBack.entities.SessionMember;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
+import com.example.GymInTheBack.services.mappers.SubscriptionMemberWithPaymentsMapper;
 import com.example.GymInTheBack.utils.QRCodeGenerator;
-import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -33,13 +32,15 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
 
 
     private final SubscriptionMemberMapper subscriptionMemberMapper;
+    private final SubscriptionMemberWithPaymentsMapper subscriptionMemberWithPaymentsMapper;
 
     public SubscriptionMemberServiceImpl(
             SubscriptionMemberRepository subscriptionMemberRepository,
-            SubscriptionMemberMapper subscriptionMemberMapper
-    ) {
+            SubscriptionMemberMapper subscriptionMemberMapper,
+            SubscriptionMemberWithPaymentsMapper subscriptionMemberWithPaymentsMapper) {
         this.subscriptionMemberRepository = subscriptionMemberRepository;
         this.subscriptionMemberMapper = subscriptionMemberMapper;
+        this.subscriptionMemberWithPaymentsMapper = subscriptionMemberWithPaymentsMapper;
     }
 
     @Override
@@ -111,4 +112,12 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
         return subscriptionMemberRepository.entering(qrCode);
 
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SubscriptionWithPaymentsDTO> findByMemberId(Long userId) {
+        return subscriptionMemberRepository.findByMemberId(userId).stream().map(subscriptionMemberWithPaymentsMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+
 }

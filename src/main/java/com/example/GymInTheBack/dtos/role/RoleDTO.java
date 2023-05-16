@@ -32,6 +32,7 @@ public class RoleDTO implements Serializable {
     private Boolean preferences;
 
     private Boolean manageWebSite;
+    private Boolean coach;
 
     public Long getId() {
         return id;
@@ -119,5 +120,13 @@ public class RoleDTO implements Serializable {
 
     public void setManageWebSite(Boolean manageWebSite) {
         this.manageWebSite = manageWebSite;
+    }
+
+    public Boolean getCoach() {
+        return coach;
+    }
+
+    public void setCoach(Boolean coach) {
+        this.coach = coach;
     }
 }

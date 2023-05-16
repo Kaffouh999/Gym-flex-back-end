@@ -14,6 +14,8 @@ import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.*;
 import com.example.GymInTheBack.repositories.MemberRepository;
+import com.example.GymInTheBack.repositories.OnlineUserRepository;
+import com.example.GymInTheBack.services.mappers.MemberMapper;
 import com.example.GymInTheBack.services.member.MemberService;
 import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.services.user.OnlineUserService;
@@ -22,8 +24,6 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,13 +45,17 @@ public class MemberResource {
     private final MemberService memberService;
 
     private final OnlineUserService onlineUserService;
+    private final OnlineUserRepository onlineUserRepository;
+    private final MemberMapper memberMapper;
     private IUploadService uploadService;
     private final MemberRepository memberRepository;
 
-    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService , IUploadService uploadService) {
+    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService , OnlineUserRepository onlineUserRepository, MemberMapper memberMapper, IUploadService uploadService) {
         this.memberService = memberService;
         this.memberRepository = memberRepository;
         this.onlineUserService = onlineUserService;
+        this.onlineUserRepository = onlineUserRepository;
+        this.memberMapper = memberMapper;
         this.uploadService=uploadService;
     }
 
@@ -181,6 +185,14 @@ public class MemberResource {
         log.debug("REST request to get Member : {}", id);
         Optional<MemberDTO> memberDTO = memberService.findOne(id);
         return ResponseUtil.wrapOrNotFound(memberDTO);
+    }
+
+    @GetMapping("/members/user/{id}")
+    public ResponseEntity<MemberDTO> getMemberByUser(@PathVariable Long id) {
+        log.debug("REST request to get Member : {}", id);
+        Optional<OnlineUser> onlineUser = onlineUserRepository.findById(id);
+        Member member = onlineUser.get().getMember();
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(memberMapper.toDto(member)));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -130,6 +131,7 @@ public class OnlineUser implements UserDetails {
         this.email = email;
     }
 
+    @JsonIgnoreProperties(value = "onlineUser")
     public Member getMember() {
         return member;
     }

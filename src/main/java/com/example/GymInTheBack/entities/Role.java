@@ -37,11 +37,12 @@ public class Role implements Serializable {
   private Boolean preferences;
 
   private Boolean manageWebSite;
+  private Boolean coach;
 
   public Role() {
   }
 
-  public Role(Long id, String name, String description, Boolean analytics, Boolean membership, Boolean payments, Boolean inventory, Boolean training, Boolean settings, Boolean preferences, Boolean manageWebSite) {
+  public Role(Long id, String name, String description, Boolean analytics, Boolean membership, Boolean payments, Boolean inventory, Boolean training, Boolean settings, Boolean preferences, Boolean manageWebSite,Boolean coach) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -53,6 +54,7 @@ public class Role implements Serializable {
     this.settings = settings;
     this.preferences = preferences;
     this.manageWebSite = manageWebSite;
+    this.coach=coach;
   }
 
   public Long getId() {
@@ -141,5 +143,13 @@ public class Role implements Serializable {
 
   public void setManageWebSite(Boolean manageWebSite) {
     this.manageWebSite = manageWebSite;
+  }
+
+  public Boolean getCoach() {
+    return coach;
+  }
+
+  public void setCoach(Boolean coach) {
+    this.coach = coach;
   }
 }

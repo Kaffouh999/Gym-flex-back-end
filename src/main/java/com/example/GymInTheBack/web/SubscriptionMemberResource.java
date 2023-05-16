@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
+import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -171,6 +172,11 @@ public class SubscriptionMemberResource {
         return ResponseUtil.wrapOrNotFound(subscriptionMemberDTO);
     }
 
+    @GetMapping("/web/subscription-members/{id}")
+    public List<SubscriptionWithPaymentsDTO> getSubscriptionMemberByMember(@PathVariable Long id) {
+        log.debug("REST request to get SubscriptionMember : {}", id);
+        return subscriptionMemberService.findByMemberId(id);
+    }
     @GetMapping("/subscription-members/qrcode/{qrCode}")
     public ResponseEntity<SubscriptionMemberDTO> getSubscriptionMember(@PathVariable String qrCode) {
         log.debug("REST request to get SubscriptionMember : {}", qrCode);

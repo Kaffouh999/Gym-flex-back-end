@@ -81,4 +81,9 @@ public class PaymentServiceImpl implements PaymentService {
         log.debug("Request to delete Payment : {}", id);
         paymentRepository.deleteById(id);
     }
+
+    @Override
+    public List<PaymentDTO> findByMemberId(Long memberId) {
+        return paymentRepository.findByMemberId(memberId).stream().map(paymentMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
 }
