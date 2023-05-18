@@ -51,4 +51,6 @@ public interface SubCategoryService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    boolean existsByName(String name);
 }

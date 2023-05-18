@@ -38,7 +38,7 @@ public class Equipment implements Serializable {
     @JsonIgnoreProperties(value = { "category" }, allowSetters = true)
     private SubCategory subCategory;
 
-    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "equipment")
     @JsonIgnore
     private List<EquipmentItem> equipmentItemList;
 

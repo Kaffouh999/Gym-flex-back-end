@@ -57,4 +57,5 @@ public interface EquipmentService {
     void deleteImage(Long id);
 
     Optional<Equipment> findById(Long id);
+    boolean existsByName(String name);
 }

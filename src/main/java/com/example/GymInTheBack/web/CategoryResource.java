@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.category.CategoryDTO;
+import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
 import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.CategoryRepository;
@@ -54,8 +55,13 @@ public class CategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/categories")
-    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) throws URISyntaxException {
         log.debug("REST request to save Category : {}", categoryDTO);
+
+        if (categoryService.existsByName(categoryDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Category name is already used");
+        }
+
         if (categoryDTO.getId() != null) {
             throw new BadRequestAlertException("A new category cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -86,11 +92,18 @@ public class CategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/categories/{id}")
-    public ResponseEntity<CategoryDTO> updateCategory(
+    public ResponseEntity<Object> updateCategory(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody CategoryDTO categoryDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Category : {}, {}", id, categoryDTO);
+        CategoryDTO oldCategory = categoryService.findOne(id).get();
+        if ( !oldCategory.getName().equals(categoryDTO.getName()) && categoryService.existsByName(categoryDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Category name is already used");
+        }
+        if (categoryService.existsByName(categoryDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Category name is already used");
+        }
         if (categoryDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

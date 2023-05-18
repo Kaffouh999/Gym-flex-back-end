@@ -10,6 +10,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
+import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.GymBranch;
+import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.GymBranchRepository;
 import com.example.GymInTheBack.services.gymbranch.GymBranchService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -18,6 +21,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,8 +56,12 @@ public class GymBranchResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/gym-branches")
-    public ResponseEntity<GymBranchDTO> createGymBranch(@Valid @RequestBody GymBranchDTO gymBranchDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createGymBranch(@Valid @RequestBody GymBranchDTO gymBranchDTO) throws URISyntaxException {
         log.debug("REST request to save GymBranch : {}", gymBranchDTO);
+
+        if (gymBranchService.existsByName(gymBranchDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Gym Branch name is already used");
+        }
         if (gymBranchDTO.getId() != null) {
             throw new BadRequestAlertException("A new gymBranch cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -90,11 +98,15 @@ public class GymBranchResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/gym-branches/{id}")
-    public ResponseEntity<GymBranchDTO> updateGymBranch(
+    public ResponseEntity<Object> updateGymBranch(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody GymBranchDTO gymBranchDTO
     ) throws URISyntaxException {
         log.debug("REST request to update GymBranch : {}, {}", id, gymBranchDTO);
+        GymBranchDTO oldGym = gymBranchService.findOne(id).get();
+        if (!oldGym.getName().equals(gymBranchDTO.getName()) && gymBranchService.existsByName(gymBranchDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Gym Branch  name is already used");
+        }
         if (gymBranchDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -180,12 +192,25 @@ public class GymBranchResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/gym-branches/{id}")
-    public ResponseEntity<Void> deleteGymBranch(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteGymBranch(@PathVariable Long id) {
         log.debug("REST request to delete GymBranch : {}", id);
+
+        GymBranch gymBranch = gymBranchRepository.findById(id).orElse(null);
+        if(canTDelete(gymBranch)){
+            String errorMessage = "Cannot delete "+gymBranch.getName()+" Gym branch cause it's still containes relations with members or equipment items or training sessions: ";
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+
         gymBranchService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+    private boolean canTDelete(GymBranch gymBranch ){
+        return (gymBranch.getMemberList() != null && !gymBranch.getMemberList().isEmpty() ) ||
+                ( gymBranch.getEquipmentItemList() != null && !gymBranch.getEquipmentItemList().isEmpty()) ||
+                (gymBranch.getSessionMemberList() != null && !gymBranch.getSessionMemberList().isEmpty()) ;
     }
 }

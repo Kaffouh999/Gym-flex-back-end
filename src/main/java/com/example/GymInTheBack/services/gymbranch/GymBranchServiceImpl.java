@@ -81,4 +81,9 @@ public class GymBranchServiceImpl implements GymBranchService {
         log.debug("Request to delete GymBranch : {}", id);
         gymBranchRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return gymBranchRepository.findByName(name) != null ? true:false;
+    }
 }

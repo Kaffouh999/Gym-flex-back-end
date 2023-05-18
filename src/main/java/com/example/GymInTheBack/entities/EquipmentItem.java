@@ -1,9 +1,11 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import javax.validation.constraints.*;
 
 
@@ -41,6 +43,14 @@ public class EquipmentItem implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     private GymBranch gymBranch;
+
+    @OneToMany(mappedBy = "item")
+    @JsonIgnore
+    private List<Maintining> maintiningList;
+
+    @OneToMany(mappedBy = "item")
+    @JsonIgnore
+    private List<Reform> reformList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 

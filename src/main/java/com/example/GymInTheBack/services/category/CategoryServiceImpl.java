@@ -81,4 +81,9 @@ public class CategoryServiceImpl implements CategoryService {
         log.debug("Request to delete Category : {}", id);
         categoryRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return categoryRepository.findByName(name) != null ? true:false;
+    }
 }

@@ -37,7 +37,7 @@ public class Category implements Serializable {
     @Column(name = "is_for_inventory", nullable = false)
     private Boolean isForInventory;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category")
     @JsonIgnore
     private List<SubCategory> subCategoryList;
 

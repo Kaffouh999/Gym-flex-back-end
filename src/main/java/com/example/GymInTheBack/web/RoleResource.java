@@ -7,8 +7,12 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.role.RoleDTO;
+import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.entities.Role;
+import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.RoleRepository;
 import com.example.GymInTheBack.services.role.RoleService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -16,6 +20,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +46,13 @@ public class RoleResource {
     }
 
     @PostMapping("/roles")
-    public ResponseEntity<RoleDTO> createRole(@Valid @RequestBody RoleDTO roleDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createRole(@Valid @RequestBody RoleDTO roleDTO) throws URISyntaxException {
         log.debug("REST request to save Role : {}", roleDTO);
+
+        if ( roleService.existsByName(roleDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Role name is already used");
+        }
+
         if (roleDTO.getId() != null) {
             throw new BadRequestAlertException("A new role cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -59,11 +69,17 @@ public class RoleResource {
 
 
     @PutMapping("/roles/{id}")
-    public ResponseEntity<RoleDTO> updateRole(
+    public ResponseEntity<Object> updateRole(
             @PathVariable(value = "id", required = false) final Long id,
             @Valid @RequestBody RoleDTO roleDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Role : {}, {}", id, roleDTO);
+
+        RoleDTO oldRole = roleService.findOne(id).get();
+        if ( !oldRole.getName().equals(roleDTO.getName()) && roleService.existsByName(roleDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Role name is already used");
+        }
+
         if (roleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -130,6 +146,14 @@ public class RoleResource {
     public ResponseEntity<Object> deleteRole(@PathVariable Long id) {
         log.debug("REST request to delete Role : {}", id);
         Role role = roleRepository.findById(id).orElse(null);
+
+        if(role.getOnlineUserList() != null && !role.getOnlineUserList().isEmpty()){
+            String errorMessage = "Cannot delete category with those associated subcategories : ";
+            for(OnlineUser onlineUser : role.getOnlineUserList()){
+                errorMessage += " -> (" +onlineUser.getFirstName()+" "+onlineUser.getLastName()+")" ;
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
 
         roleService.delete(id);
         return ResponseEntity

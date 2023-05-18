@@ -1,9 +1,11 @@
 package com.example.GymInTheBack.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import javax.validation.constraints.*;
 
 /**
@@ -56,6 +58,18 @@ public class GymBranch implements Serializable {
     @NotNull
     @Column(name = "session_duration_allowed", nullable = false)
     private Float sessionDurationAllowed;
+
+    @OneToMany(mappedBy = "gymBranch")
+    @JsonIgnore
+    private List<Member> memberList;
+
+    @OneToMany(mappedBy = "gymBranch")
+    @JsonIgnore
+    private List<EquipmentItem> equipmentItemList;
+
+    @OneToMany(mappedBy = "gymBranch")
+    @JsonIgnore
+    private List<SessionMember> sessionMemberList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -202,7 +216,30 @@ public class GymBranch implements Serializable {
         this.sessionDurationAllowed = sessionDurationAllowed;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public List<Member> getMemberList() {
+        return memberList;
+    }
+
+    public void setMemberList(List<Member> memberList) {
+        this.memberList = memberList;
+    }
+
+    public List<EquipmentItem> getEquipmentItemList() {
+        return equipmentItemList;
+    }
+
+    public void setEquipmentItemList(List<EquipmentItem> equipmentItemList) {
+        this.equipmentItemList = equipmentItemList;
+    }
+
+    public List<SessionMember> getSessionMemberList() {
+        return sessionMemberList;
+    }
+
+    public void setSessionMemberList(List<SessionMember> sessionMemberList) {
+        this.sessionMemberList = sessionMemberList;
+    }
+// jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {

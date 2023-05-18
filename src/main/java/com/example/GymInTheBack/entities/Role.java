@@ -1,15 +1,14 @@
 package com.example.GymInTheBack.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Builder
 @Entity
@@ -39,6 +38,10 @@ public class Role implements Serializable {
   private Boolean manageWebSite;
   private Boolean coach;
 
+  @OneToMany(mappedBy = "role")
+  @JsonIgnore
+  private List<OnlineUser> onlineUserList;
+
   public Role() {
   }
 
@@ -55,6 +58,22 @@ public class Role implements Serializable {
     this.preferences = preferences;
     this.manageWebSite = manageWebSite;
     this.coach=coach;
+  }
+
+  public Role(Long id, String name, String description, Boolean analytics, Boolean membership, Boolean payments, Boolean inventory, Boolean training, Boolean settings, Boolean preferences, Boolean manageWebSite, Boolean coach, List<OnlineUser> onlineUserList) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.analytics = analytics;
+    this.membership = membership;
+    this.payments = payments;
+    this.inventory = inventory;
+    this.training = training;
+    this.settings = settings;
+    this.preferences = preferences;
+    this.manageWebSite = manageWebSite;
+    this.coach = coach;
+    this.onlineUserList = onlineUserList;
   }
 
   public Long getId() {
@@ -151,5 +170,13 @@ public class Role implements Serializable {
 
   public void setCoach(Boolean coach) {
     this.coach = coach;
+  }
+
+  public List<OnlineUser> getOnlineUserList() {
+    return onlineUserList;
+  }
+
+  public void setOnlineUserList(List<OnlineUser> onlineUserList) {
+    this.onlineUserList = onlineUserList;
   }
 }

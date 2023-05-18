@@ -84,6 +84,10 @@ public class PlanServiceImpl implements PlanService {
         planRepository.deleteById(id);
     }
 
+    @Override
+    public boolean existsByName(String name) {
+        return planRepository.findByName(name) != null ? true:false;
+    }
 
 
 }

@@ -81,4 +81,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
         log.debug("Request to delete SubCategory : {}", id);
         subCategoryRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return subCategoryRepository.findByName(name) != null ? true:false;
+    }
 }

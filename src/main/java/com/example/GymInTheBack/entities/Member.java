@@ -48,11 +48,11 @@ public class Member implements Serializable {
     @NotNull
     private OnlineUser onlineUser;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member")
     @JsonIgnore
     private List<AssuranceMember> assuranceMemberList;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member")
     @JsonIgnore
     private List<SubscriptionMember> subscriptionMemberList;
 

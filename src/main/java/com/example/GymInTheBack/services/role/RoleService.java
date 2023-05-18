@@ -24,5 +24,5 @@ public interface RoleService {
 
 
     void delete(Long id);
-
+    boolean existsByName(String name);
 }

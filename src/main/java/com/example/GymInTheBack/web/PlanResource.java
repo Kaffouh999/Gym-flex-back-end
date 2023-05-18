@@ -9,6 +9,7 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.Plan;
@@ -60,8 +61,11 @@ public class PlanResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/plans")
-    public ResponseEntity<PlanDTO> createPlan(@Valid @RequestBody PlanDTO planDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createPlan(@Valid @RequestBody PlanDTO planDTO) throws URISyntaxException {
         log.debug("REST request to save Plan : {}", planDTO);
+        if (planService.existsByName(planDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Plan name is already used");
+        }
         if (planDTO.getId() != null) {
             throw new BadRequestAlertException("A new plan cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -92,11 +96,16 @@ public class PlanResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/plans/{id}")
-    public ResponseEntity<PlanDTO> updatePlan(
+    public ResponseEntity<Object> updatePlan(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody PlanDTO planDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Plan : {}, {}", id, planDTO);
+
+        PlanDTO oldPlan = planService.findOne(id).get();
+        if ( !oldPlan.getName().equals(planDTO.getName()) && planService.existsByName(planDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Plan name is already used");
+        }
         if (planDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

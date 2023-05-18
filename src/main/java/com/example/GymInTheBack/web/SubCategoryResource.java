@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
 import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.Equipment;
@@ -54,8 +55,13 @@ public class SubCategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/sub-categories")
-    public ResponseEntity<SubCategoryDTO> createSubCategory(@Valid @RequestBody SubCategoryDTO subCategoryDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createSubCategory(@Valid @RequestBody SubCategoryDTO subCategoryDTO) throws URISyntaxException {
         log.debug("REST request to save SubCategory : {}", subCategoryDTO);
+
+        if (subCategoryService.existsByName(subCategoryDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("SubCategory name is already used");
+        }
+
         if (subCategoryDTO.getId() != null) {
             throw new BadRequestAlertException("A new subCategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -80,11 +86,17 @@ public class SubCategoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/sub-categories/{id}")
-    public ResponseEntity<SubCategoryDTO> updateSubCategory(
+    public ResponseEntity<Object> updateSubCategory(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody SubCategoryDTO subCategoryDTO
     ) throws URISyntaxException {
         log.debug("REST request to update SubCategory : {}, {}", id, subCategoryDTO);
+
+        SubCategoryDTO oldSubCategory = subCategoryService.findOne(id).get();
+        if ( !oldSubCategory.getName().equals(subCategoryDTO.getName()) && subCategoryService.existsByName(subCategoryDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("SubCategory name is already used");
+        }
+
         if (subCategoryDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

@@ -114,4 +114,9 @@ public class EquipmentServiceImpl implements EquipmentService {
     public Optional<Equipment> findById(Long id) {
         return equipmentRepository.findById(id);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return equipmentRepository.findByName(name) != null ? true:false;
+    }
 }

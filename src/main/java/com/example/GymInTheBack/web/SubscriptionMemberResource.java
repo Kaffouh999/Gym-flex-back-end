@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,6 +14,10 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
+import com.example.GymInTheBack.entities.Category;
+import com.example.GymInTheBack.entities.Payment;
+import com.example.GymInTheBack.entities.SubCategory;
+import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -21,6 +26,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -191,8 +197,19 @@ public class SubscriptionMemberResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/subscription-members/{id}")
-    public ResponseEntity<Void> deleteSubscriptionMember(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteSubscriptionMember(@PathVariable Long id) {
         log.debug("REST request to delete SubscriptionMember : {}", id);
+
+        SubscriptionMember subscriptionMember = subscriptionMemberRepository.findById(id).orElse(null);
+        if(subscriptionMember.getPaymentList() != null && !subscriptionMember.getPaymentList().isEmpty()){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String errorMessage = "Cannot delete subscription with those associated payments at : ";
+            for(Payment payment : subscriptionMember.getPaymentList()){
+                errorMessage += " -> " +payment.getPaymentDate().format(formatter) ;
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+
         subscriptionMemberService.delete(id);
         return ResponseEntity
             .noContent()

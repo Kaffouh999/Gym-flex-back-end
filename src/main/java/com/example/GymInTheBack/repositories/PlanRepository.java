@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.repositories;
 
 
+import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.Plan;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -10,4 +11,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PlanRepository extends JpaRepository<Plan, Long> {}
+public interface PlanRepository extends JpaRepository<Plan, Long> {
+    Plan findByName(String name);
+}

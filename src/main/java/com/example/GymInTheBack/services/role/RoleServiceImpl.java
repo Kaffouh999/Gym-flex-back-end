@@ -84,4 +84,10 @@ public class RoleServiceImpl implements RoleService{
         log.debug("Request to delete Role : {}", id);
         roleRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsByName(String name) {
+        return roleRepository.findByName(name) != null ? true:false;
+
+    }
 }

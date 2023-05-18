@@ -13,6 +13,7 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.EquipmentItem;
@@ -68,8 +69,13 @@ public class EquipmentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/equipment")
-    public ResponseEntity<EquipmentDTO> createEquipment(@Valid @RequestBody EquipmentDTO equipmentDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createEquipment(@Valid @RequestBody EquipmentDTO equipmentDTO) throws URISyntaxException {
         log.debug("REST request to save Equipment : {}", equipmentDTO);
+
+        if (equipmentService.existsByName(equipmentDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("equipment name is already used");
+        }
+
         if (equipmentDTO.getId() != null) {
             throw new BadRequestAlertException("A new equipment cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -94,11 +100,16 @@ public class EquipmentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/equipment/{id}")
-    public ResponseEntity<EquipmentDTO> updateEquipment(
+    public ResponseEntity<Object> updateEquipment(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EquipmentDTO equipmentDTO
     ) throws URISyntaxException {
         log.debug("REST request to update Equipment : {}, {}", id, equipmentDTO);
+
+        EquipmentDTO oldEquipment= equipmentService.findOne(id).get();
+        if ( !oldEquipment.getName().equals(equipmentDTO.getName()) && equipmentService.existsByName(equipmentDTO.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("equipment name is already used");
+        }
         if (equipmentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

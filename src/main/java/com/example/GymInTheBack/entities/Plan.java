@@ -45,7 +45,7 @@ public class Plan implements Serializable {
     @Column(name = "ratingPer5", nullable = true)
     private Float ratingPer5;
 
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "plan")
     @JsonIgnore
     private List<SubscriptionMember> subscriptionMemberList;
     // jhipster-needle-entity-add-field - JHipster will add fields here
