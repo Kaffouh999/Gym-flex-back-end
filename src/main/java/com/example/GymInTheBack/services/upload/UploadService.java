@@ -25,7 +25,7 @@ public class UploadService implements IUploadService{
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         try {
-            File uploadDir = new File("/home/youssef/Documents/GYmFlexDocuments"+folderUrl);
+            File uploadDir = new File("C:\\Users\\Youssef\\Documents\\GymFlexFiles"+folderUrl);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
@@ -47,7 +47,7 @@ public class UploadService implements IUploadService{
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         try {
-            File uploadDir = new File("/home/youssef/Documents/GYmFlexDocuments"+folderUrl);
+            File uploadDir = new File("C:\\Users\\Youssef\\Documents\\GymFlexFiles"+folderUrl);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
@@ -69,7 +69,7 @@ public class UploadService implements IUploadService{
                 int lastIndex = urlDocument.lastIndexOf("/");
                 String fileName = urlDocument.substring(lastIndex + 1);
 
-                String folderPath = "/home/youssef/Documents/GYmFlexDocuments"+urlFolderDocument;
+                String folderPath = "C:\\Users\\Youssef\\Documents\\GymFlexFiles"+urlFolderDocument;
 
                 String filePath = folderPath + fileName ;
                 // Create a File object representing the image file

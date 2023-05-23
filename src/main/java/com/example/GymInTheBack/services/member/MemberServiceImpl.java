@@ -97,8 +97,11 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(rollbackFor =DataIntegrityViolationException.class )
     public MemberDTO saveMemberWithUser(MemberDTO memberDTO) throws DataIntegrityViolationException {
         OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
+
+        if (onlineUserDTO == null || onlineUserDTO.getId() == null || onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
             onlineUserDTO = onlineUserService.save(onlineUserDTO);
-            memberDTO.setOnlineUser(onlineUserDTO);
+        memberDTO.setOnlineUser(onlineUserDTO);
+    }
             MemberDTO result = save(memberDTO);
             return result;
 

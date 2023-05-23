@@ -85,7 +85,6 @@ public class MemberResource {
         if (memberDTO.getGender() == null ) {
             throw new BadRequestAlertException("A new member must have gender", ENTITY_NAME, "genderrequired");
         }
-        if(onlineUserDTO== null || onlineUserDTO.getId() == null ||onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
                 try {
                 MemberDTO result = memberService.saveMemberWithUser(memberDTO);
                     return ResponseEntity
@@ -97,8 +96,7 @@ public class MemberResource {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
                 }
 
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exist");
+
 
     }
 
