@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.maintining.MaintiningDTO;
+import com.example.GymInTheBack.entities.AssuranceMember;
 import com.example.GymInTheBack.entities.Maintining;
 import com.example.GymInTheBack.repositories.MaintiningRepository;
 import com.example.GymInTheBack.services.mappers.MaintiningMapper;
@@ -34,17 +35,27 @@ public class MaintiningServiceImpl implements MaintiningService {
     @Override
     public MaintiningDTO save(MaintiningDTO maintiningDTO) {
         log.debug("Request to save Maintining : {}", maintiningDTO);
-        Maintining maintining = maintiningMapper.toEntity(maintiningDTO);
-        maintining = maintiningRepository.save(maintining);
-        return maintiningMapper.toDto(maintining);
+        List<Maintining> maintiningINterferWithDate =  maintiningRepository.findIntersectingMaintinings(maintiningDTO.getStartDate(),maintiningDTO.getEndDate(),maintiningDTO.getItem().getId());
+        if(maintiningINterferWithDate.isEmpty()) {
+            Maintining maintining = maintiningMapper.toEntity(maintiningDTO);
+            maintining = maintiningRepository.save(maintining);
+            return maintiningMapper.toDto(maintining);
+        }else{
+            return null;
+        }
     }
 
     @Override
     public MaintiningDTO update(MaintiningDTO maintiningDTO) {
         log.debug("Request to update Maintining : {}", maintiningDTO);
-        Maintining maintining = maintiningMapper.toEntity(maintiningDTO);
-        maintining = maintiningRepository.save(maintining);
-        return maintiningMapper.toDto(maintining);
+        List<Maintining> maintiningINterferWithDate =  maintiningRepository.findIntersectingMaintinings(maintiningDTO.getStartDate(),maintiningDTO.getEndDate(),maintiningDTO.getItem().getId());
+        if(maintiningINterferWithDate.isEmpty()) {
+            Maintining maintining = maintiningMapper.toEntity(maintiningDTO);
+            maintining = maintiningRepository.save(maintining);
+            return maintiningMapper.toDto(maintining);
+        }else{
+            return null;
+        }
     }
 
     @Override

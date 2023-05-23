@@ -7,11 +7,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
+import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.Member;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.services.mappers.MemberMapper;
+import com.example.GymInTheBack.services.user.OnlineUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +29,12 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
 
     private final MemberMapper memberMapper;
+    private final OnlineUserService onlineUserService;
 
-    public MemberServiceImpl(MemberRepository memberRepository, MemberMapper memberMapper) {
+    public MemberServiceImpl(MemberRepository memberRepository, MemberMapper memberMapper, OnlineUserService onlineUserService) {
         this.memberRepository = memberRepository;
         this.memberMapper = memberMapper;
+        this.onlineUserService = onlineUserService;
     }
 
     @Override
@@ -51,14 +58,14 @@ public class MemberServiceImpl implements MemberService {
         log.debug("Request to partially update Member : {}", memberDTO);
 
         return memberRepository
-            .findById(memberDTO.getId())
-            .map(existingMember -> {
-                memberMapper.partialUpdate(existingMember, memberDTO);
+                .findById(memberDTO.getId())
+                .map(existingMember -> {
+                    memberMapper.partialUpdate(existingMember, memberDTO);
 
-                return existingMember;
-            })
-            .map(memberRepository::save)
-            .map(memberMapper::toDto);
+                    return existingMember;
+                })
+                .map(memberRepository::save)
+                .map(memberMapper::toDto);
     }
 
     @Override
@@ -85,4 +92,17 @@ public class MemberServiceImpl implements MemberService {
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
     }
+
+    @Override
+    @Transactional(rollbackFor =DataIntegrityViolationException.class )
+    public MemberDTO saveMemberWithUser(MemberDTO memberDTO) throws DataIntegrityViolationException {
+        OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
+            onlineUserDTO = onlineUserService.save(onlineUserDTO);
+            memberDTO.setOnlineUser(onlineUserDTO);
+            MemberDTO result = save(memberDTO);
+            return result;
+
+
+    }
 }
+

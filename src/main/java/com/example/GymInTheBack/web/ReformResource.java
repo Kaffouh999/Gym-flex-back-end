@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.maintining.MaintiningDTO;
 import com.example.GymInTheBack.dtos.reform.ReformDTO;
 import com.example.GymInTheBack.repositories.ReformRepository;
 import com.example.GymInTheBack.services.reform.ReformService;
@@ -18,6 +19,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,16 +53,21 @@ public class ReformResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/reforms")
-    public ResponseEntity<ReformDTO> createReform(@Valid @RequestBody ReformDTO reformDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createReform(@Valid @RequestBody ReformDTO reformDTO) throws URISyntaxException {
         log.debug("REST request to save Reform : {}", reformDTO);
         if (reformDTO.getId() != null) {
             throw new BadRequestAlertException("A new reform cannot already have an ID", ENTITY_NAME, "idexists");
         }
         ReformDTO result = reformService.save(reformDTO);
-        return ResponseEntity
-            .created(new URI("/api/reforms/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        if(result != null) {
+            return ResponseEntity
+                    .created(new URI("/api/reforms/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "this equipment item is already reformed";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
     }
 
     /**
@@ -74,7 +81,7 @@ public class ReformResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/reforms/{id}")
-    public ResponseEntity<ReformDTO> updateReform(
+    public ResponseEntity<Object> updateReform(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody ReformDTO reformDTO
     ) throws URISyntaxException {
@@ -91,10 +98,15 @@ public class ReformResource {
         }
 
         ReformDTO result = reformService.update(reformDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString()))
-            .body(result);
+        if(result != null) {
+            return ResponseEntity
+                    .ok()
+                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "this equipment item is already gone to reformed";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
     }
 
     /**

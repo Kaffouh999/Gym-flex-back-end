@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.GymInTheBack.dtos.reform.ReformDTO;
+import com.example.GymInTheBack.entities.Maintining;
 import com.example.GymInTheBack.entities.Reform;
 import com.example.GymInTheBack.repositories.ReformRepository;
 import com.example.GymInTheBack.services.mappers.ReformMapper;
@@ -34,17 +35,27 @@ public class ReformServiceImpl implements ReformService {
     @Override
     public ReformDTO save(ReformDTO reformDTO) {
         log.debug("Request to save Reform : {}", reformDTO);
-        Reform reform = reformMapper.toEntity(reformDTO);
-        reform = reformRepository.save(reform);
-        return reformMapper.toDto(reform);
+        List<Reform> oldREform =  reformRepository.findOldReform(reformDTO.getItem().getId());
+        if(oldREform.isEmpty()) {
+            Reform reform = reformMapper.toEntity(reformDTO);
+            reform = reformRepository.save(reform);
+            return reformMapper.toDto(reform);
+        }else{
+            return null;
+        }
     }
 
     @Override
     public ReformDTO update(ReformDTO reformDTO) {
         log.debug("Request to update Reform : {}", reformDTO);
-        Reform reform = reformMapper.toEntity(reformDTO);
-        reform = reformRepository.save(reform);
-        return reformMapper.toDto(reform);
+        List<Reform> oldREform =  reformRepository.findOldReform(reformDTO.getItem().getId());
+        if(oldREform.isEmpty()) {
+            Reform reform = reformMapper.toEntity(reformDTO);
+            reform = reformRepository.save(reform);
+            return reformMapper.toDto(reform);
+        }else{
+            return  null;
+        }
     }
 
     @Override

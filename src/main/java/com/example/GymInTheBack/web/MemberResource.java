@@ -24,8 +24,11 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -67,7 +70,7 @@ public class MemberResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/members")
-    public ResponseEntity<MemberDTO> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
         log.debug("REST request to save Member : {}", memberDTO);
         OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
         if (memberDTO.getId() != null) {
@@ -83,14 +86,20 @@ public class MemberResource {
             throw new BadRequestAlertException("A new member must have gender", ENTITY_NAME, "genderrequired");
         }
         if(onlineUserDTO== null || onlineUserDTO.getId() == null ||onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
-            onlineUserDTO = onlineUserService.save(onlineUserDTO);
-            memberDTO.setOnlineUser(onlineUserDTO);
+                try {
+                MemberDTO result = memberService.saveMemberWithUser(memberDTO);
+                    return ResponseEntity
+                            .created(new URI("/api/members/" + result.getId()))
+                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                            .body(result);
+                }catch(DataIntegrityViolationException e){
+                    String errorMessage = "Member with the same cin or email already exists.";
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+                }
+
         }
-        MemberDTO result = memberService.save(memberDTO);
-        return ResponseEntity
-            .created(new URI("/api/members/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exist");
+
     }
 
     /**

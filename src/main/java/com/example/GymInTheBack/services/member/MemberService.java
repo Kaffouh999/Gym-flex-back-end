@@ -57,4 +57,6 @@ public interface MemberService {
     void delete(Long id);
 
     public Optional<Member> findById(Long id);
+
+    MemberDTO saveMemberWithUser(MemberDTO member);
 }

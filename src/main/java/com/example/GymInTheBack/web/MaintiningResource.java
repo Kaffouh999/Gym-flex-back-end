@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.example.GymInTheBack.dtos.assuranceMember.AssuranceMemberDTO;
 import com.example.GymInTheBack.dtos.maintining.MaintiningDTO;
 import com.example.GymInTheBack.repositories.MaintiningRepository;
 import com.example.GymInTheBack.services.maintining.MaintiningService;
@@ -18,6 +19,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +54,7 @@ public class MaintiningResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/maintinings")
-    public ResponseEntity<MaintiningDTO> createMaintining(@Valid @RequestBody MaintiningDTO maintiningDTO) throws URISyntaxException {
+    public ResponseEntity<Object> createMaintining(@Valid @RequestBody MaintiningDTO maintiningDTO) throws URISyntaxException {
         log.debug("REST request to save Maintining : {}", maintiningDTO);
         if (maintiningDTO.getId() != null) {
             throw new BadRequestAlertException("A new maintining cannot already have an ID", ENTITY_NAME, "idexists");
@@ -61,10 +63,15 @@ public class MaintiningResource {
             throw new BadRequestAlertException("A new maintining should have a start date", ENTITY_NAME, "startDateRequired");
         }
         MaintiningDTO result = maintiningService.save(maintiningDTO);
-        return ResponseEntity
-            .created(new URI("/api/maintinings/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        if(result != null) {
+            return ResponseEntity
+                    .created(new URI("/api/maintinings/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "this equipment item is already gone to maintient in this periode you specified";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
     }
 
     /**
@@ -78,7 +85,7 @@ public class MaintiningResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/maintinings/{id}")
-    public ResponseEntity<MaintiningDTO> updateMaintining(
+    public ResponseEntity<Object> updateMaintining(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody MaintiningDTO maintiningDTO
     ) throws URISyntaxException {
@@ -93,12 +100,16 @@ public class MaintiningResource {
         if (!maintiningRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
-        MaintiningDTO result = maintiningService.update(maintiningDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, maintiningDTO.getId().toString()))
-            .body(result);
+        MaintiningDTO result = maintiningService.save(maintiningDTO);
+        if(result != null) {
+            return ResponseEntity
+                    .ok()
+                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, maintiningDTO.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "this equipment item is already gone to maintient in this periode you specified";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
     }
 
     /**

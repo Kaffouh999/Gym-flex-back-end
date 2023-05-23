@@ -26,6 +26,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -215,5 +216,15 @@ public class SubscriptionMemberResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @PostMapping("/subscription-members/search")
+    public ResponseEntity<List<SubscriptionMemberDTO>> searchSubs(
+        @RequestBody SubscriptionMemberDTO subscriptionMemberDTO
+    ) {
+        // Logic to search the data based on the provided search criteria
+        List<SubscriptionMemberDTO> searchData = subscriptionMemberService.searchSubs(subscriptionMemberDTO);
+
+        return ResponseEntity.ok(searchData);
     }
 }

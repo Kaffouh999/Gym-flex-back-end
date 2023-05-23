@@ -59,4 +59,6 @@ public interface SessionMemberService {
     Integer entering(String qrCode);
 
     List<SessionMember> alreadyIn(String qrCode);
+
+    List<SessionMemberDTO> findSessionsByMember(Long idMember);
 }

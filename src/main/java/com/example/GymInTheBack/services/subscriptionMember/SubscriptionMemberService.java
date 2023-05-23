@@ -3,10 +3,13 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
+import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.google.zxing.WriterException;
 
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -64,5 +67,7 @@ public interface SubscriptionMemberService {
    List<SubscriptionMember> entering(String qrCode);
 
     List<SubscriptionWithPaymentsDTO>  findByMemberId(Long userId);
+
+    List<SubscriptionMemberDTO> searchSubs(SubscriptionMemberDTO subscriptionMemberDTO);
 
 }

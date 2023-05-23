@@ -17,4 +17,7 @@ public interface SessionMemberRepository extends JpaRepository<SessionMember, Lo
 
     @Query("select e from SessionMember e WHERE subscriptionMember.codeSubscription = :qrCode and  DAY(e.enteringTime) = DAY(CURRENT_DATE) AND MONTH(e.enteringTime) = MONTH(CURRENT_DATE) AND YEAR(e.enteringTime) = YEAR(CURRENT_DATE)")
     List<SessionMember> alreadyIn(String qrCode);
+
+    @Query("SELECT s FROM SessionMember s WHERE subscriptionMember.member.onlineUser.id = :memberId")
+    List<SessionMember> findSessionByMemberId(Long memberId);
 }

@@ -13,9 +13,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.payment.PaymentDTO;
+import com.example.GymInTheBack.dtos.statistics.PaymentStatistics;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.repositories.PaymentRepository;
 import com.example.GymInTheBack.services.payment.PaymentService;
+import com.example.GymInTheBack.services.statistics.StatisticsService;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
@@ -41,12 +43,14 @@ public class PaymentResource {
     private String applicationName ="GymFlex";
 
     private final PaymentService paymentService;
+    private final StatisticsService statisticsService;
 
     private final SubscriptionMemberService subscriptionMemberService;
     private final PaymentRepository paymentRepository;
 
-    public PaymentResource(PaymentService paymentService, SubscriptionMemberService subscriptionMemberService, PaymentRepository paymentRepository) {
+    public PaymentResource(PaymentService paymentService, StatisticsService statisticsService, SubscriptionMemberService subscriptionMemberService, PaymentRepository paymentRepository) {
         this.paymentService = paymentService;
+        this.statisticsService = statisticsService;
         this.subscriptionMemberService = subscriptionMemberService;
         this.paymentRepository = paymentRepository;
     }
@@ -183,6 +187,11 @@ public class PaymentResource {
         return paymentService.findAll();
     }
 
+    @GetMapping("/payments/statistics")
+    public List<PaymentStatistics> getAllPaymentsstats() {
+        log.debug("REST request to get all Payments statistics");
+        return statisticsService.getPaymentStatistics();
+    }
     /**
      * {@code GET  /payments/:id} : get the "id" payment.
      *

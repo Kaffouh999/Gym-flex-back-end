@@ -154,4 +154,10 @@ public class SessionMemberServiceImpl implements SessionMemberService {
         return sessionMemberRepository.alreadyIn(qrCode);
     }
 
+    @Override
+    public List<SessionMemberDTO> findSessionsByMember(Long idMember) {
+        List<SessionMember> sessionMemberList = sessionMemberRepository.findSessionByMemberId(idMember);
+        return sessionMemberRepository.findSessionByMemberId(idMember).stream().map(sessionMemberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
 }

@@ -33,17 +33,27 @@ public class AssuranceMemberServiceImpl implements AssuranceMemberService {
     @Override
     public AssuranceMemberDTO save(AssuranceMemberDTO assuranceMemberDTO) {
         log.debug("Request to save AssuranceMember : {}", assuranceMemberDTO);
-        AssuranceMember assuranceMember = assuranceMemberMapper.toEntity(assuranceMemberDTO);
-        assuranceMember = assuranceMemberRepository.save(assuranceMember);
-        return assuranceMemberMapper.toDto(assuranceMember);
+        List<AssuranceMember> assurancesINterferWithDate =  assuranceMemberRepository.findIntersectingAssurances(assuranceMemberDTO.getStartDate(),assuranceMemberDTO.getEndDate(),assuranceMemberDTO.getMember().getId());
+       if(assurancesINterferWithDate.isEmpty()) {
+           AssuranceMember assuranceMember = assuranceMemberMapper.toEntity(assuranceMemberDTO);
+           assuranceMember = assuranceMemberRepository.save(assuranceMember);
+           return assuranceMemberMapper.toDto(assuranceMember);
+       }else{
+           return  null;
+       }
     }
 
     @Override
     public AssuranceMemberDTO update(AssuranceMemberDTO assuranceMemberDTO) {
         log.debug("Request to update AssuranceMember : {}", assuranceMemberDTO);
+        List<AssuranceMember> assurancesINterferWithDate =  assuranceMemberRepository.findIntersectingAssurances(assuranceMemberDTO.getStartDate(),assuranceMemberDTO.getEndDate(),assuranceMemberDTO.getMember().getId());
+        if(assurancesINterferWithDate.isEmpty()) {
         AssuranceMember assuranceMember = assuranceMemberMapper.toEntity(assuranceMemberDTO);
         assuranceMember = assuranceMemberRepository.save(assuranceMember);
         return assuranceMemberMapper.toDto(assuranceMember);
+        }else{
+            return  null;
+        }
     }
 
     @Override

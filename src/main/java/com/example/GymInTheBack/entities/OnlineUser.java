@@ -51,7 +51,7 @@ public class OnlineUser implements UserDetails {
     private String email;
 
     @NotNull
-    @Column(name = "password", nullable = false, unique = true)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "profile_picture")

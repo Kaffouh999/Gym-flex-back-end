@@ -18,6 +18,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +53,7 @@ public class AssuranceMemberResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/assurance-members")
-    public ResponseEntity<AssuranceMemberDTO> createAssuranceMember(@Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO)
+    public ResponseEntity<Object> createAssuranceMember(@Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO)
         throws URISyntaxException {
         log.debug("REST request to save AssuranceMember : {}", assuranceMemberDTO);
         if (assuranceMemberDTO.getId() != null) {
@@ -67,11 +68,18 @@ public class AssuranceMemberResource {
         if (assuranceMemberDTO.getAmountPayed() == null) {
             throw new BadRequestAlertException("A new assuranceMember must have amount payed ", ENTITY_NAME, "amountpayedrequired");
         }
+
         AssuranceMemberDTO result = assuranceMemberService.save(assuranceMemberDTO);
-        return ResponseEntity
-            .created(new URI("/api/assurance-members/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        if(result != null) {
+            return ResponseEntity
+                    .created(new URI("/api/assurance-members/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "the period of time you specified is already covered by an assurance for the user selected";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+
+        }
     }
 
     /**
@@ -85,7 +93,7 @@ public class AssuranceMemberResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/assurance-members/{id}")
-    public ResponseEntity<AssuranceMemberDTO> updateAssuranceMember(
+    public ResponseEntity<Object> updateAssuranceMember(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO
     ) throws URISyntaxException {
@@ -102,10 +110,15 @@ public class AssuranceMemberResource {
         }
 
         AssuranceMemberDTO result = assuranceMemberService.update(assuranceMemberDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()))
-            .body(result);
+        if(result != null) {
+            return ResponseEntity
+                    .ok()
+                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()))
+                    .body(result);
+        }else{
+            String errorMessage = "the period of time you specified is already covered by an assurance for the user selected";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
     }
 
     /**

@@ -3,9 +3,11 @@ package com.example.GymInTheBack.web;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -157,6 +159,11 @@ public class SessionMemberResource {
         return sessionMemberService.findAll();
     }
 
+    @GetMapping("/web/session-members/member/{id}")
+    public List<SessionMemberDTO> getAllSessionMembers(@PathVariable Long id) {
+        log.debug("REST request to get all SessionMembers");
+        return sessionMemberService.findSessionsByMember(id);
+    }
     /**
      * {@code GET  /session-members/:id} : get the "id" sessionMember.
      *
@@ -169,6 +176,7 @@ public class SessionMemberResource {
         Optional<SessionMemberDTO> sessionMemberDTO = sessionMemberService.findOne(id);
         return ResponseUtil.wrapOrNotFound(sessionMemberDTO);
     }
+
 
     @GetMapping("/session-members/entering/{qrCode}")
     public ResponseEntity<Integer> entering(@PathVariable String qrCode) {

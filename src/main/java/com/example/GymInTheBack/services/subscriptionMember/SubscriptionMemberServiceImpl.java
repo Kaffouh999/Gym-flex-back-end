@@ -2,6 +2,8 @@ package com.example.GymInTheBack.services.subscriptionMember;
 
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +12,8 @@ import java.util.stream.Stream;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
+import com.example.GymInTheBack.entities.Member;
+import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.mappers.SubscriptionMemberMapper;
@@ -117,6 +121,20 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
     @Transactional(readOnly = true)
     public List<SubscriptionWithPaymentsDTO> findByMemberId(Long userId) {
         return subscriptionMemberRepository.findByMemberId(userId).stream().map(subscriptionMemberWithPaymentsMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    @Override
+    public List<SubscriptionMemberDTO> searchSubs(SubscriptionMemberDTO subscriptionMemberDTO) {
+        SubscriptionMember subscriptionMember = subscriptionMemberMapper.toEntity(subscriptionMemberDTO);
+        Long membeId = subscriptionMember.getMember() != null ? subscriptionMember.getMember().getId():null;
+         Long planId = subscriptionMember.getPlan() != null? subscriptionMember.getPlan().getId():null;
+         Timestamp startDate = subscriptionMember.getStartDate() != null? Timestamp.from(subscriptionMember.getStartDate().toInstant()):null;
+        Timestamp endDate = subscriptionMember.getEndDate() != null? Timestamp.from(subscriptionMember.getEndDate().toInstant()):null;
+
+        System.out.println(startDate);
+        System.out.println(endDate);
+
+        return subscriptionMemberRepository.searchSubscriptions( membeId ,  planId , startDate,endDate).stream().map(subscriptionMemberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
 
 
