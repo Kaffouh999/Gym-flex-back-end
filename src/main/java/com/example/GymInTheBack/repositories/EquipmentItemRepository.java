@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @SuppressWarnings("unused")
 @Repository
-public interface EquipmentItemRepository extends JpaRepository<EquipmentItem, Long> {}
+public interface EquipmentItemRepository extends JpaRepository<EquipmentItem, Long> {
+    EquipmentItem findByBareCode(String bareCode);
+}

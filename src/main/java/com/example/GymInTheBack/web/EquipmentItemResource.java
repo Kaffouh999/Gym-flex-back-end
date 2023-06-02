@@ -160,6 +160,11 @@ public class EquipmentItemResource {
         return ResponseUtil.wrapOrNotFound(equipmentItemDTO);
     }
 
+    @GetMapping("/equipment-items/qrCode/{qrCode}")
+    public ResponseEntity<EquipmentItemDTO> getEquipmentItemByQrCode(@PathVariable String qrCode) {
+        Optional<EquipmentItemDTO> equipmentItemDTO = equipmentItemService.findByBareCode(qrCode);
+        return ResponseUtil.wrapOrNotFound(equipmentItemDTO);
+    }
     /**
      * {@code DELETE  /equipment-items/:id} : delete the "id" equipmentItem.
      *

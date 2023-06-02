@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.repositories;
 
 
+import com.example.GymInTheBack.dtos.statistics.EnteringTimeStatisticDTO;
 import com.example.GymInTheBack.entities.SessionMember;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import org.springframework.data.jpa.repository.*;
@@ -20,4 +21,7 @@ public interface SessionMemberRepository extends JpaRepository<SessionMember, Lo
 
     @Query("SELECT s FROM SessionMember s WHERE subscriptionMember.member.onlineUser.id = :memberId")
     List<SessionMember> findSessionByMemberId(Long memberId);
+
+
+
 }

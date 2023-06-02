@@ -85,4 +85,9 @@ public class EquipmentItemServiceImpl implements EquipmentItemService {
         log.debug("Request to delete EquipmentItem : {}", id);
         equipmentItemRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<EquipmentItemDTO> findByBareCode(String bareCode) {
+        return Optional.ofNullable(equipmentItemMapper.toDto(equipmentItemRepository.findByBareCode(bareCode)));
+    }
 }

@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
+import com.example.GymInTheBack.dtos.statistics.MemberEquipmentStatistic;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.*;
 import com.example.GymInTheBack.repositories.MemberRepository;
@@ -178,9 +179,16 @@ public class MemberResource {
     @GetMapping("/members")
     public List<MemberDTO> getAllMembers() {
         log.debug("REST request to get all Members");
+        System.out.println("REST request to get all Members");
+
         return memberService.findAll();
     }
 
+    @GetMapping("/members/statistics")
+    public MemberEquipmentStatistic getAllMembersEquipmentStatistic() {
+        log.debug("REST request to get all Members");
+        return memberRepository.getMemberEquipmentStatistics();
+    }
     /**
      * {@code GET  /members/:id} : get the "id" member.
      *

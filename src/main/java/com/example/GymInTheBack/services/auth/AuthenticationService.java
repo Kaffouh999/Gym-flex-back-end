@@ -57,7 +57,7 @@ public class AuthenticationService {
       GymBranch gymBranch = gymBranchList.get(0);
       String message = "Please click the link below to verify your email:\n" +
               "http://localhost:8080/api/web/verify/" + validationKey;
-      emailService.sendEmail(gymBranch.getEmail(),gymBranch.getAppPasswordEmail(),user.getEmail(),"Email Verification",message);
+    //  emailService.sendEmail(gymBranch.getEmail(),gymBranch.getAppPasswordEmail(),user.getEmail(),"Email Verification",message);
     }
 
 

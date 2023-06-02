@@ -101,9 +101,7 @@ public class CategoryResource {
         if ( !oldCategory.getName().equals(categoryDTO.getName()) && categoryService.existsByName(categoryDTO.getName())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Category name is already used");
         }
-        if (categoryService.existsByName(categoryDTO.getName())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Category name is already used");
-        }
+
         if (categoryDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

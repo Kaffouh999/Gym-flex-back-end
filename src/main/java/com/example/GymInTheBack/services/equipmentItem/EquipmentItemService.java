@@ -1,6 +1,7 @@
 package com.example.GymInTheBack.services.equipmentItem;
 
 import com.example.GymInTheBack.dtos.equipmentItem.EquipmentItemDTO;
+import com.example.GymInTheBack.entities.EquipmentItem;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -53,4 +54,6 @@ public interface EquipmentItemService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    Optional<EquipmentItemDTO> findByBareCode(String bareCode);
 }

@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.equipment.EquipmentDTO;
+import com.example.GymInTheBack.dtos.statistics.EquipmentStatisticsDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.EquipmentItem;
 import com.example.GymInTheBack.entities.SubCategory;
@@ -175,6 +176,11 @@ public class EquipmentResource {
         return equipmentService.findAll();
     }
 
+    @GetMapping("/equipment/statistics")
+    public List<EquipmentStatisticsDTO> getEquipmentStatistic() {
+        log.debug("REST request to get all Equipment");
+        return equipmentRepository.getEquipmentStatistics();
+    }
     /**
      * {@code GET  /equipment/:id} : get the "id" equipment.
      *
@@ -198,7 +204,7 @@ public class EquipmentResource {
     public ResponseEntity<Object> deleteEquipment(@PathVariable Long id) {
         log.debug("REST request to delete Equipment : {}", id);
 
-        Optional<Equipment> equipment = equipmentRepository.findById(id);
+        Optional<Equipment> equipment = equipmentService.findById(id);
         if( equipment.get().getEquipmentItemList() != null && !equipment.get().getEquipmentItemList().isEmpty()){
             String errorMessage = "Cannot delete equipment has associated equipment items .";
 

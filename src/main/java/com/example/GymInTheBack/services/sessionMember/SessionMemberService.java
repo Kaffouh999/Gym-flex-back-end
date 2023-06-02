@@ -2,6 +2,7 @@ package com.example.GymInTheBack.services.sessionMember;
 
 
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
+import com.example.GymInTheBack.dtos.statistics.EnteringTimeStatisticDTO;
 import com.example.GymInTheBack.entities.SessionMember;
 
 import java.util.List;
@@ -61,4 +62,6 @@ public interface SessionMemberService {
     List<SessionMember> alreadyIn(String qrCode);
 
     List<SessionMemberDTO> findSessionsByMember(Long idMember);
+
+    List<EnteringTimeStatisticDTO> getSessionStatistic(Long idGymBranch);
 }

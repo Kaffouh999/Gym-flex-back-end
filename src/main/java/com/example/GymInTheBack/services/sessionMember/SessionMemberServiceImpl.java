@@ -4,16 +4,21 @@ package com.example.GymInTheBack.services.sessionMember;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
 import com.example.GymInTheBack.dtos.sessionMember.SessionMemberDTO;
+import com.example.GymInTheBack.dtos.statistics.EnteringTimeStatisticDTO;
+import com.example.GymInTheBack.entities.GymBranch;
 import com.example.GymInTheBack.entities.Notification;
 import com.example.GymInTheBack.entities.SessionMember;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SessionMemberRepository;
+import com.example.GymInTheBack.services.gymbranch.GymBranchService;
 import com.example.GymInTheBack.services.mappers.SessionMemberMapper;
 import com.example.GymInTheBack.services.notification.NotificationService;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
@@ -35,16 +40,18 @@ public class SessionMemberServiceImpl implements SessionMemberService {
     private final SessionMemberRepository sessionMemberRepository;
     private final SubscriptionMemberService subscriptionMemberService;
 
+    private final GymBranchService gymBranchService;
     private final NotificationService notificationService;
     private final SessionMemberMapper sessionMemberMapper;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public SessionMemberServiceImpl(SessionMemberRepository sessionMemberRepository, SessionMemberMapper sessionMemberMapper , SubscriptionMemberService subscriptionMemberService, NotificationService notificationService) {
+    public SessionMemberServiceImpl(SessionMemberRepository sessionMemberRepository, SessionMemberMapper sessionMemberMapper , SubscriptionMemberService subscriptionMemberService, GymBranchService gymBranchService, NotificationService notificationService) {
         this.sessionMemberRepository = sessionMemberRepository;
         this.sessionMemberMapper = sessionMemberMapper;
         this.subscriptionMemberService = subscriptionMemberService;
+        this.gymBranchService = gymBranchService;
         this.notificationService = notificationService;
     }
 
@@ -158,6 +165,21 @@ public class SessionMemberServiceImpl implements SessionMemberService {
     public List<SessionMemberDTO> findSessionsByMember(Long idMember) {
         List<SessionMember> sessionMemberList = sessionMemberRepository.findSessionByMemberId(idMember);
         return sessionMemberRepository.findSessionByMemberId(idMember).stream().map(sessionMemberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+
+
+    @Override
+    public List<EnteringTimeStatisticDTO> getSessionStatistic(Long idGymBranch) {
+        List<EnteringTimeStatisticDTO> statisticEnteringList =  new ArrayList<EnteringTimeStatisticDTO>();
+        GymBranchDTO gymBranch = gymBranchService.findOne(idGymBranch).get();
+        ZonedDateTime startDateTime = gymBranch.getOpeningDate();
+        ZonedDateTime endDateTime = gymBranch.getClosingDate();
+
+        List<SessionMember> statistics = sessionMemberRepository.findAll();
+
+
+        return statisticEnteringList;
     }
 
 }
