@@ -10,9 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.gymbranch.GymBranchDTO;
-import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.GymBranch;
-import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.GymBranchRepository;
 import com.example.GymInTheBack.services.gymbranch.GymBranchService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
@@ -26,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
@@ -36,8 +33,8 @@ public class GymBranchResource {
 
     private static final String ENTITY_NAME = "gymBranch";
 
-
-    private String applicationName = "GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final GymBranchService gymBranchService;
 
@@ -65,10 +62,10 @@ public class GymBranchResource {
         if (gymBranchDTO.getId() != null) {
             throw new BadRequestAlertException("A new gymBranch cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if (gymBranchDTO.getName() == null || gymBranchDTO.getName().trim().equals("")) {
+        if (gymBranchDTO.getName() == null || gymBranchDTO.getName().trim().isEmpty()) {
             throw new BadRequestAlertException("A new gymBranch must have an email", ENTITY_NAME, "openeningdaterequired");
         }
-        if (gymBranchDTO.getEmail() == null || gymBranchDTO.getEmail().trim().equals("")) {
+        if (gymBranchDTO.getEmail() == null || gymBranchDTO.getEmail().trim().isEmpty()) {
             throw new BadRequestAlertException("A new gymBranch must have an email", ENTITY_NAME, "openeningdaterequired");
         }
         if (gymBranchDTO.getOpeningDate() == null) {
@@ -77,31 +74,24 @@ public class GymBranchResource {
         if (gymBranchDTO.getClosingDate() == null) {
             throw new BadRequestAlertException("A new gymBranch must have a closing date", ENTITY_NAME, "closingdaterequired");
         }
-        if (gymBranchDTO.getSessionDurationAllowed() == null || gymBranchDTO.getSessionDurationAllowed() == 0 ) {
+        if (gymBranchDTO.getSessionDurationAllowed() == null || gymBranchDTO.getSessionDurationAllowed() == 0) {
             throw new BadRequestAlertException("A new gymBranch must have a session duration", ENTITY_NAME, "sessiondurationrequired");
         }
         GymBranchDTO result = gymBranchService.save(gymBranchDTO);
-        return ResponseEntity
-            .created(new URI("/api/gym-branches/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/gym-branches/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /gym-branches/:id} : Updates an existing gymBranch.
      *
-     * @param id the id of the gymBranchDTO to save.
+     * @param id           the id of the gymBranchDTO to save.
      * @param gymBranchDTO the gymBranchDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated gymBranchDTO,
      * or with status {@code 400 (Bad Request)} if the gymBranchDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the gymBranchDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/gym-branches/{id}")
-    public ResponseEntity<Object> updateGymBranch(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody GymBranchDTO gymBranchDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<Object> updateGymBranch(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody GymBranchDTO gymBranchDTO) {
         log.debug("REST request to update GymBranch : {}, {}", id, gymBranchDTO);
         GymBranchDTO oldGym = gymBranchService.findOne(id).get();
         if (!oldGym.getName().equals(gymBranchDTO.getName()) && gymBranchService.existsByName(gymBranchDTO.getName())) {
@@ -119,28 +109,21 @@ public class GymBranchResource {
         }
 
         GymBranchDTO result = gymBranchService.update(gymBranchDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gymBranchDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, gymBranchDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /gym-branches/:id} : Partial updates given fields of an existing gymBranch, field will ignore if it is null
      *
-     * @param id the id of the gymBranchDTO to save.
+     * @param id           the id of the gymBranchDTO to save.
      * @param gymBranchDTO the gymBranchDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated gymBranchDTO,
      * or with status {@code 400 (Bad Request)} if the gymBranchDTO is not valid,
      * or with status {@code 404 (Not Found)} if the gymBranchDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the gymBranchDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/gym-branches/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<GymBranchDTO> partialUpdateGymBranch(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody GymBranchDTO gymBranchDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/gym-branches/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<GymBranchDTO> partialUpdateGymBranch(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody GymBranchDTO gymBranchDTO) {
         log.debug("REST request to partial update GymBranch partially : {}, {}", id, gymBranchDTO);
         if (gymBranchDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -155,10 +138,7 @@ public class GymBranchResource {
 
         Optional<GymBranchDTO> result = gymBranchService.partialUpdate(gymBranchDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gymBranchDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, gymBranchDTO.getId().toString()));
     }
 
     /**
@@ -196,21 +176,17 @@ public class GymBranchResource {
         log.debug("REST request to delete GymBranch : {}", id);
 
         GymBranch gymBranch = gymBranchRepository.findById(id).orElse(null);
-        if(canTDelete(gymBranch)){
-            String errorMessage = "Cannot delete "+gymBranch.getName()+" Gym branch cause it's still containes relations with members or equipment items or training sessions: ";
+        if (gymBranch != null && canTDelete(gymBranch)) {
+            String errorMessage = "Cannot delete " + gymBranch.getName() + " Gym branch cause it's still containes relations with members or equipment items or training sessions: ";
 
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
 
         gymBranchService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
-    private boolean canTDelete(GymBranch gymBranch ){
-        return (gymBranch.getMemberList() != null && !gymBranch.getMemberList().isEmpty() ) ||
-                ( gymBranch.getEquipmentItemList() != null && !gymBranch.getEquipmentItemList().isEmpty()) ||
-                (gymBranch.getSessionMemberList() != null && !gymBranch.getSessionMemberList().isEmpty()) ;
+
+    private boolean canTDelete(GymBranch gymBranch) {
+        return (gymBranch.getMemberList() != null && !gymBranch.getMemberList().isEmpty()) || (gymBranch.getEquipmentItemList() != null && !gymBranch.getEquipmentItemList().isEmpty()) || (gymBranch.getSessionMemberList() != null && !gymBranch.getSessionMemberList().isEmpty());
     }
 }

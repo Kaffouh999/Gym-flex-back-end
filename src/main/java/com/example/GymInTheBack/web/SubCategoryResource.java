@@ -9,9 +9,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
-import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.repositories.SubCategoryRepository;
@@ -21,6 +19,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +34,8 @@ public class SubCategoryResource {
 
     private static final String ENTITY_NAME = "subCategory";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final SubCategoryService subCategoryService;
 
@@ -65,35 +64,34 @@ public class SubCategoryResource {
         if (subCategoryDTO.getId() != null) {
             throw new BadRequestAlertException("A new subCategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if (subCategoryDTO.getName() == null || subCategoryDTO.getName().trim().equals("") ) {
+        if (subCategoryDTO.getName() == null || subCategoryDTO.getName().trim().isEmpty()) {
             throw new BadRequestAlertException("A new subCategory should have a name", ENTITY_NAME, "namerequiered");
         }
         SubCategoryDTO result = subCategoryService.save(subCategoryDTO);
         return ResponseEntity
-            .created(new URI("/api/sub-categories/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .created(new URI("/api/sub-categories/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
     }
 
     /**
      * {@code PUT  /sub-categories/:id} : Updates an existing subCategory.
      *
-     * @param id the id of the subCategoryDTO to save.
+     * @param id             the id of the subCategoryDTO to save.
      * @param subCategoryDTO the subCategoryDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated subCategoryDTO,
      * or with status {@code 400 (Bad Request)} if the subCategoryDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the subCategoryDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/sub-categories/{id}")
     public ResponseEntity<Object> updateSubCategory(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody SubCategoryDTO subCategoryDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody SubCategoryDTO subCategoryDTO
+    ) {
         log.debug("REST request to update SubCategory : {}, {}", id, subCategoryDTO);
 
         SubCategoryDTO oldSubCategory = subCategoryService.findOne(id).get();
-        if ( !oldSubCategory.getName().equals(subCategoryDTO.getName()) && subCategoryService.existsByName(subCategoryDTO.getName())) {
+        if (!oldSubCategory.getName().equals(subCategoryDTO.getName()) && subCategoryService.existsByName(subCategoryDTO.getName())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("SubCategory name is already used");
         }
 
@@ -110,30 +108,29 @@ public class SubCategoryResource {
 
         SubCategoryDTO result = subCategoryService.update(subCategoryDTO);
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subCategoryDTO.getId().toString()))
-            .body(result);
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subCategoryDTO.getId().toString()))
+                .body(result);
     }
 
     /**
      * {@code PATCH  /sub-categories/:id} : Partial updates given fields of an existing subCategory, field will ignore if it is null
      *
-     * @param id the id of the subCategoryDTO to save.
+     * @param id             the id of the subCategoryDTO to save.
      * @param subCategoryDTO the subCategoryDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated subCategoryDTO,
      * or with status {@code 400 (Bad Request)} if the subCategoryDTO is not valid,
      * or with status {@code 404 (Not Found)} if the subCategoryDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the subCategoryDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/sub-categories/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/sub-categories/{id}", consumes = {"application/json", "application/merge-patch+json"})
     public ResponseEntity<SubCategoryDTO> partialUpdateSubCategory(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody SubCategoryDTO subCategoryDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody SubCategoryDTO subCategoryDTO
+    ) {
         log.debug("REST request to partial update SubCategory partially : {}, {}", id, subCategoryDTO);
         if (subCategoryDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            throw new BadRequestAlertException("Invalid id ", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, subCategoryDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
@@ -146,8 +143,8 @@ public class SubCategoryResource {
         Optional<SubCategoryDTO> result = subCategoryService.partialUpdate(subCategoryDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subCategoryDTO.getId().toString())
+                result,
+                HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subCategoryDTO.getId().toString())
         );
     }
 
@@ -186,18 +183,18 @@ public class SubCategoryResource {
         log.debug("REST request to delete SubCategory : {}", id);
 
         SubCategory subCategory = subCategoryRepository.findById(id).orElse(null);
-        if(subCategory.getEquipmentList() != null && !subCategory.getEquipmentList().isEmpty()){
-            String errorMessage = "Cannot delete sub-category with those associated equipments : ";
-            for(Equipment equipment : subCategory.getEquipmentList()){
-                errorMessage += " -> " +equipment.getName() ;
+        if (subCategory != null && subCategory.getEquipmentList() != null && !subCategory.getEquipmentList().isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder("Cannot delete sub-category with those associated equipments : ");
+            for (Equipment equipment : subCategory.getEquipmentList()) {
+                errorMessage.append(" -> ").append(equipment.getName());
             }
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage.toString());
         }
 
         subCategoryService.delete(id);
         return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .build();
     }
 }

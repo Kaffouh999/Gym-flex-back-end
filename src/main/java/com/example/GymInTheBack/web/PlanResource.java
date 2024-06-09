@@ -9,9 +9,7 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.example.GymInTheBack.dtos.category.CategoryDTO;
 import com.example.GymInTheBack.dtos.plan.PlanDTO;
-import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.PlanRepository;
@@ -23,6 +21,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,18 +37,16 @@ public class PlanResource {
 
     private static final String ENTITY_NAME = "plan";
 
-
-    private String applicationName = "GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final PlanService planService;
     private final UploadService uploadService;
-    private final PlanMapper planMapper;
     private final PlanRepository planRepository;
 
-    public PlanResource(PlanService planService, UploadService uploadService, PlanMapper planMapper, PlanRepository planRepository) {
+    public PlanResource(PlanService planService, UploadService uploadService, PlanRepository planRepository) {
         this.planService = planService;
         this.uploadService = uploadService;
-        this.planMapper = planMapper;
         this.planRepository = planRepository;
     }
 
@@ -69,41 +66,34 @@ public class PlanResource {
         if (planDTO.getId() != null) {
             throw new BadRequestAlertException("A new plan cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if (planDTO.getDuration() == null || planDTO.getDuration() <= 0)  {
+        if (planDTO.getDuration() == null || planDTO.getDuration() <= 0) {
             throw new BadRequestAlertException("A new plan must have duration and it must be positive", ENTITY_NAME, "durationrequired");
         }
         if (planDTO.getPrice() == null) {
             throw new BadRequestAlertException("A new plan must have price", ENTITY_NAME, "pricerequired");
         }
-        if (planDTO.getName() == null || planDTO.getName().trim().equals("")) {
+        if (planDTO.getName() == null || planDTO.getName().trim().isEmpty()) {
             throw new BadRequestAlertException("A new plan must have name", ENTITY_NAME, "namerequired");
         }
         PlanDTO result = planService.save(planDTO);
-        return ResponseEntity
-            .created(new URI("/api/plans/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/plans/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /plans/:id} : Updates an existing plan.
      *
-     * @param id the id of the planDTO to save.
+     * @param id      the id of the planDTO to save.
      * @param planDTO the planDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated planDTO,
      * or with status {@code 400 (Bad Request)} if the planDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the planDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/plans/{id}")
-    public ResponseEntity<Object> updatePlan(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody PlanDTO planDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<Object> updatePlan(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody PlanDTO planDTO) {
         log.debug("REST request to update Plan : {}, {}", id, planDTO);
 
         PlanDTO oldPlan = planService.findOne(id).get();
-        if ( !oldPlan.getName().equals(planDTO.getName()) && planService.existsByName(planDTO.getName())) {
+        if (!oldPlan.getName().equals(planDTO.getName()) && planService.existsByName(planDTO.getName())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Plan name is already used");
         }
         if (planDTO.getId() == null) {
@@ -118,28 +108,21 @@ public class PlanResource {
         }
 
         PlanDTO result = planService.update(planDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, planDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, planDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /plans/:id} : Partial updates given fields of an existing plan, field will ignore if it is null
      *
-     * @param id the id of the planDTO to save.
+     * @param id      the id of the planDTO to save.
      * @param planDTO the planDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated planDTO,
      * or with status {@code 400 (Bad Request)} if the planDTO is not valid,
      * or with status {@code 404 (Not Found)} if the planDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the planDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/plans/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<PlanDTO> partialUpdatePlan(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody PlanDTO planDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/plans/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<PlanDTO> partialUpdatePlan(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody PlanDTO planDTO) {
         log.debug("REST request to partial update Plan partially : {}, {}", id, planDTO);
         if (planDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -154,10 +137,7 @@ public class PlanResource {
 
         Optional<PlanDTO> result = planService.partialUpdate(planDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, planDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, planDTO.getId().toString()));
     }
 
     /**
@@ -195,43 +175,40 @@ public class PlanResource {
         log.debug("REST request to delete Plan : {}", id);
         Plan plan = planRepository.findById(id).orElse(null);
 
-        if(plan.getSubscriptionMemberList()!= null && !plan.getSubscriptionMemberList().isEmpty()){
+        if (plan != null && plan.getSubscriptionMemberList() != null && !plan.getSubscriptionMemberList().isEmpty()) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String errorMessage = "Cannot delete plan with those associated Subscriptions  : ";
-            for(SubscriptionMember subscriptionMember : plan.getSubscriptionMemberList()){
-                errorMessage += " (" +subscriptionMember.getMember().getOnlineUser().getFirstName()+" "+ subscriptionMember.getStartDate().format(formatter) + " " + subscriptionMember.getPlan().getName() + ")";
+            StringBuilder errorMessage = new StringBuilder("Cannot delete plan with those associated Subscriptions  : ");
+            for (SubscriptionMember subscriptionMember : plan.getSubscriptionMemberList()) {
+                errorMessage.append(" (").append(subscriptionMember.getMember().getOnlineUser().getFirstName()).append(" ").append(subscriptionMember.getStartDate().format(formatter)).append(" ").append(subscriptionMember.getPlan().getName()).append(")");
             }
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage.toString());
         }
 
 
-        if(plan != null) {
+        if (plan != null) {
             String folderUrl = "/images/plans/";
             String urlImage = plan.getImageAds();
             uploadService.deleteDocument(folderUrl, urlImage);
         }
 
         planService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 
 
     @PostMapping("/plans/upload/{name}")
-    public ResponseEntity<Object> handleFileUpload(@PathVariable String name , @RequestParam(value = "file",required = false) MultipartFile file) {
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
         String folerUrl = "/images/plans/";
         Map<String, String> response = new HashMap<>();
 
         try {
-            if(file != null) {
+            if (file != null) {
                 String fileName = uploadService.handleFileUpload(name, folerUrl, file);
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
                 response.put("message", "http://localhost:5051/images/plans/" + fileName);
-            }else{
+            } else {
                 response.put("message", "");
             }
             return ResponseEntity.ok(response);
@@ -242,37 +219,37 @@ public class PlanResource {
     }
 
     @PutMapping("/plans/upload/{id}")
-    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
         Optional<PlanDTO> plan = planService.findOne(id);
         String imageUrl = plan.get().getImageAds();
         String folderUrl = "/images/plans/";
 
         try {
-            if(file != null) {
+            if (file != null) {
                 uploadService.deleteDocument(folderUrl, imageUrl);
                 String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
 
-                if (imageUrl == null || imageUrl.equals("")) {
+                if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = plan.get().getName();
                     fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
-                }else {
+                } else {
                     fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
                 }
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
-                }else {
+                } else {
                     plan.get().setImageAds("http://localhost:5051" + folderUrl + fileName);
                     planService.save(plan.get());
                 }
                 response.put("message", "http://localhost:5051" + folderUrl + fileName);
 
-            }else{
+            } else {
                 response.put("message", "");
             }
             return ResponseEntity.ok(response);
 
-        }catch (IOException e){
+        } catch (IOException e) {
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }

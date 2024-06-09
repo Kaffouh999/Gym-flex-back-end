@@ -4,7 +4,6 @@ package com.example.GymInTheBack.web;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -14,9 +13,7 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.subscription.SubscriptionMemberDTO;
 import com.example.GymInTheBack.dtos.subscription.SubscriptionWithPaymentsDTO;
-import com.example.GymInTheBack.entities.Category;
 import com.example.GymInTheBack.entities.Payment;
-import com.example.GymInTheBack.entities.SubCategory;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.SubscriptionMemberRepository;
 import com.example.GymInTheBack.services.subscriptionMember.SubscriptionMemberService;
@@ -26,7 +23,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +39,8 @@ public class SubscriptionMemberResource {
 
     private static final String ENTITY_NAME = "subscriptionMember";
 
-
-    private String applicationName = "GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final SubscriptionMemberService subscriptionMemberService;
 
@@ -81,7 +78,7 @@ public class SubscriptionMemberResource {
         SubscriptionMemberDTO result = subscriptionMemberService.save(subscriptionMemberDTO);
         return ResponseEntity
             .created(new URI("/api/subscription-members/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
@@ -93,16 +90,15 @@ public class SubscriptionMemberResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated subscriptionMemberDTO,
      * or with status {@code 400 (Bad Request)} if the subscriptionMemberDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the subscriptionMemberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/subscription-members/{id}")
     public ResponseEntity<SubscriptionMemberDTO> updateSubscriptionMember(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody SubscriptionMemberDTO subscriptionMemberDTO
-    ) throws URISyntaxException {
+    ) {
         log.debug("REST request to update SubscriptionMember : {}, {}", id, subscriptionMemberDTO);
-        if (subscriptionMemberDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        if (assertSubscriptionMemberIsNotNull(subscriptionMemberDTO)) {
+            throw new BadRequestAlertException("Invalid id ", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, subscriptionMemberDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
@@ -115,7 +111,7 @@ public class SubscriptionMemberResource {
         SubscriptionMemberDTO result = subscriptionMemberService.update(subscriptionMemberDTO);
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString()))
             .body(result);
     }
 
@@ -128,15 +124,14 @@ public class SubscriptionMemberResource {
      * or with status {@code 400 (Bad Request)} if the subscriptionMemberDTO is not valid,
      * or with status {@code 404 (Not Found)} if the subscriptionMemberDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the subscriptionMemberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/subscription-members/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<SubscriptionMemberDTO> partialUpdateSubscriptionMember(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody SubscriptionMemberDTO subscriptionMemberDTO
-    ) throws URISyntaxException {
+    ) {
         log.debug("REST request to partial update SubscriptionMember partially : {}, {}", id, subscriptionMemberDTO);
-        if (subscriptionMemberDTO.getId() == null) {
+        if (assertSubscriptionMemberIsNotNull(subscriptionMemberDTO)) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, subscriptionMemberDTO.getId())) {
@@ -151,8 +146,12 @@ public class SubscriptionMemberResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString())
         );
+    }
+
+    public boolean assertSubscriptionMemberIsNotNull(SubscriptionMemberDTO subscriptionMemberDTO){
+        return subscriptionMemberDTO != null && subscriptionMemberDTO.getId() != null;
     }
 
     /**
@@ -181,12 +180,12 @@ public class SubscriptionMemberResource {
 
     @GetMapping("/web/subscription-members/{id}")
     public List<SubscriptionWithPaymentsDTO> getSubscriptionMemberByMember(@PathVariable Long id) {
-        log.debug("REST request to get SubscriptionMember : {}", id);
+        log.debug("REST request to get SubscriptionMember By Member : {}", id);
         return subscriptionMemberService.findByMemberId(id);
     }
     @GetMapping("/subscription-members/qrcode/{qrCode}")
     public ResponseEntity<SubscriptionMemberDTO> getSubscriptionMember(@PathVariable String qrCode) {
-        log.debug("REST request to get SubscriptionMember : {}", qrCode);
+        log.debug("REST request to get SubscriptionMember by qrcode : {}", qrCode);
         Optional<SubscriptionMemberDTO> subscriptionMemberDTO = subscriptionMemberService.findByCodeSubscription(qrCode);
         return ResponseUtil.wrapOrNotFound(subscriptionMemberDTO);
     }
@@ -202,19 +201,19 @@ public class SubscriptionMemberResource {
         log.debug("REST request to delete SubscriptionMember : {}", id);
 
         SubscriptionMember subscriptionMember = subscriptionMemberRepository.findById(id).orElse(null);
-        if(subscriptionMember.getPaymentList() != null && !subscriptionMember.getPaymentList().isEmpty()){
+        if(subscriptionMember != null &&subscriptionMember.getPaymentList() != null && !subscriptionMember.getPaymentList().isEmpty()){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String errorMessage = "Cannot delete subscription with those associated payments at : ";
+            StringBuilder errorMessage = new StringBuilder("Cannot delete subscription with those associated payments at : ");
             for(Payment payment : subscriptionMember.getPaymentList()){
-                errorMessage += " -> " +payment.getPaymentDate().format(formatter) ;
+                errorMessage.append(" -> ").append(payment.getPaymentDate().format(formatter));
             }
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage.toString());
         }
 
         subscriptionMemberService.delete(id);
         return ResponseEntity
             .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
             .build();
     }
 

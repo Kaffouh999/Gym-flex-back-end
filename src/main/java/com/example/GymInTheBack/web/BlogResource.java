@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api")
 public class BlogResource {
@@ -31,8 +30,8 @@ public class BlogResource {
 
     private static final String ENTITY_NAME = "blog";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final BlogService blogService;
 
@@ -57,27 +56,20 @@ public class BlogResource {
             throw new BadRequestAlertException("A new blog cannot already have an ID", ENTITY_NAME, "idexists");
         }
         BlogDTO result = blogService.save(blogDTO);
-        return ResponseEntity
-            .created(new URI("/api/blogs/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/blogs/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /blogs/:id} : Updates an existing blog.
      *
-     * @param id the id of the blogDTO to save.
+     * @param id      the id of the blogDTO to save.
      * @param blogDTO the blogDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated blogDTO,
      * or with status {@code 400 (Bad Request)} if the blogDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the blogDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/blogs/{id}")
-    public ResponseEntity<BlogDTO> updateBlog(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody BlogDTO blogDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<BlogDTO> updateBlog(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody BlogDTO blogDTO) {
         log.debug("REST request to update Blog : {}, {}", id, blogDTO);
         if (blogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -91,28 +83,21 @@ public class BlogResource {
         }
 
         BlogDTO result = blogService.update(blogDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blogDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, blogDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /blogs/:id} : Partial updates given fields of an existing blog, field will ignore if it is null
      *
-     * @param id the id of the blogDTO to save.
+     * @param id      the id of the blogDTO to save.
      * @param blogDTO the blogDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated blogDTO,
      * or with status {@code 400 (Bad Request)} if the blogDTO is not valid,
      * or with status {@code 404 (Not Found)} if the blogDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the blogDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/blogs/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<BlogDTO> partialUpdateBlog(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody BlogDTO blogDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/blogs/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<BlogDTO> partialUpdateBlog(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody BlogDTO blogDTO) {
         log.debug("REST request to partial update Blog partially : {}, {}", id, blogDTO);
         if (blogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -127,10 +112,7 @@ public class BlogResource {
 
         Optional<BlogDTO> result = blogService.partialUpdate(blogDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blogDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, blogDTO.getId().toString()));
     }
 
     /**
@@ -167,9 +149,6 @@ public class BlogResource {
     public ResponseEntity<Void> deleteBlog(@PathVariable Long id) {
         log.debug("REST request to delete Blog : {}", id);
         blogService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -12,26 +12,22 @@ import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.member.MemberDTO;
 import com.example.GymInTheBack.dtos.statistics.MemberEquipmentStatistic;
-import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.*;
 import com.example.GymInTheBack.repositories.MemberRepository;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
 import com.example.GymInTheBack.services.mappers.MemberMapper;
 import com.example.GymInTheBack.services.member.MemberService;
 import com.example.GymInTheBack.services.upload.IUploadService;
-import com.example.GymInTheBack.services.user.OnlineUserService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.UnexpectedRollbackException;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
 
 
 @RestController
@@ -43,24 +39,22 @@ public class MemberResource {
 
     private static final String ENTITY_NAME = "member";
 
-
-    private String applicationName = "GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final MemberService memberService;
 
-    private final OnlineUserService onlineUserService;
     private final OnlineUserRepository onlineUserRepository;
     private final MemberMapper memberMapper;
-    private IUploadService uploadService;
+    private final IUploadService uploadService;
     private final MemberRepository memberRepository;
 
-    public MemberResource(MemberService memberService, MemberRepository memberRepository , OnlineUserService onlineUserService , OnlineUserRepository onlineUserRepository, MemberMapper memberMapper, IUploadService uploadService) {
+    public MemberResource(MemberService memberService, MemberRepository memberRepository, OnlineUserRepository onlineUserRepository, MemberMapper memberMapper, IUploadService uploadService) {
         this.memberService = memberService;
         this.memberRepository = memberRepository;
-        this.onlineUserService = onlineUserService;
         this.onlineUserRepository = onlineUserRepository;
         this.memberMapper = memberMapper;
-        this.uploadService=uploadService;
+        this.uploadService = uploadService;
     }
 
     /**
@@ -73,30 +67,25 @@ public class MemberResource {
     @PostMapping("/members")
     public ResponseEntity<Object> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
         log.debug("REST request to save Member : {}", memberDTO);
-        OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
         if (memberDTO.getId() != null) {
             throw new BadRequestAlertException("A new member cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (memberDTO.getAge() == null) {
             throw new BadRequestAlertException("A new member must have age", ENTITY_NAME, "agerequired");
         }
-        if (memberDTO.getCin() == null || memberDTO.getCin().trim().equals("") ) {
+        if (memberDTO.getCin() == null || memberDTO.getCin().trim().isEmpty()) {
             throw new BadRequestAlertException("A new member must have cin", ENTITY_NAME, "cinrequired");
         }
-        if (memberDTO.getGender() == null ) {
+        if (memberDTO.getGender() == null) {
             throw new BadRequestAlertException("A new member must have gender", ENTITY_NAME, "genderrequired");
         }
-                try {
-                MemberDTO result = memberService.saveMemberWithUser(memberDTO);
-                    return ResponseEntity
-                            .created(new URI("/api/members/" + result.getId()))
-                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-                            .body(result);
-                }catch(DataIntegrityViolationException e){
-                    String errorMessage = "Member with the same cin or email already exists.";
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-                }
-
+        try {
+            MemberDTO result = memberService.saveMemberWithUser(memberDTO);
+            return ResponseEntity.created(new URI("/api/members/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        } catch (DataIntegrityViolationException e) {
+            String errorMessage = "Member with the same cin or email already exists.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
 
 
     }
@@ -104,18 +93,14 @@ public class MemberResource {
     /**
      * {@code PUT  /members/:id} : Updates an existing member.
      *
-     * @param id the id of the memberDTO to save.
+     * @param id        the id of the memberDTO to save.
      * @param memberDTO the memberDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated memberDTO,
      * or with status {@code 400 (Bad Request)} if the memberDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the memberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/members/{id}")
-    public ResponseEntity<MemberDTO> updateMember(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody MemberDTO memberDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<MemberDTO> updateMember(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody MemberDTO memberDTO) {
         log.debug("REST request to update Member : {}, {}", id, memberDTO);
         if (memberDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -129,28 +114,21 @@ public class MemberResource {
         }
 
         MemberDTO result = memberService.update(memberDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, memberDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /members/:id} : Partial updates given fields of an existing member, field will ignore if it is null
      *
-     * @param id the id of the memberDTO to save.
+     * @param id        the id of the memberDTO to save.
      * @param memberDTO the memberDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated memberDTO,
      * or with status {@code 400 (Bad Request)} if the memberDTO is not valid,
      * or with status {@code 404 (Not Found)} if the memberDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the memberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/members/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<MemberDTO> partialUpdateMember(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody MemberDTO memberDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/members/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<MemberDTO> partialUpdateMember(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody MemberDTO memberDTO) {
         log.debug("REST request to partial update Member partially : {}, {}", id, memberDTO);
         if (memberDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -165,10 +143,7 @@ public class MemberResource {
 
         Optional<MemberDTO> result = memberService.partialUpdate(memberDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, memberDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString()));
     }
 
     /**
@@ -189,6 +164,7 @@ public class MemberResource {
         log.debug("REST request to get all Members");
         return memberRepository.getMemberEquipmentStatistics();
     }
+
     /**
      * {@code GET  /members/:id} : get the "id" member.
      *
@@ -221,34 +197,29 @@ public class MemberResource {
         log.debug("REST request to delete Member : {}", id);
         Optional<Member> member = memberService.findById(id);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        if(!member.get().getAssuranceMemberList().isEmpty() || !member.get().getSubscriptionMemberList().isEmpty() ){
-            String errorMessage = "Cannot delete member has associated : ";
-            if(!member.get().getAssuranceMemberList().isEmpty()) {
-                errorMessage += " \n assurances items : ";
+        if (!member.get().getAssuranceMemberList().isEmpty() || !member.get().getSubscriptionMemberList().isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder("Cannot delete member has associated : ");
+            if (!member.get().getAssuranceMemberList().isEmpty()) {
+                errorMessage.append(" \n assurances items : ");
 
                 for (AssuranceMember assuranceMember : member.get().getAssuranceMemberList()) {
-                    errorMessage += " (" + assuranceMember.getStartDate().format(formatter) + " " + assuranceMember.getAssurancAgency() + ") ";
+                    errorMessage.append(" (").append(assuranceMember.getStartDate().format(formatter)).append(" ").append(assuranceMember.getAssurancAgency()).append(") ");
                 }
             }
-            if(!member.get().getSubscriptionMemberList().isEmpty()) {
-                errorMessage += " \n subscriptions : ";
+            if (!member.get().getSubscriptionMemberList().isEmpty()) {
+                errorMessage.append(" \n subscriptions : ");
 
                 for (SubscriptionMember subscriptionMember : member.get().getSubscriptionMemberList()) {
-                    errorMessage += " (" +subscriptionMember.getMember().getOnlineUser().getFirstName()+" "+ subscriptionMember.getStartDate().format(formatter) + " " + subscriptionMember.getPlan().getName() + ")";
+                    errorMessage.append(" (").append(subscriptionMember.getMember().getOnlineUser().getFirstName()).append(" ").append(subscriptionMember.getStartDate().format(formatter)).append(" ").append(subscriptionMember.getPlan().getName()).append(")");
                 }
             }
 
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage.toString());
         }
-        if(member.get() != null) {
-            String folderUrl = "/images/membersProfile/";
-            String urlImage = member.get().getOnlineUser().getProfilePicture();
-            uploadService.deleteDocument(folderUrl, urlImage);
-        }
+        String folderUrl = "/images/membersProfile/";
+        String urlImage = member.get().getOnlineUser().getProfilePicture();
+        uploadService.deleteDocument(folderUrl, urlImage);
         memberService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }

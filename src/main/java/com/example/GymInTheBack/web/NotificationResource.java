@@ -3,9 +3,9 @@ package com.example.GymInTheBack.web;
 import com.example.GymInTheBack.entities.Notification;
 import com.example.GymInTheBack.services.notification.NotificationService;
 import com.example.GymInTheBack.utils.HeaderUtil;
-import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +20,8 @@ public class NotificationResource {
 
     private static final String ENTITY_NAME = "notification";
 
-
-    private String applicationName ="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
 
 
@@ -50,7 +50,7 @@ public class NotificationResource {
         notificationService.delete(id);
         return ResponseEntity
                 .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class NotificationResource {
         notificationService.markAsRead();
         return ResponseEntity
                 .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, "")).body("");
+                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, "")).body("");
 
     }
 }

@@ -33,8 +33,8 @@ public class EquipmentItemResource {
 
     private static final String ENTITY_NAME = "equipmentItem";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final EquipmentItemService equipmentItemService;
 
@@ -62,7 +62,7 @@ public class EquipmentItemResource {
         EquipmentItemDTO result = equipmentItemService.save(equipmentItemDTO);
         return ResponseEntity
             .created(new URI("/api/equipment-items/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
@@ -74,13 +74,12 @@ public class EquipmentItemResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated equipmentItemDTO,
      * or with status {@code 400 (Bad Request)} if the equipmentItemDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the equipmentItemDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/equipment-items/{id}")
     public ResponseEntity<EquipmentItemDTO> updateEquipmentItem(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EquipmentItemDTO equipmentItemDTO
-    ) throws URISyntaxException {
+    ) {
         log.debug("REST request to update EquipmentItem : {}, {}", id, equipmentItemDTO);
         if (equipmentItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -96,7 +95,7 @@ public class EquipmentItemResource {
         EquipmentItemDTO result = equipmentItemService.update(equipmentItemDTO);
         return ResponseEntity
             .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
             .body(result);
     }
 
@@ -109,13 +108,12 @@ public class EquipmentItemResource {
      * or with status {@code 400 (Bad Request)} if the equipmentItemDTO is not valid,
      * or with status {@code 404 (Not Found)} if the equipmentItemDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the equipmentItemDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/equipment-items/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EquipmentItemDTO> partialUpdateEquipmentItem(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody EquipmentItemDTO equipmentItemDTO
-    ) throws URISyntaxException {
+    ) {
         log.debug("REST request to partial update EquipmentItem partially : {}, {}", id, equipmentItemDTO);
         if (equipmentItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -132,7 +130,7 @@ public class EquipmentItemResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
         );
     }
 
@@ -177,7 +175,7 @@ public class EquipmentItemResource {
         equipmentItemService.delete(id);
         return ResponseEntity
             .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

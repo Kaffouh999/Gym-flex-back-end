@@ -25,6 +25,7 @@ import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +40,8 @@ public class PaymentResource {
 
     private static final String ENTITY_NAME = "payment";
 
-
-    private String applicationName ="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final PaymentService paymentService;
     private final StatisticsService statisticsService;
@@ -74,25 +75,24 @@ public class PaymentResource {
         if (paymentDTO.getAmountPayed() == null) {
             throw new BadRequestAlertException("A new payment should have  ammountpayed", ENTITY_NAME, "amountpayedrequired");
         }
-        if (paymentDTO.getSubscriptionMember() == null || paymentDTO.getSubscriptionMember().getId() == null ) {
+        if (paymentDTO.getSubscriptionMember() == null || paymentDTO.getSubscriptionMember().getId() == null) {
             throw new BadRequestAlertException("A new payment should have  subscription", ENTITY_NAME, "subscriptionrequired");
         }
 
         ZonedDateTime dateNow = ZonedDateTime.now();
         SubscriptionMemberDTO subscriptionMemberDTO = paymentDTO.getSubscriptionMember();
-        if(subscriptionMemberDTO.getEndDate() != null ) {
+        if (subscriptionMemberDTO.getEndDate() != null) {
 
-            if(dateNow.isAfter( subscriptionMemberDTO.getEndDate() )){
+            if (dateNow.isAfter(subscriptionMemberDTO.getEndDate())) {
                 subscriptionMemberDTO.setStartDate(dateNow);
                 ZonedDateTime endDate = dateNow.plusDays(subscriptionMemberDTO.getPlan().getDuration());
                 subscriptionMemberDTO.setEndDate(endDate);
-            }
-            else{
+            } else {
                 ZonedDateTime endDate = subscriptionMemberDTO.getEndDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
                 subscriptionMemberDTO.setEndDate(endDate);
             }
 
-        }else{
+        } else {
             ZonedDateTime endDate = subscriptionMemberDTO.getStartDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
             subscriptionMemberDTO.setEndDate(endDate);
         }
@@ -100,27 +100,20 @@ public class PaymentResource {
         subscriptionMemberService.save(subscriptionMemberDTO);
 
         PaymentDTO result = paymentService.save(paymentDTO);
-        return ResponseEntity
-            .created(new URI("/api/payments/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/payments/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /payments/:id} : Updates an existing payment.
      *
-     * @param id the id of the paymentDTO to save.
+     * @param id         the id of the paymentDTO to save.
      * @param paymentDTO the paymentDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated paymentDTO,
      * or with status {@code 400 (Bad Request)} if the paymentDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the paymentDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/payments/{id}")
-    public ResponseEntity<PaymentDTO> updatePayment(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody PaymentDTO paymentDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<PaymentDTO> updatePayment(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody PaymentDTO paymentDTO) {
         log.debug("REST request to update Payment : {}, {}", id, paymentDTO);
         if (paymentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -134,28 +127,21 @@ public class PaymentResource {
         }
 
         PaymentDTO result = paymentService.update(paymentDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, paymentDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, paymentDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /payments/:id} : Partial updates given fields of an existing payment, field will ignore if it is null
      *
-     * @param id the id of the paymentDTO to save.
+     * @param id         the id of the paymentDTO to save.
      * @param paymentDTO the paymentDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated paymentDTO,
      * or with status {@code 400 (Bad Request)} if the paymentDTO is not valid,
      * or with status {@code 404 (Not Found)} if the paymentDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the paymentDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/payments/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<PaymentDTO> partialUpdatePayment(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody PaymentDTO paymentDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/payments/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<PaymentDTO> partialUpdatePayment(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody PaymentDTO paymentDTO) {
         log.debug("REST request to partial update Payment partially : {}, {}", id, paymentDTO);
         if (paymentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -170,10 +156,7 @@ public class PaymentResource {
 
         Optional<PaymentDTO> result = paymentService.partialUpdate(paymentDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, paymentDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, paymentDTO.getId().toString()));
     }
 
     /**
@@ -192,6 +175,7 @@ public class PaymentResource {
         log.debug("REST request to get all Payments statistics");
         return statisticsService.getPaymentStatistics();
     }
+
     /**
      * {@code GET  /payments/:id} : get the "id" payment.
      *
@@ -210,6 +194,7 @@ public class PaymentResource {
         log.debug("REST request to get Payment : {}", id);
         return paymentService.findAll();
     }
+
     /**
      * {@code DELETE  /payments/:id} : delete the "id" payment.
      *
@@ -217,7 +202,7 @@ public class PaymentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/payments/{id}")
-            public ResponseEntity<Object> deletePayment(@PathVariable Long id) throws NoSuchAlgorithmException, WriterException {
+    public ResponseEntity<Object> deletePayment(@PathVariable Long id) throws NoSuchAlgorithmException, WriterException {
         log.debug("REST request to delete Payment : {}", id);
 
         PaymentDTO paymentDTO = paymentService.findOne(id).get();
@@ -228,25 +213,21 @@ public class PaymentResource {
         ZonedDateTime dateNow = ZonedDateTime.now();
         ZonedDateTime updatedDate;
         long differenceDays = ChronoUnit.DAYS.between(dateNow, dateEnd);
-        if(dateEnd.isAfter( dateNow ) && differenceDays>0){
+        if (dateEnd.isAfter(dateNow) && differenceDays > 0) {
 
-            if(differenceDays > planDuration){
-                updatedDate= dateEnd.minusDays(planDuration);
-            }
-            else{
-                 updatedDate= dateEnd.minusDays(differenceDays);
+            if (differenceDays > planDuration) {
+                updatedDate = dateEnd.minusDays(planDuration);
+            } else {
+                updatedDate = dateEnd.minusDays(differenceDays);
             }
 
-        }else{
+        } else {
             String errorMessage = "Cannot delete this payment , it's already consumed ";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
         subscriptionMemberDTO.setEndDate(updatedDate);
         subscriptionMemberService.save(subscriptionMemberDTO);
         paymentService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }

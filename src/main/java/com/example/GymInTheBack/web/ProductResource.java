@@ -9,10 +9,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.example.GymInTheBack.dtos.product.ProductDTO;
-import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.entities.Product;
 import com.example.GymInTheBack.repositories.ProductRepository;
-import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
 import com.example.GymInTheBack.services.mappers.ProductMapper;
 import com.example.GymInTheBack.services.product.ProductService;
 import com.example.GymInTheBack.services.upload.IUploadService;
@@ -21,6 +19,7 @@ import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +35,8 @@ public class ProductResource {
 
     private static final String ENTITY_NAME = "product";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final ProductService productService;
 
@@ -50,8 +49,8 @@ public class ProductResource {
     public ProductResource(ProductService productService, ProductRepository productRepository, IUploadService uploadService, ProductMapper productMapper) {
         this.productService = productService;
         this.productRepository = productRepository;
-        this.uploadService=uploadService;
-        this.productMapper=productMapper;
+        this.uploadService = uploadService;
+        this.productMapper = productMapper;
     }
 
     /**
@@ -70,31 +69,24 @@ public class ProductResource {
         if (productDTO.getPrice() == null || productDTO.getPrice() <= 0) {
             throw new BadRequestAlertException("A new product should have a price", ENTITY_NAME, "pricerequired");
         }
-        if (productDTO.getName() == null || productDTO.getName().trim().equals("")) {
+        if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
             throw new BadRequestAlertException("A new product should have a name", ENTITY_NAME, "namerequired");
         }
         ProductDTO result = productService.save(productDTO);
-        return ResponseEntity
-            .created(new URI("/api/products/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/products/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /products/:id} : Updates an existing product.
      *
-     * @param id the id of the productDTO to save.
+     * @param id         the id of the productDTO to save.
      * @param productDTO the productDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated productDTO,
      * or with status {@code 400 (Bad Request)} if the productDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the productDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/products/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody ProductDTO productDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody ProductDTO productDTO) {
         log.debug("REST request to update Product : {}, {}", id, productDTO);
         if (productDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -108,28 +100,21 @@ public class ProductResource {
         }
 
         ProductDTO result = productService.update(productDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, productDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, productDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /products/:id} : Partial updates given fields of an existing product, field will ignore if it is null
      *
-     * @param id the id of the productDTO to save.
+     * @param id         the id of the productDTO to save.
      * @param productDTO the productDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated productDTO,
      * or with status {@code 400 (Bad Request)} if the productDTO is not valid,
      * or with status {@code 404 (Not Found)} if the productDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the productDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/products/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<ProductDTO> partialUpdateProduct(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody ProductDTO productDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/products/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<ProductDTO> partialUpdateProduct(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody ProductDTO productDTO) {
         log.debug("REST request to partial update Product partially : {}, {}", id, productDTO);
         if (productDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -144,10 +129,7 @@ public class ProductResource {
 
         Optional<ProductDTO> result = productService.partialUpdate(productDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, productDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, productDTO.getId().toString()));
     }
 
     /**
@@ -184,24 +166,22 @@ public class ProductResource {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         log.debug("REST request to delete Product : {}", id);
         productService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
+
     @PostMapping("/products/upload/{name}")
-    public ResponseEntity<Object> handleFileUpload(@PathVariable String name ,  @RequestParam(value = "file",required = false) MultipartFile file) {
+    public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
         String folderUrl = "/images/productsPictures/";
         Map<String, String> response = new HashMap<>();
         try {
-            if(file != null) {
+            if (file != null) {
                 String fileName = uploadService.handleFileUpload(name, folderUrl, file);
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
 
                 response.put("message", "http://localhost:5051" + folderUrl + fileName);
-            }else{
+            } else {
                 response.put("message", "");
             }
             return ResponseEntity.ok(response);
@@ -212,22 +192,22 @@ public class ProductResource {
     }
 
     @PutMapping("/products/upload/{id}")
-    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id , @RequestParam(value = "file",required = false) MultipartFile file) {
+    public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
         String fileName;
-        Optional<Product> product=productService.findById(id);
+        Optional<Product> product = productService.findById(id);
         String imageUrl = product.get().getImageUrl();
         String folderUrl = "/images/productsPictures/";
 
 
         try {
-            if(file != null){
+            if (file != null) {
                 uploadService.deleteDocument(folderUrl, imageUrl);
 
-                if (imageUrl == null || imageUrl.equals("")) {
+                if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = product.get().getName() + "_" + product.get().getSubCategory();
                     fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
-                }else {
+                } else {
                     fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
                 }
 
@@ -240,13 +220,13 @@ public class ProductResource {
                 }
 
                 response.put("message", "http://localhost:5051" + folderUrl + fileName);
-            }else{
+            } else {
 
                 response.put("message", "");
             }
             return ResponseEntity.ok(response);
 
-        }catch (IOException e){
+        } catch (IOException e) {
             response = new HashMap<>();
             response.put("message", "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

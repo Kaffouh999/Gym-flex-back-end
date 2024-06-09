@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api")
 public class CategoryBlogResource {
@@ -31,8 +30,8 @@ public class CategoryBlogResource {
 
     private static final String ENTITY_NAME = "categoryBlog";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final CategoryBlogService categoryBlogService;
 
@@ -51,37 +50,29 @@ public class CategoryBlogResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/category-blogs")
-    public ResponseEntity<CategoryBlogDTO> createCategoryBlog(@Valid @RequestBody CategoryBlogDTO categoryBlogDTO)
-        throws URISyntaxException {
+    public ResponseEntity<CategoryBlogDTO> createCategoryBlog(@Valid @RequestBody CategoryBlogDTO categoryBlogDTO) throws URISyntaxException {
         log.debug("REST request to save CategoryBlog : {}", categoryBlogDTO);
         if (categoryBlogDTO.getId() != null) {
             throw new BadRequestAlertException("A new categoryBlog cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if (categoryBlogDTO.getName() == null || categoryBlogDTO.getName().equals("")) {
+        if (categoryBlogDTO.getName() == null || categoryBlogDTO.getName().isEmpty()) {
             throw new BadRequestAlertException("A new categoryBlog must have name required", ENTITY_NAME, "namerequired");
         }
         CategoryBlogDTO result = categoryBlogService.save(categoryBlogDTO);
-        return ResponseEntity
-            .created(new URI("/api/category-blogs/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        return ResponseEntity.created(new URI("/api/category-blogs/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
      * {@code PUT  /category-blogs/:id} : Updates an existing categoryBlog.
      *
-     * @param id the id of the categoryBlogDTO to save.
+     * @param id              the id of the categoryBlogDTO to save.
      * @param categoryBlogDTO the categoryBlogDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated categoryBlogDTO,
      * or with status {@code 400 (Bad Request)} if the categoryBlogDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the categoryBlogDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/category-blogs/{id}")
-    public ResponseEntity<CategoryBlogDTO> updateCategoryBlog(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody CategoryBlogDTO categoryBlogDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<CategoryBlogDTO> updateCategoryBlog(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody CategoryBlogDTO categoryBlogDTO) {
         log.debug("REST request to update CategoryBlog : {}, {}", id, categoryBlogDTO);
         if (categoryBlogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -95,28 +86,21 @@ public class CategoryBlogResource {
         }
 
         CategoryBlogDTO result = categoryBlogService.update(categoryBlogDTO);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, categoryBlogDTO.getId().toString()))
-            .body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, categoryBlogDTO.getId().toString())).body(result);
     }
 
     /**
      * {@code PATCH  /category-blogs/:id} : Partial updates given fields of an existing categoryBlog, field will ignore if it is null
      *
-     * @param id the id of the categoryBlogDTO to save.
+     * @param id              the id of the categoryBlogDTO to save.
      * @param categoryBlogDTO the categoryBlogDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated categoryBlogDTO,
      * or with status {@code 400 (Bad Request)} if the categoryBlogDTO is not valid,
      * or with status {@code 404 (Not Found)} if the categoryBlogDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the categoryBlogDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/category-blogs/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<CategoryBlogDTO> partialUpdateCategoryBlog(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody CategoryBlogDTO categoryBlogDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/category-blogs/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<CategoryBlogDTO> partialUpdateCategoryBlog(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody CategoryBlogDTO categoryBlogDTO) {
         log.debug("REST request to partial update CategoryBlog partially : {}, {}", id, categoryBlogDTO);
         if (categoryBlogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -131,10 +115,7 @@ public class CategoryBlogResource {
 
         Optional<CategoryBlogDTO> result = categoryBlogService.partialUpdate(categoryBlogDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, categoryBlogDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, categoryBlogDTO.getId().toString()));
     }
 
     /**
@@ -171,9 +152,6 @@ public class CategoryBlogResource {
     public ResponseEntity<Void> deleteCategoryBlog(@PathVariable Long id) {
         log.debug("REST request to delete CategoryBlog : {}", id);
         categoryBlogService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }

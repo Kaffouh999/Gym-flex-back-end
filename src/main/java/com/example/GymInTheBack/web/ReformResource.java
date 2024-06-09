@@ -9,7 +9,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.example.GymInTheBack.dtos.maintining.MaintiningDTO;
 import com.example.GymInTheBack.dtos.reform.ReformDTO;
 import com.example.GymInTheBack.repositories.ReformRepository;
 import com.example.GymInTheBack.services.reform.ReformService;
@@ -33,8 +32,8 @@ public class ReformResource {
 
     private static final String ENTITY_NAME = "reform";
 
-
-    private String applicationName="GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final ReformService reformService;
 
@@ -59,12 +58,9 @@ public class ReformResource {
             throw new BadRequestAlertException("A new reform cannot already have an ID", ENTITY_NAME, "idexists");
         }
         ReformDTO result = reformService.save(reformDTO);
-        if(result != null) {
-            return ResponseEntity
-                    .created(new URI("/api/reforms/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-                    .body(result);
-        }else{
+        if (result != null) {
+            return ResponseEntity.created(new URI("/api/reforms/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        } else {
             String errorMessage = "this equipment item is already reformed";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
@@ -73,18 +69,14 @@ public class ReformResource {
     /**
      * {@code PUT  /reforms/:id} : Updates an existing reform.
      *
-     * @param id the id of the reformDTO to save.
+     * @param id        the id of the reformDTO to save.
      * @param reformDTO the reformDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated reformDTO,
      * or with status {@code 400 (Bad Request)} if the reformDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the reformDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/reforms/{id}")
-    public ResponseEntity<Object> updateReform(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody ReformDTO reformDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<Object> updateReform(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody ReformDTO reformDTO) {
         log.debug("REST request to update Reform : {}, {}", id, reformDTO);
         if (reformDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -98,12 +90,9 @@ public class ReformResource {
         }
 
         ReformDTO result = reformService.update(reformDTO);
-        if(result != null) {
-            return ResponseEntity
-                    .ok()
-                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString()))
-                    .body(result);
-        }else{
+        if (result != null) {
+            return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, reformDTO.getId().toString())).body(result);
+        } else {
             String errorMessage = "this equipment item is already gone to reformed";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
@@ -112,19 +101,15 @@ public class ReformResource {
     /**
      * {@code PATCH  /reforms/:id} : Partial updates given fields of an existing reform, field will ignore if it is null
      *
-     * @param id the id of the reformDTO to save.
+     * @param id        the id of the reformDTO to save.
      * @param reformDTO the reformDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated reformDTO,
      * or with status {@code 400 (Bad Request)} if the reformDTO is not valid,
      * or with status {@code 404 (Not Found)} if the reformDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the reformDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/reforms/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<ReformDTO> partialUpdateReform(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody ReformDTO reformDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/reforms/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<ReformDTO> partialUpdateReform(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody ReformDTO reformDTO) {
         log.debug("REST request to partial update Reform partially : {}, {}", id, reformDTO);
         if (reformDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -139,10 +124,7 @@ public class ReformResource {
 
         Optional<ReformDTO> result = reformService.partialUpdate(reformDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, reformDTO.getId().toString()));
     }
 
     /**
@@ -179,9 +161,6 @@ public class ReformResource {
     public ResponseEntity<Void> deleteReform(@PathVariable Long id) {
         log.debug("REST request to delete Reform : {}", id);
         reformService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
@@ -33,8 +32,8 @@ public class AssuranceMemberResource {
 
     private static final String ENTITY_NAME = "assuranceMember";
 
-
-    private String applicationName = "GymFlex";
+    @Value("${APPLICATION_NAME}")
+    private String APPLICATION_NAME;
 
     private final AssuranceMemberService assuranceMemberService;
 
@@ -53,8 +52,7 @@ public class AssuranceMemberResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/assurance-members")
-    public ResponseEntity<Object> createAssuranceMember(@Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO)
-        throws URISyntaxException {
+    public ResponseEntity<Object> createAssuranceMember(@Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO) throws URISyntaxException {
         log.debug("REST request to save AssuranceMember : {}", assuranceMemberDTO);
         if (assuranceMemberDTO.getId() != null) {
             throw new BadRequestAlertException("A new assuranceMember cannot already have an ID", ENTITY_NAME, "idexists");
@@ -70,12 +68,9 @@ public class AssuranceMemberResource {
         }
 
         AssuranceMemberDTO result = assuranceMemberService.save(assuranceMemberDTO);
-        if(result != null) {
-            return ResponseEntity
-                    .created(new URI("/api/assurance-members/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-                    .body(result);
-        }else{
+        if (result != null) {
+            return ResponseEntity.created(new URI("/api/assurance-members/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        } else {
             String errorMessage = "the period of time you specified is already covered by an assurance for the user selected";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
 
@@ -85,18 +80,14 @@ public class AssuranceMemberResource {
     /**
      * {@code PUT  /assurance-members/:id} : Updates an existing assuranceMember.
      *
-     * @param id the id of the assuranceMemberDTO to save.
+     * @param id                 the id of the assuranceMemberDTO to save.
      * @param assuranceMemberDTO the assuranceMemberDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated assuranceMemberDTO,
      * or with status {@code 400 (Bad Request)} if the assuranceMemberDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the assuranceMemberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/assurance-members/{id}")
-    public ResponseEntity<Object> updateAssuranceMember(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO
-    ) throws URISyntaxException {
+    public ResponseEntity<Object> updateAssuranceMember(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody AssuranceMemberDTO assuranceMemberDTO) {
         log.debug("REST request to update AssuranceMember : {}, {}", id, assuranceMemberDTO);
         if (assuranceMemberDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -110,12 +101,9 @@ public class AssuranceMemberResource {
         }
 
         AssuranceMemberDTO result = assuranceMemberService.update(assuranceMemberDTO);
-        if(result != null) {
-            return ResponseEntity
-                    .ok()
-                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()))
-                    .body(result);
-        }else{
+        if (result != null) {
+            return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, assuranceMemberDTO.getId().toString())).body(result);
+        } else {
             String errorMessage = "the period of time you specified is already covered by an assurance for the user selected";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
@@ -124,19 +112,15 @@ public class AssuranceMemberResource {
     /**
      * {@code PATCH  /assurance-members/:id} : Partial updates given fields of an existing assuranceMember, field will ignore if it is null
      *
-     * @param id the id of the assuranceMemberDTO to save.
+     * @param id                 the id of the assuranceMemberDTO to save.
      * @param assuranceMemberDTO the assuranceMemberDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated assuranceMemberDTO,
      * or with status {@code 400 (Bad Request)} if the assuranceMemberDTO is not valid,
      * or with status {@code 404 (Not Found)} if the assuranceMemberDTO is not found,
      * or with status {@code 500 (Internal Server Error)} if the assuranceMemberDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/assurance-members/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AssuranceMemberDTO> partialUpdateAssuranceMember(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody AssuranceMemberDTO assuranceMemberDTO
-    ) throws URISyntaxException {
+    @PatchMapping(value = "/assurance-members/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    public ResponseEntity<AssuranceMemberDTO> partialUpdateAssuranceMember(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody AssuranceMemberDTO assuranceMemberDTO) {
         log.debug("REST request to partial update AssuranceMember partially : {}, {}", id, assuranceMemberDTO);
         if (assuranceMemberDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -151,10 +135,7 @@ public class AssuranceMemberResource {
 
         Optional<AssuranceMemberDTO> result = assuranceMemberService.partialUpdate(assuranceMemberDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, assuranceMemberDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()));
     }
 
     /**
@@ -191,9 +172,6 @@ public class AssuranceMemberResource {
     public ResponseEntity<Void> deleteAssuranceMember(@PathVariable Long id) {
         log.debug("REST request to delete AssuranceMember : {}", id);
         assuranceMemberService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 }
