@@ -20,57 +20,43 @@ public class UploadService implements IUploadService {
 
     @Override
     public String handleFileUpload(String name, String folderUrl, MultipartFile file) {
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         try {
-            File uploadDir = new File("C:\\Users\\othman\\Documents\\GymFlexFiles" + folderUrl);
-            if (!uploadDir.exists()) {
+            File uploadDir = createDirectoryIfNotExists(folderUrl);
+            String fileName = getFileName(file);
+            Path dest = uploadDir.toPath().resolve(name + "." + fileName);
 
-                if (uploadDir.mkdirs()) {
-                    logger.info("Folder created");
-                }
-            }
-            Path dest = uploadDir.toPath().resolve(name + "." + extension);
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, dest, StandardCopyOption.REPLACE_EXISTING);
             }
 
             return dest.getFileName().toString();
         } catch (IOException e) {
-
+            logger.severe("Failed to handle file upload: " + e.getMessage());
             return null;
         }
     }
 
     @Override
     public String updateFileUpload(String documentUrl, String folderUrl, MultipartFile file) {
-        int lastIndex = documentUrl.lastIndexOf("/");
-        String name = documentUrl.substring(lastIndex + 1);
-
-        //String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        //String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         try {
-            File uploadDir = new File("C:\\Users\\othman\\Documents\\GymFlexFiles" + folderUrl);
-            if (!uploadDir.exists()) {
-                if (uploadDir.mkdirs()) {
-                    logger.info("Folder created");
-                }
-            }
+            File uploadDir = createDirectoryIfNotExists(folderUrl);
+            int lastIndex = documentUrl.lastIndexOf("/");
+            String name = documentUrl.substring(lastIndex + 1);
             Path dest = uploadDir.toPath().resolve(name);
+
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, dest, StandardCopyOption.REPLACE_EXISTING);
             }
 
             return dest.getFileName().toString();
         } catch (IOException e) {
-
+            logger.severe("Failed to update file upload: " + e.getMessage());
             return null;
         }
     }
 
     @Override
     public void deleteDocument(String urlFolderDocument, String urlDocument) {
-
         int lastIndex = urlDocument.lastIndexOf("/");
         String fileName = urlDocument.substring(lastIndex + 1);
 
@@ -82,11 +68,27 @@ public class UploadService implements IUploadService {
 
         // Delete the image file
         if (documentFile.delete()) {
-            System.out.println("File deleted successfully.");
+            logger.info("File deleted successfully.");
         } else {
-            System.out.println("Failed to delete the file.");
+            logger.severe("Failed to delete the file.");
         }
     }
 
+    private File createDirectoryIfNotExists(String folderUrl) {
+        File directory = new File("C:\\Users\\othman\\Documents\\GymFlexFiles" + folderUrl);
+        if (!directory.exists()) {
+            boolean result = directory.mkdirs();
+            if (result) {
+                logger.info("Directory was created!");
+            } else {
+                logger.severe("Failed to create directory!");
+            }
+        }
+        return directory;
+    }
 
+    private String getFileName(MultipartFile file) {
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
 }

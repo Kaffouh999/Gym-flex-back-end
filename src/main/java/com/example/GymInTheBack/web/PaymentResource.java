@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
@@ -23,6 +22,7 @@ import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import com.google.zxing.WriterException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +30,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class PaymentResource {
 
     private final Logger log = LoggerFactory.getLogger(PaymentResource.class);
@@ -42,19 +42,11 @@ public class PaymentResource {
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
-
     private final PaymentService paymentService;
-    private final StatisticsService statisticsService;
-
-    private final SubscriptionMemberService subscriptionMemberService;
     private final PaymentRepository paymentRepository;
+    private final StatisticsService statisticsService;
+    private final SubscriptionMemberService subscriptionMemberService;
 
-    public PaymentResource(PaymentService paymentService, StatisticsService statisticsService, SubscriptionMemberService subscriptionMemberService, PaymentRepository paymentRepository) {
-        this.paymentService = paymentService;
-        this.statisticsService = statisticsService;
-        this.subscriptionMemberService = subscriptionMemberService;
-        this.paymentRepository = paymentRepository;
-    }
 
     /**
      * {@code POST  /payments} : Create a new payment.
@@ -222,7 +214,7 @@ public class PaymentResource {
             }
 
         } else {
-            String errorMessage = "Cannot delete this payment , it's already consumed ";
+            String errorMessage = "Cannot delete this payment, it's already consumed ";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
         subscriptionMemberDTO.setEndDate(updatedDate);

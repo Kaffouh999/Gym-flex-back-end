@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,12 +12,12 @@ import com.example.GymInTheBack.dtos.plan.PlanDTO;
 import com.example.GymInTheBack.entities.Plan;
 import com.example.GymInTheBack.entities.SubscriptionMember;
 import com.example.GymInTheBack.repositories.PlanRepository;
-import com.example.GymInTheBack.services.mappers.PlanMapper;
 import com.example.GymInTheBack.services.plan.PlanService;
 import com.example.GymInTheBack.services.upload.UploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class PlanResource {
 
     private final Logger log = LoggerFactory.getLogger(PlanResource.class);
@@ -44,11 +44,6 @@ public class PlanResource {
     private final UploadService uploadService;
     private final PlanRepository planRepository;
 
-    public PlanResource(PlanService planService, UploadService uploadService, PlanRepository planRepository) {
-        this.planService = planService;
-        this.uploadService = uploadService;
-        this.planRepository = planRepository;
-    }
 
     /**
      * {@code POST  /plans} : Create a new plan.
@@ -151,18 +146,18 @@ public class PlanResource {
         return planService.findAll();
     }
 
-    /**
-     * {@code GET  /plans/:id} : get the "id" plan.
-     *
-     * @param id the id of the planDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the planDTO, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/plans/{id}")
-    public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
-        log.debug("REST request to get Plan : {}", id);
-        Optional<PlanDTO> planDTO = planService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(planDTO);
-    }
+/**
+ * {@code GET  /plans/:id} : get the "id" plan.
+ *
+ * @param id the id of the planDTO to retrieve.
+ * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the planDTO, or with status {@code 404 (Not Found)}.
+ */
+@GetMapping("/plans/{id}")
+public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
+    log.debug("REST request to get Plan : {}", id);
+    Optional<PlanDTO> planDTO = planService.findOne(id);
+    return ResponseUtil.wrapOrNotFound(planDTO);
+}
 
     /**
      * {@code DELETE  /plans/:id} : delete the "id" plan.
@@ -184,7 +179,6 @@ public class PlanResource {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage.toString());
         }
 
-
         if (plan != null) {
             String folderUrl = "/images/plans/";
             String urlImage = plan.getImageAds();
@@ -198,12 +192,12 @@ public class PlanResource {
 
     @PostMapping("/plans/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
-        String folerUrl = "/images/plans/";
+        String folderUrl = "/images/plans/";
         Map<String, String> response = new HashMap<>();
 
         try {
             if (file != null) {
-                String fileName = uploadService.handleFileUpload(name, folerUrl, file);
+                String fileName = uploadService.handleFileUpload(name, folderUrl, file);
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }

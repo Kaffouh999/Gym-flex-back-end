@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
@@ -16,41 +15,40 @@ import com.example.GymInTheBack.services.equipmentItem.EquipmentItemService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * REST controller .
+ */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
-//todo: refactor
+@RequiredArgsConstructor
 public class EquipmentItemResource {
 
     private final Logger log = LoggerFactory.getLogger(EquipmentItemResource.class);
-
     private static final String ENTITY_NAME = "equipmentItem";
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
 
     private final EquipmentItemService equipmentItemService;
-
     private final EquipmentItemRepository equipmentItemRepository;
 
-    public EquipmentItemResource(EquipmentItemService equipmentItemService, EquipmentItemRepository equipmentItemRepository) {
-        this.equipmentItemService = equipmentItemService;
-        this.equipmentItemRepository = equipmentItemRepository;
-    }
 
     /**
      * {@code POST  /equipment-items} : Create a new equipmentItem.
      *
      * @param equipmentItemDTO the equipmentItemDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new equipmentItemDTO, or with status {@code 400 (Bad Request)} if the equipmentItem has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new equipmentItemDTO,
+     * or with status {@code 400 (Bad Request)} if the equipmentItem has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @throws NoSuchAlgorithmException if there is an error generating the ID.
      */
     @PostMapping("/equipment-items")
     public ResponseEntity<EquipmentItemDTO> createEquipmentItem(@Valid @RequestBody EquipmentItemDTO equipmentItemDTO)
@@ -61,9 +59,9 @@ public class EquipmentItemResource {
         }
         EquipmentItemDTO result = equipmentItemService.save(equipmentItemDTO);
         return ResponseEntity
-            .created(new URI("/api/equipment-items/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .created(new URI("/api/equipment-items/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -77,9 +75,8 @@ public class EquipmentItemResource {
      */
     @PutMapping("/equipment-items/{id}")
     public ResponseEntity<EquipmentItemDTO> updateEquipmentItem(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody EquipmentItemDTO equipmentItemDTO
-    ) {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody EquipmentItemDTO equipmentItemDTO) {
         log.debug("REST request to update EquipmentItem : {}, {}", id, equipmentItemDTO);
         if (equipmentItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -94,13 +91,13 @@ public class EquipmentItemResource {
 
         EquipmentItemDTO result = equipmentItemService.update(equipmentItemDTO);
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
-            .body(result);
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
+                .body(result);
     }
 
     /**
-     * {@code PATCH  /equipment-items/:id} : Partial updates given fields of an existing equipmentItem, field will ignore if it is null
+     * {@code PATCH  /equipment-items/:id} : Partial updates given fields of an existing equipmentItem, field will ignore if it is null.
      *
      * @param id the id of the equipmentItemDTO to save.
      * @param equipmentItemDTO the equipmentItemDTO to update.
@@ -111,9 +108,8 @@ public class EquipmentItemResource {
      */
     @PatchMapping(value = "/equipment-items/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EquipmentItemDTO> partialUpdateEquipmentItem(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody EquipmentItemDTO equipmentItemDTO
-    ) {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody EquipmentItemDTO equipmentItemDTO) {
         log.debug("REST request to partial update EquipmentItem partially : {}, {}", id, equipmentItemDTO);
         if (equipmentItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -129,8 +125,8 @@ public class EquipmentItemResource {
         Optional<EquipmentItemDTO> result = equipmentItemService.partialUpdate(equipmentItemDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
+                result,
+                HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
         );
     }
 
@@ -149,7 +145,8 @@ public class EquipmentItemResource {
      * {@code GET  /equipment-items/:id} : get the "id" equipmentItem.
      *
      * @param id the id of the equipmentItemDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the equipmentItemDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the equipmentItemDTO,
+     * or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/equipment-items/{id}")
     public ResponseEntity<EquipmentItemDTO> getEquipmentItem(@PathVariable Long id) {
@@ -158,24 +155,32 @@ public class EquipmentItemResource {
         return ResponseUtil.wrapOrNotFound(equipmentItemDTO);
     }
 
+    /**
+     * {@code GET  /equipment-items/qrCode/:qrCode} : get the equipmentItem by QR code.
+     *
+     * @param qrCode the QR code of the equipmentItemDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the equipmentItemDTO,
+     * or with status {@code 404 (Not Found)}.
+     */
     @GetMapping("/equipment-items/qrCode/{qrCode}")
     public ResponseEntity<EquipmentItemDTO> getEquipmentItemByQrCode(@PathVariable String qrCode) {
         Optional<EquipmentItemDTO> equipmentItemDTO = equipmentItemService.findByBareCode(qrCode);
         return ResponseUtil.wrapOrNotFound(equipmentItemDTO);
     }
+
     /**
      * {@code DELETE  /equipment-items/:id} : delete the "id" equipmentItem.
      *
      * @param id the id of the equipmentItemDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO CONTENT)}.
      */
     @DeleteMapping("/equipment-items/{id}")
     public ResponseEntity<Void> deleteEquipmentItem(@PathVariable Long id) {
         log.debug("REST request to delete EquipmentItem : {}", id);
         equipmentItemService.delete(id);
         return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
-            .build();
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .build();
     }
 }

@@ -1,14 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.example.GymInTheBack.dtos.subCategory.SubCategoryDTO;
 import com.example.GymInTheBack.entities.Equipment;
 import com.example.GymInTheBack.entities.SubCategory;
@@ -17,6 +8,7 @@ import com.example.GymInTheBack.services.subCategory.SubCategoryService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,10 +16,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class SubCategoryResource {
 
     private final Logger log = LoggerFactory.getLogger(SubCategoryResource.class);
@@ -38,21 +38,9 @@ public class SubCategoryResource {
     private String APPLICATION_NAME;
 
     private final SubCategoryService subCategoryService;
-
     private final SubCategoryRepository subCategoryRepository;
 
-    public SubCategoryResource(SubCategoryService subCategoryService, SubCategoryRepository subCategoryRepository) {
-        this.subCategoryService = subCategoryService;
-        this.subCategoryRepository = subCategoryRepository;
-    }
 
-    /**
-     * {@code POST  /sub-categories} : Create a new subCategory.
-     *
-     * @param subCategoryDTO the subCategoryDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new subCategoryDTO, or with status {@code 400 (Bad Request)} if the subCategory has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
     @PostMapping("/sub-categories")
     public ResponseEntity<Object> createSubCategory(@Valid @RequestBody SubCategoryDTO subCategoryDTO) throws URISyntaxException {
         log.debug("REST request to save SubCategory : {}", subCategoryDTO);
@@ -65,7 +53,7 @@ public class SubCategoryResource {
             throw new BadRequestAlertException("A new subCategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (subCategoryDTO.getName() == null || subCategoryDTO.getName().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new subCategory should have a name", ENTITY_NAME, "namerequiered");
+            throw new BadRequestAlertException("A new subCategory should have a name", ENTITY_NAME, "namerequired");
         }
         SubCategoryDTO result = subCategoryService.save(subCategoryDTO);
         return ResponseEntity
@@ -74,15 +62,6 @@ public class SubCategoryResource {
                 .body(result);
     }
 
-    /**
-     * {@code PUT  /sub-categories/:id} : Updates an existing subCategory.
-     *
-     * @param id             the id of the subCategoryDTO to save.
-     * @param subCategoryDTO the subCategoryDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated subCategoryDTO,
-     * or with status {@code 400 (Bad Request)} if the subCategoryDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the subCategoryDTO couldn't be updated.
-     */
     @PutMapping("/sub-categories/{id}")
     public ResponseEntity<Object> updateSubCategory(
             @PathVariable(value = "id", required = false) final Long id,
@@ -90,8 +69,8 @@ public class SubCategoryResource {
     ) {
         log.debug("REST request to update SubCategory : {}, {}", id, subCategoryDTO);
 
-        SubCategoryDTO oldSubCategory = subCategoryService.findOne(id).get();
-        if (!oldSubCategory.getName().equals(subCategoryDTO.getName()) && subCategoryService.existsByName(subCategoryDTO.getName())) {
+        SubCategoryDTO oldSubCategory = subCategoryService.findOne(id).orElse(null);
+        if (oldSubCategory != null && !oldSubCategory.getName().equals(subCategoryDTO.getName()) && subCategoryService.existsByName(subCategoryDTO.getName())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("SubCategory name is already used");
         }
 
@@ -113,16 +92,6 @@ public class SubCategoryResource {
                 .body(result);
     }
 
-    /**
-     * {@code PATCH  /sub-categories/:id} : Partial updates given fields of an existing subCategory, field will ignore if it is null
-     *
-     * @param id             the id of the subCategoryDTO to save.
-     * @param subCategoryDTO the subCategoryDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated subCategoryDTO,
-     * or with status {@code 400 (Bad Request)} if the subCategoryDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the subCategoryDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the subCategoryDTO couldn't be updated.
-     */
     @PatchMapping(value = "/sub-categories/{id}", consumes = {"application/json", "application/merge-patch+json"})
     public ResponseEntity<SubCategoryDTO> partialUpdateSubCategory(
             @PathVariable(value = "id", required = false) final Long id,
@@ -148,23 +117,12 @@ public class SubCategoryResource {
         );
     }
 
-    /**
-     * {@code GET  /sub-categories} : get all the subCategories.
-     *
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of subCategories in body.
-     */
     @GetMapping("/sub-categories")
     public List<SubCategoryDTO> getAllSubCategories() {
         log.debug("REST request to get all SubCategories");
         return subCategoryService.findAll();
     }
 
-    /**
-     * {@code GET  /sub-categories/:id} : get the "id" subCategory.
-     *
-     * @param id the id of the subCategoryDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the subCategoryDTO, or with status {@code 404 (Not Found)}.
-     */
     @GetMapping("/sub-categories/{id}")
     public ResponseEntity<SubCategoryDTO> getSubCategory(@PathVariable Long id) {
         log.debug("REST request to get SubCategory : {}", id);
@@ -172,12 +130,6 @@ public class SubCategoryResource {
         return ResponseUtil.wrapOrNotFound(subCategoryDTO);
     }
 
-    /**
-     * {@code DELETE  /sub-categories/:id} : delete the "id" subCategory.
-     *
-     * @param id the id of the subCategoryDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
     @DeleteMapping("/sub-categories/{id}")
     public ResponseEntity<Object> deleteSubCategory(@PathVariable Long id) {
         log.debug("REST request to delete SubCategory : {}", id);

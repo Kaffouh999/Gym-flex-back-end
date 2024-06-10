@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +16,7 @@ import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +25,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ProductResource {
 
     private final Logger log = LoggerFactory.getLogger(ProductResource.class);
@@ -37,21 +37,11 @@ public class ProductResource {
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
-
+    private final ProductMapper productMapper;
+    private final IUploadService uploadService;
     private final ProductService productService;
-
     private final ProductRepository productRepository;
 
-    private final ProductMapper productMapper;
-
-    private final IUploadService uploadService;
-
-    public ProductResource(ProductService productService, ProductRepository productRepository, IUploadService uploadService, ProductMapper productMapper) {
-        this.productService = productService;
-        this.productRepository = productRepository;
-        this.uploadService = uploadService;
-        this.productMapper = productMapper;
-    }
 
     /**
      * {@code POST  /products} : Create a new product.
@@ -199,7 +189,6 @@ public class ProductResource {
         String imageUrl = product.get().getImageUrl();
         String folderUrl = "/images/productsPictures/";
 
-
         try {
             if (file != null) {
                 uploadService.deleteDocument(folderUrl, imageUrl);
@@ -210,7 +199,6 @@ public class ProductResource {
                 } else {
                     fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
                 }
-
 
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
@@ -232,5 +220,4 @@ public class ProductResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
 }

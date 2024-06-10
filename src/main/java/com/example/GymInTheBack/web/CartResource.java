@@ -7,6 +7,7 @@ import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class CartResource {
 
     private final Logger log = LoggerFactory.getLogger(CartResource.class);
@@ -38,10 +40,6 @@ public class CartResource {
     private final CartService cartService;
     private final CartRepository cartRepository;
 
-    public CartResource(CartService cartService, CartRepository cartRepository) {
-        this.cartService = cartService;
-        this.cartRepository = cartRepository;
-    }
 
     /**
      * POST  /carts : Create a new cart.

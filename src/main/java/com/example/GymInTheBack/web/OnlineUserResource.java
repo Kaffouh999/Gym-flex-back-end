@@ -1,13 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.example.GymInTheBack.dtos.mailing.ContactMailDTO;
 import com.example.GymInTheBack.dtos.user.OnlineUserDTO;
 import com.example.GymInTheBack.entities.OnlineUser;
@@ -19,6 +11,7 @@ import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,32 +20,33 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class OnlineUserResource {
 
     private final Logger log = LoggerFactory.getLogger(OnlineUserResource.class);
-
     private static final String ENTITY_NAME = "onlineUser";
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
 
-    private final OnlineUserService onlineUserService;
-
-    private final OnlineUserMapper onlineUserMapper;
-    private final OnlineUserRepository onlineUserRepository;
-
     private final IUploadService uploadService;
-
-    public OnlineUserResource(OnlineUserService onlineUserService, OnlineUserRepository onlineUserRepository, IUploadService uploadService, OnlineUserMapper onlineUserMapper) {
-        this.onlineUserService = onlineUserService;
-        this.onlineUserRepository = onlineUserRepository;
-        this.uploadService = uploadService;
-        this.onlineUserMapper = onlineUserMapper;
-    }
+    private final OnlineUserMapper onlineUserMapper;
+    private final OnlineUserService onlineUserService;
+    private final OnlineUserRepository onlineUserRepository;
 
     /**
      * {@code POST  /online-users} : Create a new onlineUser.
@@ -67,23 +61,11 @@ public class OnlineUserResource {
         if (onlineUserDTO.getId() != null) {
             throw new BadRequestAlertException("A new onlineUser cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if (onlineUserDTO.getFirstName() == null || onlineUserDTO.getFirstName().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new onlineUser must hve a fisrt name", ENTITY_NAME, "firstnamerequired");
-        }
-        if (onlineUserDTO.getLastName() == null || onlineUserDTO.getLastName().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new onlineUser must hve a last name", ENTITY_NAME, "lastnamerequired");
-        }
-        if (onlineUserDTO.getEmail() == null || onlineUserDTO.getEmail().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new onlineUser must hve a email", ENTITY_NAME, "emailrequired");
-        }
-        if (onlineUserDTO.getPassword() == null || onlineUserDTO.getPassword().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new onlineUser must hve a password", ENTITY_NAME, "passwordrequired");
-        }
-        if (onlineUserDTO.getLogin() == null || onlineUserDTO.getLogin().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new onlineUser must hve a login", ENTITY_NAME, "loginrequired");
-        }
+        validateOnlineUser(onlineUserDTO);
         OnlineUserDTO result = onlineUserService.save(onlineUserDTO);
-        return ResponseEntity.created(new URI("/api/online-users/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/online-users/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -96,7 +78,7 @@ public class OnlineUserResource {
      * or with status {@code 500 (Internal Server Error)} if the onlineUserDTO couldn't be updated.
      */
     @PutMapping("/online-users/{id}")
-    public ResponseEntity<OnlineUserDTO> updateOnlineUser(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody OnlineUserDTO onlineUserDTO) {
+    public ResponseEntity<OnlineUserDTO> updateOnlineUser(@PathVariable(value = "id", required = false) Long id, @Valid @RequestBody OnlineUserDTO onlineUserDTO) {
         log.debug("REST request to update OnlineUser : {}, {}", id, onlineUserDTO);
         if (onlineUserDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -109,6 +91,7 @@ public class OnlineUserResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        validateOnlineUser(onlineUserDTO);
         OnlineUserDTO result = onlineUserService.update(onlineUserDTO);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, onlineUserDTO.getId().toString())).body(result);
     }
@@ -124,7 +107,7 @@ public class OnlineUserResource {
      * or with status {@code 500 (Internal Server Error)} if the onlineUserDTO couldn't be updated.
      */
     @PatchMapping(value = "/online-users/{id}", consumes = {"application/json", "application/merge-patch+json"})
-    public ResponseEntity<OnlineUserDTO> partialUpdateOnlineUser(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody OnlineUserDTO onlineUserDTO) {
+    public ResponseEntity<OnlineUserDTO> partialUpdateOnlineUser(@PathVariable(value = "id", required = false) Long id, @NotNull @RequestBody OnlineUserDTO onlineUserDTO) {
         log.debug("REST request to partial update OnlineUser partially : {}, {}", id, onlineUserDTO);
         if (onlineUserDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -179,19 +162,25 @@ public class OnlineUserResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
     }
 
-
+    /**
+     * {@code POST  /membersProfile/upload/{name}} : Handles file upload for member profile picture.
+     *
+     * @param name The name for the uploaded file.
+     * @param file The file to be uploaded.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the uploaded file URL in body, or with status {@code 500 (Internal Server Error)} if an error occurs during upload.
+     */
     @PostMapping("/membersProfile/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
-        String folerUrl = "/images/membersProfile/";
+        String folderUrl = "/images/membersProfile/";
         Map<String, String> response = new HashMap<>();
         try {
             if (file != null) {
-                String fileName = uploadService.handleFileUpload(name, folerUrl, file);
+                String fileName = uploadService.handleFileUpload(name, folderUrl, file);
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
 
-                response.put("message", "http://localhost:5051" + folerUrl + fileName);
+                response.put("message", "http://localhost:5051" + folderUrl + fileName);
             } else {
                 response.put("message", "");
             }
@@ -202,6 +191,13 @@ public class OnlineUserResource {
         }
     }
 
+    /**
+     * {@code PUT  /membersProfile/upload/{id}} : Updates member profile picture.
+     *
+     * @param id   The ID of the online user.
+     * @param file The file to be uploaded.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the uploaded file URL in body, or with status {@code 500 (Internal Server Error)} if an error occurs during upload.
+     */
     @PutMapping("/membersProfile/upload/{id}")
     public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
@@ -210,11 +206,8 @@ public class OnlineUserResource {
         String imageUrl = onlineUser.get().getProfilePicture();
         String folderUrl = "/images/membersProfile/";
 
-
         try {
             if (file != null) {
-
-
                 if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = onlineUser.get().getEmail();
                     fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
@@ -222,7 +215,6 @@ public class OnlineUserResource {
                     uploadService.deleteDocument(folderUrl, imageUrl);
                     fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
                 }
-
 
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
@@ -233,7 +225,6 @@ public class OnlineUserResource {
 
                 response.put("message", "http://localhost:5051" + folderUrl + fileName);
             } else {
-
                 response.put("message", "");
             }
             return ResponseEntity.ok(response);
@@ -245,20 +236,55 @@ public class OnlineUserResource {
         }
     }
 
+    /**
+     * {@code POST  /web/contact} : Handles contact requests.
+     *
+     * @param contactMail The contact email details.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} if the email is sent successfully, or {@code 500 (Internal Server Error)} if an error occurs.
+     */
     @PostMapping("/web/contact")
-    public ResponseEntity<Object> contact(@RequestBody ContactMailDTO contactMail) throws MessagingException {
-        if (onlineUserService.contactUs(contactMail)) {
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+    public ResponseEntity<Object> contact(@RequestBody ContactMailDTO contactMail) {
+        try {
+            if (onlineUserService.contactUs(contactMail)) {
+                return ResponseEntity.ok(true);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            }
+        } catch (MessagingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending email: " + e.getMessage());
+        }
+    }
+
+    /**
+     * {@code GET  /web/verify/{validationkey}} : Verifies email address.
+     *
+     * @param validationKey The validation key to verify email.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} if the email is verified successfully, or {@code 500 (Internal Server Error)} if an error occurs.
+     */
+    @GetMapping("/web/verify/{validationkey}")
+    public ResponseEntity<Object> verifyEmail(@PathVariable String validationKey) {
+        if (onlineUserService.validateMail(validationKey)) {
+            return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    @GetMapping("/web/verify/{validationkey}")
-    public ResponseEntity<Object> contact(@PathVariable String validationkey) {
-        if (onlineUserService.validateMail(validationkey)) {
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+    private void validateOnlineUser(OnlineUserDTO onlineUserDTO) {
+        if (onlineUserDTO.getFirstName() == null || onlineUserDTO.getFirstName().trim().isEmpty()) {
+            throw new BadRequestAlertException("A new onlineUser must have a first name", ENTITY_NAME, "firstnamerequired");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        if (onlineUserDTO.getLastName() == null || onlineUserDTO.getLastName().trim().isEmpty()) {
+            throw new BadRequestAlertException("A new onlineUser must have a last name", ENTITY_NAME, "lastnamerequired");
+        }
+        if (onlineUserDTO.getEmail() == null || onlineUserDTO.getEmail().trim().isEmpty()) {
+            throw new BadRequestAlertException("A new onlineUser must have an email", ENTITY_NAME, "emailrequired");
+        }
+        if (onlineUserDTO.getPassword() == null || onlineUserDTO.getPassword().trim().isEmpty()) {
+            throw new BadRequestAlertException("A new onlineUser must have a password", ENTITY_NAME, "passwordrequired");
+        }
+        if (onlineUserDTO.getLogin() == null || onlineUserDTO.getLogin().trim().isEmpty()) {
+            throw new BadRequestAlertException("A new onlineUser must have a login", ENTITY_NAME, "loginrequired");
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -15,6 +14,7 @@ import com.example.GymInTheBack.services.reform.ReformService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +22,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ReformResource {
 
     private final Logger log = LoggerFactory.getLogger(ReformResource.class);
@@ -39,10 +39,6 @@ public class ReformResource {
 
     private final ReformRepository reformRepository;
 
-    public ReformResource(ReformService reformService, ReformRepository reformRepository) {
-        this.reformService = reformService;
-        this.reformRepository = reformRepository;
-    }
 
     /**
      * {@code POST  /reforms} : Create a new reform.
@@ -155,6 +151,7 @@ public class ReformResource {
      * {@code DELETE  /reforms/:id} : delete the "id" reform.
      *
      * @param id the id of the reformDTO to delete.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/reforms/{id}")

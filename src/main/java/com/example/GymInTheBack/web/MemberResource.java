@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +20,7 @@ import com.example.GymInTheBack.services.upload.IUploadService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,41 +29,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class MemberResource {
 
     private final Logger log = LoggerFactory.getLogger(MemberResource.class);
-
     private static final String ENTITY_NAME = "member";
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
 
     private final MemberService memberService;
-
     private final OnlineUserRepository onlineUserRepository;
     private final MemberMapper memberMapper;
     private final IUploadService uploadService;
     private final MemberRepository memberRepository;
 
-    public MemberResource(MemberService memberService, MemberRepository memberRepository, OnlineUserRepository onlineUserRepository, MemberMapper memberMapper, IUploadService uploadService) {
-        this.memberService = memberService;
-        this.memberRepository = memberRepository;
-        this.onlineUserRepository = onlineUserRepository;
-        this.memberMapper = memberMapper;
-        this.uploadService = uploadService;
-    }
-
-    /**
-     * {@code POST  /members} : Create a new member.
-     *
-     * @param memberDTO the memberDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new memberDTO, or with status {@code 400 (Bad Request)} if the member has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
     @PostMapping("/members")
     public ResponseEntity<Object> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
         log.debug("REST request to save Member : {}", memberDTO);
@@ -81,24 +64,15 @@ public class MemberResource {
         }
         try {
             MemberDTO result = memberService.saveMemberWithUser(memberDTO);
-            return ResponseEntity.created(new URI("/api/members/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+            return ResponseEntity.created(new URI("/api/members/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
         } catch (DataIntegrityViolationException e) {
             String errorMessage = "Member with the same cin or email already exists.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
-
-
     }
 
-    /**
-     * {@code PUT  /members/:id} : Updates an existing member.
-     *
-     * @param id        the id of the memberDTO to save.
-     * @param memberDTO the memberDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated memberDTO,
-     * or with status {@code 400 (Bad Request)} if the memberDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the memberDTO couldn't be updated.
-     */
     @PutMapping("/members/{id}")
     public ResponseEntity<MemberDTO> updateMember(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody MemberDTO memberDTO) {
         log.debug("REST request to update Member : {}, {}", id, memberDTO);
@@ -114,19 +88,11 @@ public class MemberResource {
         }
 
         MemberDTO result = memberService.update(memberDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString())).body(result);
+        return ResponseEntity.ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString()))
+                .body(result);
     }
 
-    /**
-     * {@code PATCH  /members/:id} : Partial updates given fields of an existing member, field will ignore if it is null
-     *
-     * @param id        the id of the memberDTO to save.
-     * @param memberDTO the memberDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated memberDTO,
-     * or with status {@code 400 (Bad Request)} if the memberDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the memberDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the memberDTO couldn't be updated.
-     */
     @PatchMapping(value = "/members/{id}", consumes = {"application/json", "application/merge-patch+json"})
     public ResponseEntity<MemberDTO> partialUpdateMember(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody MemberDTO memberDTO) {
         log.debug("REST request to partial update Member partially : {}, {}", id, memberDTO);
@@ -146,16 +112,9 @@ public class MemberResource {
         return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString()));
     }
 
-    /**
-     * {@code GET  /members} : get all the members.
-     *
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of members in body.
-     */
     @GetMapping("/members")
     public List<MemberDTO> getAllMembers() {
         log.debug("REST request to get all Members");
-        System.out.println("REST request to get all Members");
-
         return memberService.findAll();
     }
 
@@ -165,12 +124,6 @@ public class MemberResource {
         return memberRepository.getMemberEquipmentStatistics();
     }
 
-    /**
-     * {@code GET  /members/:id} : get the "id" member.
-     *
-     * @param id the id of the memberDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the memberDTO, or with status {@code 404 (Not Found)}.
-     */
     @GetMapping("/members/{id}")
     public ResponseEntity<MemberDTO> getMember(@PathVariable Long id) {
         log.debug("REST request to get Member : {}", id);
@@ -186,12 +139,6 @@ public class MemberResource {
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(memberMapper.toDto(member)));
     }
 
-    /**
-     * {@code DELETE  /members/:id} : delete the "id" member.
-     *
-     * @param id the id of the memberDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
     @DeleteMapping("/members/{id}")
     public ResponseEntity<Object> deleteMember(@PathVariable Long id) {
         log.debug("REST request to delete Member : {}", id);

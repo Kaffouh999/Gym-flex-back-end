@@ -1,6 +1,5 @@
 package com.example.GymInTheBack.web;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -15,15 +14,16 @@ import com.example.GymInTheBack.services.order.OrderService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class OrderResource {
 
     private final Logger log = LoggerFactory.getLogger(OrderResource.class);
@@ -32,15 +32,9 @@ public class OrderResource {
 
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
-
     private final OrderService orderService;
-
     private final OrderRepository orderRepository;
 
-    public OrderResource(OrderService orderService, OrderRepository orderRepository) {
-        this.orderService = orderService;
-        this.orderRepository = orderRepository;
-    }
 
     /**
      * {@code POST  /orders} : Create a new order.

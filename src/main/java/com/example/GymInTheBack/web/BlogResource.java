@@ -7,6 +7,7 @@ import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class BlogResource {
 
     private final Logger log = LoggerFactory.getLogger(BlogResource.class);
@@ -38,10 +40,6 @@ public class BlogResource {
     private final BlogService blogService;
     private final BlogRepository blogRepository;
 
-    public BlogResource(BlogService blogService, BlogRepository blogRepository) {
-        this.blogService = blogService;
-        this.blogRepository = blogRepository;
-    }
 
     /**
      * POST  /blogs : Create a new blog.

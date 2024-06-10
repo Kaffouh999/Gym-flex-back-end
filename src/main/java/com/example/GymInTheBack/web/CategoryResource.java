@@ -17,6 +17,7 @@ import com.example.GymInTheBack.services.category.CategoryService;
 import com.example.GymInTheBack.utils.BadRequestAlertException;
 import com.example.GymInTheBack.utils.HeaderUtil;
 import com.example.GymInTheBack.utils.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class CategoryResource {
 
     private final Logger log = LoggerFactory.getLogger(CategoryResource.class);
@@ -37,11 +39,6 @@ public class CategoryResource {
 
     private final CategoryService categoryService;
     private final CategoryRepository categoryRepository;
-
-    public CategoryResource(CategoryService categoryService, CategoryRepository categoryRepository) {
-        this.categoryService = categoryService;
-        this.categoryRepository = categoryRepository;
-    }
 
     @PostMapping("/categories")
     public ResponseEntity<Object> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) throws URISyntaxException {
