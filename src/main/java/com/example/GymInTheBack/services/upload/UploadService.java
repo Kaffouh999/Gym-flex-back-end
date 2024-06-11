@@ -18,6 +18,8 @@ public class UploadService implements IUploadService {
 
     Logger logger = Logger.getLogger(UploadService.class.getName());
 
+    String mainFolderPath = "C:\\Users\\othman\\Documents\\GymFlexFiles";
+
     @Override
     public String handleFileUpload(String name, String folderUrl, MultipartFile file) {
         try {
@@ -60,7 +62,7 @@ public class UploadService implements IUploadService {
         int lastIndex = urlDocument.lastIndexOf("/");
         String fileName = urlDocument.substring(lastIndex + 1);
 
-        String folderPath = "C:\\Users\\Youssef\\Documents\\GymFlexFiles" + urlFolderDocument;
+        String folderPath = mainFolderPath + urlFolderDocument;
 
         String filePath = folderPath + fileName;
         // Create a File object representing the image file
@@ -75,7 +77,7 @@ public class UploadService implements IUploadService {
     }
 
     private File createDirectoryIfNotExists(String folderUrl) {
-        File directory = new File("C:\\Users\\othman\\Documents\\GymFlexFiles" + folderUrl);
+        File directory = new File(mainFolderPath + folderUrl);
         if (!directory.exists()) {
             boolean result = directory.mkdirs();
             if (result) {
