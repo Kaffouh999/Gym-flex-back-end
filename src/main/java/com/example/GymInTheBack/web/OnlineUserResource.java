@@ -180,7 +180,7 @@ public class OnlineUserResource {
                     throw new IOException("Error uploading file");
                 }
 
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", folderUrl + fileName);
             } else {
                 response.put("message", "");
             }
@@ -204,26 +204,26 @@ public class OnlineUserResource {
         String fileName;
         Optional<OnlineUser> onlineUser = onlineUserService.findById(id);
         String imageUrl = onlineUser.get().getProfilePicture();
-        String folderUrl = "/images/membersProfile/";
+        String prodileImagefolders = "/images/membersProfile/";
 
         try {
             if (file != null) {
                 if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = onlineUser.get().getEmail();
-                    fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+                    fileName = uploadService.handleFileUpload(imageUrl, prodileImagefolders, file);
                 } else {
-                    uploadService.deleteDocument(folderUrl, imageUrl);
-                    fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                    uploadService.deleteDocument(prodileImagefolders, imageUrl);
+                    fileName = uploadService.updateFileUpload(imageUrl, prodileImagefolders, file);
                 }
 
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 } else {
-                    onlineUser.get().setProfilePicture("http://localhost:5051" + folderUrl + fileName);
+                    onlineUser.get().setProfilePicture(prodileImagefolders + fileName);
                     onlineUserService.save(onlineUserMapper.toDto(onlineUser.get()));
                 }
 
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", prodileImagefolders + fileName);
             } else {
                 response.put("message", "");
             }

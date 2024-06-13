@@ -146,18 +146,18 @@ public class PlanResource {
         return planService.findAll();
     }
 
-/**
- * {@code GET  /plans/:id} : get the "id" plan.
- *
- * @param id the id of the planDTO to retrieve.
- * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the planDTO, or with status {@code 404 (Not Found)}.
- */
-@GetMapping("/plans/{id}")
-public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
-    log.debug("REST request to get Plan : {}", id);
-    Optional<PlanDTO> planDTO = planService.findOne(id);
-    return ResponseUtil.wrapOrNotFound(planDTO);
-}
+    /**
+     * {@code GET  /plans/:id} : get the "id" plan.
+     *
+     * @param id the id of the planDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the planDTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/plans/{id}")
+    public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
+        log.debug("REST request to get Plan : {}", id);
+        Optional<PlanDTO> planDTO = planService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(planDTO);
+    }
 
     /**
      * {@code DELETE  /plans/:id} : delete the "id" plan.
@@ -201,7 +201,7 @@ public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
-                response.put("message", "http://localhost:5051/images/plans/" + fileName);
+                response.put("message", "/images/plans/" + fileName);
             } else {
                 response.put("message", "");
             }
@@ -224,6 +224,7 @@ public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
                 uploadService.deleteDocument(folderUrl, imageUrl);
                 String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
 
+                //TODO
                 if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = plan.get().getName();
                     fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
@@ -233,10 +234,10 @@ public ResponseEntity<PlanDTO> getPlan(@PathVariable Long id) {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 } else {
-                    plan.get().setImageAds("http://localhost:5051" + folderUrl + fileName);
+                    plan.get().setImageAds(folderUrl + fileName);
                     planService.save(plan.get());
                 }
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", folderUrl + fileName);
 
             } else {
                 response.put("message", "");

@@ -1,5 +1,6 @@
 package com.example.GymInTheBack.services.upload;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,8 @@ public class UploadService implements IUploadService {
 
     Logger logger = Logger.getLogger(UploadService.class.getName());
 
-    String mainFolderPath = "C:\\Users\\othman\\Documents\\GymFlexFiles";
+    @Value("${FILE_UPLOAD_DIRECTORY}")
+    String FILE_UPLOAD_DIRECTORY;
 
     @Override
     public String handleFileUpload(String name, String folderUrl, MultipartFile file) {
@@ -62,7 +64,7 @@ public class UploadService implements IUploadService {
         int lastIndex = urlDocument.lastIndexOf("/");
         String fileName = urlDocument.substring(lastIndex + 1);
 
-        String folderPath = mainFolderPath + urlFolderDocument;
+        String folderPath = FILE_UPLOAD_DIRECTORY + urlFolderDocument;
 
         String filePath = folderPath + fileName;
         // Create a File object representing the image file
@@ -77,7 +79,7 @@ public class UploadService implements IUploadService {
     }
 
     private File createDirectoryIfNotExists(String folderUrl) {
-        File directory = new File(mainFolderPath + folderUrl);
+        File directory = new File(FILE_UPLOAD_DIRECTORY + folderUrl);
         if (!directory.exists()) {
             boolean result = directory.mkdirs();
             if (result) {

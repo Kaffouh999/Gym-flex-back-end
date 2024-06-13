@@ -13,11 +13,9 @@ import com.example.GymInTheBack.entities.OnlineUser;
 import com.example.GymInTheBack.entities.Role;
 import com.example.GymInTheBack.repositories.OnlineUserRepository;
 import com.example.GymInTheBack.repositories.RoleRepository;
-import com.example.GymInTheBack.services.auth.JwtService;
 import com.example.GymInTheBack.services.gymbranch.GymBranchService;
 import com.example.GymInTheBack.services.mailing.EmailService;
 import com.example.GymInTheBack.services.mappers.OnlineUserMapper;
-import io.jsonwebtoken.Claims;
 import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +30,16 @@ public class OnlineUserServiceImpl implements OnlineUserService {
     private final Logger log = LoggerFactory.getLogger(OnlineUserServiceImpl.class);
 
     private final OnlineUserRepository onlineUserRepository;
-
-    private final OnlineUserMapper onlineUserMapper;
-
-    private final RoleRepository roleRepository;
     private final GymBranchService gymBranchService;
-    private final JwtService jwtService;
-
+    private final OnlineUserMapper onlineUserMapper;
+    private final RoleRepository roleRepository;
     private final EmailService emailService;
 
-    public OnlineUserServiceImpl(OnlineUserRepository onlineUserRepository, OnlineUserMapper onlineUserMapper, RoleRepository roleRepository, GymBranchService gymBranchService, JwtService jwtService, EmailService emailService) {
+    public OnlineUserServiceImpl(OnlineUserRepository onlineUserRepository, OnlineUserMapper onlineUserMapper, RoleRepository roleRepository, GymBranchService gymBranchService, EmailService emailService) {
         this.onlineUserRepository = onlineUserRepository;
         this.onlineUserMapper = onlineUserMapper;
         this.roleRepository = roleRepository;
         this.gymBranchService = gymBranchService;
-        this.jwtService = jwtService;
         this.emailService = emailService;
     }
 

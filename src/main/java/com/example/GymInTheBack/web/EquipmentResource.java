@@ -42,10 +42,10 @@ public class EquipmentResource {
     @Value("${APPLICATION_NAME}")
     private String APPLICATION_NAME;
 
+    private final EquipmentRepository equipmentRepository;
     private final EquipmentService equipmentService;
     private final EquipmentMapper equipmentMapper;
     private final IUploadService uploadService;
-    private final EquipmentRepository equipmentRepository;
 
 
     /**
@@ -212,7 +212,7 @@ public class EquipmentResource {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
-                response.put("message", "http://localhost:5051/images/equipments/" + fileName);
+                response.put("message", "/images/equipments/" + fileName);
             } else {
                 response.put("message", "");
             }
@@ -251,10 +251,10 @@ public class EquipmentResource {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 } else {
-                    equipment.get().setImageUrl("http://localhost:5051" + folderUrl + fileName);
+                    equipment.get().setImageUrl(folderUrl + fileName);
                     equipmentService.save(equipmentMapper.toDto(equipment.get()));
                 }
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", folderUrl + fileName);
 
             } else {
                 response.put("message", "");

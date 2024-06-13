@@ -170,7 +170,7 @@ public class ProductResource {
                     throw new IOException("Error uploading file");
                 }
 
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", folderUrl + fileName);
             } else {
                 response.put("message", "");
             }
@@ -203,11 +203,11 @@ public class ProductResource {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 } else {
-                    product.get().setImageUrl("http://localhost:5051" + folderUrl + fileName);
+                    product.get().setImageUrl(folderUrl + fileName);
                     productService.save(productMapper.toDto(product.get()));
                 }
 
-                response.put("message", "http://localhost:5051" + folderUrl + fileName);
+                response.put("message", folderUrl + fileName);
             } else {
 
                 response.put("message", "");
