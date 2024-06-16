@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>com.soft</groupId>
 	<artifactId>GymInTheBack</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>GymInTheBack</name>
-	<description>The backend part of the project system gestion de salle de sport , api , data , and business ties , mad by spring boot and postgres</description>
+	<description>The backend part of the project system gestion de salle de sport , api , data , and business ties , made by spring boot and postgres</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

@@ -163,13 +163,13 @@ public class OnlineUserResource {
     }
 
     /**
-     * {@code POST  /membersProfile/upload/{name}} : Handles file upload for member profile picture.
+     * {@code POST  /online-users/upload/{name}} : Handles file upload for member profile picture.
      *
      * @param name The name for the uploaded file.
      * @param file The file to be uploaded.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the uploaded file URL in body, or with status {@code 500 (Internal Server Error)} if an error occurs during upload.
      */
-    @PostMapping("/membersProfile/upload/{name}")
+    @PostMapping("/online-users/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
         String folderUrl = "/images/membersProfile/";
         Map<String, String> response = new HashMap<>();
@@ -192,13 +192,13 @@ public class OnlineUserResource {
     }
 
     /**
-     * {@code PUT  /membersProfile/upload/{id}} : Updates member profile picture.
+     * {@code PUT  /online-users/upload/{id}} : Updates member profile picture.
      *
      * @param id   The ID of the online user.
      * @param file The file to be uploaded.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the uploaded file URL in body, or with status {@code 500 (Internal Server Error)} if an error occurs during upload.
      */
-    @PutMapping("/membersProfile/upload/{id}")
+    @PutMapping("/online-users/upload/{id}")
     public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
         String fileName;

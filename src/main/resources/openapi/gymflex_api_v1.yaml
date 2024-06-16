@@ -1,0 +1,1182 @@
+openapi: 3.0.1
+info:
+  description: "This project is the backend of the GymFlex application. It is a RESTful API that provides endpoints for the GymFlex frontend to interact with the database."
+  title: GymFlexApi
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081/api
+    description: Local server
+security:
+  - bearerAuth: [ ]
+tags:
+  - name: Role
+    description: Role management
+  - name: User
+    description: User management
+  - name: Authentication
+    description: User authentication
+  - name: Category
+    description: Category management
+  - name: SubCategory
+    description: SubCategory management
+  - name: Equipment
+    description: Equipment management
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: "Register a new user"
+      operationId: "registerUser"
+      requestBody:
+        description: "The registration request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: "User registered successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: "Bad request"
+        '500':
+          description: "Server error"
+
+  /auth/authenticate:
+    post:
+      tags:
+        - Authentication
+      summary: "Authenticate a user"
+      operationId: "authenticateUser"
+      requestBody:
+        description: "The authentication request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        '200':
+          description: "User authenticated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: "Bad request"
+        '401':
+          description: "Unauthorized"
+        '500':
+          description: "Server error"
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - Authentication
+      summary: "Refresh authentication token"
+      operationId: "refreshToken"
+      requestBody:
+        description: "The token refresh request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: "Token refreshed successfully"
+        '400':
+          description: "Bad request"
+        '401':
+          description: "Unauthorized"
+        '500':
+          description: "Server error"
+
+  /online-users:
+    post:
+      tags:
+        - User
+      summary: "Create a new online user"
+      operationId: "createOnlineUser"
+      requestBody:
+        description: "The online user creation request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineUserDTO'
+      responses:
+        '201':
+          description: "Online user created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineUserDTO'
+        '400':
+          description: "Bad request"
+        '500':
+          description: "Server error"
+    get:
+      tags:
+        - User
+      summary: "Get all online users"
+      operationId: "getAllOnlineUsers"
+      responses:
+        '200':
+          description: "List of all online users"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OnlineUserDTO'
+        '500':
+          description: "Server error"
+
+  /online-users/{id}:
+    get:
+      tags:
+        - User
+      summary: "Get online user by ID"
+      operationId: "getOnlineUser"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Online user retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineUserDTO'
+        '404':
+          description: "Online user not found"
+        '500':
+          description: "Server error"
+    put:
+      tags:
+        - User
+      summary: "Update an existing online user"
+      operationId: "updateOnlineUser"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: "The online user update request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineUserDTO'
+      responses:
+        '200':
+          description: "Online user updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineUserDTO'
+        '400':
+          description: "Bad request"
+        '404':
+          description: "Online user not found"
+        '500':
+          description: "Server error"
+    patch:
+      tags:
+        - User
+      summary: "Partial update of an online user"
+      operationId: "partialUpdateOnlineUser"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: "The online user partial update request body"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineUserDTO'
+      responses:
+        '200':
+          description: "Online user updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineUserDTO'
+        '400':
+          description: "Bad request"
+        '404':
+          description: "Online user not found"
+        '500':
+          description: "Server error"
+    delete:
+      tags:
+        - User
+      summary: "Delete an online user"
+      operationId: "deleteOnlineUser"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: "Online user deleted successfully"
+        '404':
+          description: "Online user not found"
+        '500':
+          description: "Server error"
+
+  /online-users/upload/{name}:
+    post:
+      tags:
+        - User
+      summary: "Upload member profile picture"
+      operationId: "handleFileUpload"
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: "The file upload request body"
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: "File uploaded successfully"
+        '500':
+          description: "Server error"
+
+  /online-users/upload/{id}:
+    put:
+      tags:
+        - User
+      summary: "Update member profile picture"
+      operationId: "updateFileUpload"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: "The file upload request body"
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: "File updated successfully"
+        '500':
+          description: "Server error"
+
+  /web/contact:
+    post:
+      summary: "Handle contact requests"
+      operationId: "contact"
+      requestBody:
+        description: "The contact email details"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactMailDTO'
+      responses:
+        '200':
+          description: "Email sent successfully"
+        '500':
+          description: "Server error"
+
+  /web/verify/{validationkey}:
+    get:
+      summary: "Verify email address"
+      operationId: "verifyEmail"
+      parameters:
+        - name: validationkey
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Email verified successfully"
+        '500':
+          description: "Server error"
+  /roles:
+    post:
+      tags:
+        - Role
+      summary: Create a new role
+      operationId: createRole
+      requestBody:
+        description: The role to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+      responses:
+        '201':
+          description: Role created successfully
+          headers:
+            Location:
+              description: The URI of the created role
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict, role name already used
+          content:
+            text/plain:
+              schema:
+                type: string
+    get:
+      tags:
+        - Role
+      summary: Get all roles
+      operationId: getAllRoles
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleDTO'
+  /roles/{id}:
+    get:
+      tags:
+        - Role
+      summary: Get a role by ID
+      operationId: getRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the role to retrieve
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Role
+      summary: Update an existing role
+      operationId: updateRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the role to update
+      requestBody:
+        description: The updated role
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict, role name already used
+          content:
+            text/plain:
+              schema:
+                type: string
+    patch:
+      tags:
+        - Role
+      summary: Partial update a role
+      operationId: partialUpdateRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the role to partially update
+      requestBody:
+        description: The partial update for the role
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+      responses:
+        '200':
+          description: Role partially updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Role
+      summary: Delete a role by ID
+      operationId: deleteRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the role to delete
+      responses:
+        '204':
+          description: Role deleted successfully
+        '409':
+          description: Conflict, role has associated users
+          content:
+            text/plain:
+              schema:
+                type: string
+  /categories:
+    post:
+      tags:
+        - Category
+      summary: Create a new category
+      operationId: createCategory
+      requestBody:
+        description: The category to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryDTO'
+      responses:
+        '201':
+          description: Category created successfully
+          headers:
+            Location:
+              description: The URI of the created category
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict, category name already used
+          content:
+            text/plain:
+              schema:
+                type: string
+    get:
+      tags:
+        - Category
+      summary: Get all categories
+      operationId: getAllCategories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDTO'
+  /categories/{id}:
+    get:
+      tags:
+        - Category
+      summary: Get a category by ID
+      operationId: getCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the category to retrieve
+      responses:
+        '200':
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Category
+      summary: Update an existing category
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the category to update
+      requestBody:
+        description: The updated category
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryDTO'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict, category name already used
+          content:
+            text/plain:
+              schema:
+                type: string
+    patch:
+      tags:
+        - Category
+      summary: Partial update a category
+      operationId: partialUpdateCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the category to partially update
+      requestBody:
+        description: The partial update for the category
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryDTO'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/CategoryDTO'
+      responses:
+        '200':
+          description: Category partially updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Category
+      summary: Delete a category by ID
+      operationId: deleteCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the category to delete
+      responses:
+        '204':
+          description: Category deleted successfully
+        '409':
+          description: Conflict, category has associated subcategories
+          content:
+            text/plain:
+              schema:
+                type: string
+  /sub-categories:
+    post:
+      tags:
+        - SubCategory
+      summary: Create a new sub-category
+      operationId: createSubCategory
+      requestBody:
+        description: The sub-category to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubCategoryDTO'
+      responses:
+        '201':
+          description: Sub-category created successfully
+        '400':
+          description: Bad request
+        '409':
+          description: Conflict, sub-category name already used
+    get:
+      tags:
+        - SubCategory
+      summary: Get all sub-categories
+      operationId: getAllSubCategories
+      responses:
+        '200':
+          description: List of sub-categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubCategoryDTO'
+  /sub-categories/{id}:
+    get:
+      tags:
+        - SubCategory
+      summary: Get a sub-category by ID
+      operationId: getSubCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sub-category retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubCategoryDTO'
+        '404':
+          description: Sub-category not found
+    put:
+      tags:
+        - SubCategory
+      summary: Update an existing sub-category
+      operationId: updateSubCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The updated sub-category
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubCategoryDTO'
+      responses:
+        '200':
+          description: Sub-category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubCategoryDTO'
+        '400':
+          description: Bad request
+        '404':
+          description: Sub-category not found
+        '409':
+          description: Conflict, sub-category name already used
+    patch:
+      tags:
+        - SubCategory
+      summary: Partial update a sub-category
+      operationId: partialUpdateSubCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The partial update for the sub-category
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubCategoryDTO'
+      responses:
+        '200':
+          description: Sub-category partially updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubCategoryDTO'
+        '400':
+          description: Bad request
+        '404':
+          description: Sub-category not found
+    delete:
+      tags:
+        - SubCategory
+      summary: Delete a sub-category by ID
+      operationId: deleteSubCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Sub-category deleted successfully
+        '409':
+          description: Conflict, sub-category has associated equipments
+  /equipment:
+    post:
+      tags:
+        - Equipment
+      summary: Create a new equipment
+      operationId: createEquipment
+      requestBody:
+        description: The equipment to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentDTO'
+      responses:
+        '201':
+          description: Equipment created successfully
+        '400':
+          description: Bad request
+        '409':
+          description: Conflict, equipment name already used
+    get:
+      tags:
+        - Equipment
+      summary: Get all equipment
+      operationId: getAllEquipment
+      responses:
+        '200':
+          description: List of equipment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EquipmentDTO'
+  /equipment/{id}:
+    get:
+      tags:
+        - Equipment
+      summary: Get equipment by ID
+      operationId: getEquipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Equipment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentDTO'
+        '404':
+          description: Equipment not found
+    put:
+      tags:
+        - Equipment
+      summary: Update an existing equipment
+      operationId: updateEquipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The updated equipment
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentDTO'
+      responses:
+        '200':
+          description: Equipment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentDTO'
+        '400':
+          description: Bad request
+        '404':
+          description: Equipment not found
+        '409':
+          description: Conflict, equipment name already used
+    patch:
+      tags:
+        - Equipment
+      summary: Partial update an equipment
+      operationId: partialUpdateEquipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The partial update for the equipment
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentDTO'
+      responses:
+        '200':
+          description: Equipment partially updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentDTO'
+        '400':
+          description: Bad request
+        '404':
+          description: Equipment not found
+    delete:
+      tags:
+        - Equipment
+      summary: Delete an equipment by ID
+      operationId: deleteEquipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Equipment deleted successfully
+        '409':
+          description: Conflict, equipment has associated equipment items
+  /equipment/upload/{name}:
+    post:
+      tags:
+        - Equipment
+      summary: Handle file upload for equipment
+      operationId: handleFileUpload
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The file to upload
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded successfully
+        '500':
+          description: Server error
+  /equipment/upload/{id}:
+    put:
+      tags:
+        - Equipment
+      summary: Update file upload for equipment
+      operationId: updateFileUpload
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The file to upload
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File updated successfully
+        '500':
+          description: Server error
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - password
+        - email
+
+    AuthenticationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    AuthenticationResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        refreshToken:
+          type: string
+
+    RoleDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        analytics:
+          type: boolean
+        membership:
+          type: boolean
+        payments:
+          type: boolean
+        inventory:
+          type: boolean
+        training:
+          type: boolean
+        settings:
+          type: boolean
+        preferences:
+          type: boolean
+        manageWebSite:
+          type: boolean
+        coach:
+          type: boolean
+
+
+    OnlineUserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        login:
+          type: string
+        profilePicture:
+          type: string
+        roles:
+          $ref: '#/components/schemas/RoleDTO'
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - login
+
+    ContactMailDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+      required:
+        - name
+        - email
+        - subject
+        - message
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    CategoryDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        isForInventory:
+          type: boolean
+        isForClient:
+          type: boolean
+    SubCategoryDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/CategoryDTO'
+    EquipmentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+            type: string
+        imageUrl:
+          type: string
+        subCategory:
+            $ref: '#/components/schemas/SubCategoryDTO'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
