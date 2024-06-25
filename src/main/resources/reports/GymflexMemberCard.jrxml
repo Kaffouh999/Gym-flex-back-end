@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="GymflexMemberCard" pageWidth="242" pageHeight="153" columnWidth="242" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="afed44bb-c99c-4a5b-b2b2-4488ea95cc97">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="cardStyle" mode="Opaque" backcolor="#2C3E50"/>
+	<style name="logoStyle" forecolor="#F39C12" fontSize="18" isBold="true"/>
+	<style name="nameStyle" forecolor="#FFFFFF" fontSize="14" isBold="true"/>
+	<style name="numberStyle" forecolor="#BDC3C7" fontSize="10"/>
+	<style name="quoteStyle" forecolor="#BDC3C7" fontSize="8" isItalic="true"/>
+	<parameter name="QR_CODE" class="java.lang.String"/>
+	<title>
+		<band height="153" splitType="Stretch">
+			<rectangle>
+				<reportElement style="cardStyle" x="0" y="0" width="242" height="153" uuid="08545082-765a-4bb5-b32a-80e6a6a374f0"/>
+			</rectangle>
+			<textField>
+				<reportElement style="logoStyle" x="10" y="10" width="120" height="25" uuid="6bfdb851-ed68-44da-998d-83fbfeb01bfe"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<textFieldExpression><![CDATA["GYMFLEX"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="nameStyle" x="10" y="45" width="160" height="20" uuid="d32af891-db08-4af5-82c9-0e2443b15607"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Othman KAFFOUH"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="numberStyle" x="10" y="70" width="90" height="15" uuid="77ef5372-1191-4eb4-8cd0-55eb7272afb6"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["CIN		:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="numberStyle" x="10" y="85" width="90" height="15" uuid="4bdb08bb-1ee5-46f6-8361-b2abb141ddf1"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Member N°	:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="quoteStyle" x="10" y="129" width="150" height="21" uuid="2c023997-d7a2-4a19-b5ab-55eae87acf3b"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Don't limit your challenge, challenge your limit"]]></textFieldExpression>
+			</textField>
+			<ellipse>
+				<reportElement x="179" y="3" width="60" height="60" backcolor="#F39C12" uuid="c6bf0167-5443-43ac-b01b-3f0abe14f2b4"/>
+			</ellipse>
+			<textField>
+				<reportElement style="numberStyle" x="100" y="70" width="60" height="15" uuid="d592d762-2c96-472f-ac20-b34a0c031ab7"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["AZS009"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="numberStyle" x="100" y="85" width="60" height="15" uuid="59d8b938-6b09-4082-b5e6-da468917bf0b"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["009"]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame" onErrorType="Blank">
+				<reportElement mode="Transparent" x="165" y="75" width="75" height="75" uuid="c93dc0c9-f0cb-4f21-9c8c-db669c222ca3"/>
+				<imageExpression><![CDATA[net.sf.jasperreports.engine.util.JRImageLoader.getInstance(DefaultJasperReportsContext.getInstance()).loadAwtImageFromBytes(javax.xml.bind.DatatypeConverter.parseBase64Binary($P{QR_CODE}))]]></imageExpression>
+			</image>
+		</band>
+	</title>
+</jasperReport>
