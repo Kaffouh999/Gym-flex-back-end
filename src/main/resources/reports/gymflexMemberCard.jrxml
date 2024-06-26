@@ -9,6 +9,12 @@
 	<style name="numberStyle" forecolor="#BDC3C7" fontSize="10"/>
 	<style name="quoteStyle" forecolor="#BDC3C7" fontSize="8" isItalic="true"/>
 	<parameter name="QR_CODE" class="java.lang.String"/>
+	<parameter name="NGINX_URL" class="java.lang.String"/>
+	<parameter name="MEMBER_PROFILE_PICTURE" class="java.lang.String"/>
+	<parameter name="MEMBER_NBR" class="java.lang.String"/>
+	<parameter name="MEMBER_CIN" class="java.lang.String"/>
+	<parameter name="MEMBER_NAME" class="java.lang.String"/>
+	<parameter name="MEMBER_GYM_NAME" class="java.lang.String"/>
 	<title>
 		<band height="153" splitType="Stretch">
 			<rectangle>
@@ -19,14 +25,14 @@
 				<textElement>
 					<font size="18"/>
 				</textElement>
-				<textFieldExpression><![CDATA["GYMFLEX"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{MEMBER_GYM_NAME}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="nameStyle" x="10" y="45" width="160" height="20" uuid="d32af891-db08-4af5-82c9-0e2443b15607"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Othman KAFFOUH"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{MEMBER_NAME}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="numberStyle" x="10" y="70" width="90" height="15" uuid="77ef5372-1191-4eb4-8cd0-55eb7272afb6"/>
@@ -57,18 +63,22 @@
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["AZS009"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{MEMBER_CIN}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="numberStyle" x="100" y="85" width="60" height="15" uuid="59d8b938-6b09-4082-b5e6-da468917bf0b"/>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["009"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{MEMBER_NBR}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="FillFrame" onErrorType="Blank">
 				<reportElement mode="Transparent" x="165" y="75" width="75" height="75" uuid="c93dc0c9-f0cb-4f21-9c8c-db669c222ca3"/>
 				<imageExpression><![CDATA[net.sf.jasperreports.engine.util.JRImageLoader.getInstance(DefaultJasperReportsContext.getInstance()).loadAwtImageFromBytes(javax.xml.bind.DatatypeConverter.parseBase64Binary($P{QR_CODE}))]]></imageExpression>
+			</image>
+			<image scaleImage="FillFrame">
+				<reportElement x="179" y="3" width="60" height="60" uuid="09385dbe-19e8-4e81-a3b5-b77a82ed39f8"/>
+				<imageExpression><![CDATA[$P{NGINX_URL} + $P{MEMBER_PROFILE_PICTURE}]]></imageExpression>
 			</image>
 		</band>
 	</title>

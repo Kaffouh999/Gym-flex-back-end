@@ -1,29 +1,30 @@
 package com.binarybrothers.gymflexapi.services.report;
 
-import com.binarybrothers.gymflexapi.entities.OnlineUser;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import com.binarybrothers.gymflexapi.entities.Member;
+import com.binarybrothers.gymflexapi.entities.SubscriptionMember;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import static com.binarybrothers.gymflexapi.utils.QRCodeGenerator.generateQRCodeBase64;
 
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
+    @Value("${NGINX_URL}")
+    private String ngnixUrl;
+
     public byte[] generateReport(List<Object> data, String nameFile, Map<String, Object> parameters, MediaType format) {
-        JasperPrint jasperPrint = null;
+        JasperPrint jasperPrint;
         byte[] reportContent;
         try {
 
@@ -31,13 +32,14 @@ public class ReportServiceImpl implements ReportService {
             JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
 
             //Set report data
-            data = new ArrayList<>();
-            data.add(new OnlineUser(1L,"othman","kaffouh","othman","othman@gmail.com","dd","ee",null,null,null));
-            data.add(new OnlineUser(1L,"ahmed","ghandour","othman","othman@gmail.com","dd","ee",null,null,null));
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(data);
+            JRDataSource dataSource;
+            if (data == null || data.isEmpty()) {
+                // Use an empty data source instead of null
+                dataSource = new JREmptyDataSource();
+            } else {
+                dataSource = new JRBeanCollectionDataSource(data);
+            }
 
-            //Add QR code to parameters
-            parameters.put("QR_CODE", generateQRCodeBase64());
             //Fill report
             jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
@@ -46,23 +48,31 @@ public class ReportServiceImpl implements ReportService {
             } else if (format == MediaType.APPLICATION_XML) {
                 reportContent = JasperExportManager.exportReportToXml(jasperPrint).getBytes();
             } else {
-                throw new RuntimeException("Unknown report format");
+                throw new IllegalArgumentException("Unknown report format");
             }
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new IllegalArgumentException(ex);
         }
         return reportContent;
     }
 
-    private static String generateQRCodeBase64()
-            throws WriterException, IOException {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode("AD324805", BarcodeFormat.QR_CODE,0, 0);
+    public byte[] generateMemberCardReport(Member data) throws IOException {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("MEMBER_GYM_NAME", data.getGymBranch().getName());
+        parameters.put("MEMBER_NAME", data.getOnlineUser().getFirstName() + " " + data.getOnlineUser().getLastName());
+        parameters.put("MEMBER_CIN", data.getCin());
+        parameters.put("MEMBER_NBR", data.getId().toString());
+        parameters.put("MEMBER_PROFILE_PICTURE", data.getOnlineUser().getProfilePicture());
+        parameters.put("NGINX_URL", ngnixUrl);
+        Optional<SubscriptionMember> maxIdSubscriptionMember = data.getSubscriptionMemberList().stream()
+                .max(Comparator.comparing(SubscriptionMember::getId));
 
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-        byte[] pngData = pngOutputStream.toByteArray();
-
-        return Base64.getEncoder().encodeToString(pngData);
+        if(maxIdSubscriptionMember.isPresent()) {
+            SubscriptionMember lastSubscriptionMember = maxIdSubscriptionMember.get();
+            parameters.put("QR_CODE", generateQRCodeBase64(String.valueOf(lastSubscriptionMember.getCodeSubscription())));
+        }
+        return generateReport(null, "gymflexMemberCard.jrxml", parameters, MediaType.APPLICATION_PDF);
     }
+
+
 }

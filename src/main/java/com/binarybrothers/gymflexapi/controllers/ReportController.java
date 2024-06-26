@@ -1,5 +1,7 @@
 package com.binarybrothers.gymflexapi.controllers;
 
+import com.binarybrothers.gymflexapi.entities.Member;
+import com.binarybrothers.gymflexapi.services.member.MemberService;
 import com.binarybrothers.gymflexapi.services.report.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,13 +21,15 @@ public class ReportController {
 
     private final ReportService reportService;
 
+    private final MemberService memberService;
+
     @GetMapping("/{reportName}")
     public ResponseEntity<byte[]> getReport(@PathVariable String reportName, @RequestParam(required = false) Map<String, Object> parameters) {
         try {
-            byte[] reportBytes = reportService.generateReport(new ArrayList<>(),reportName, parameters,MediaType.APPLICATION_PDF);
+            byte[] reportBytes = reportService.generateMemberCardReport(memberService.findById(1L).get());
+                    //reportService.generateReport(new ArrayList<>(),reportName, parameters,MediaType.APPLICATION_PDF);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("filename", reportName + ".pdf");
             return new ResponseEntity<>(reportBytes, headers, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

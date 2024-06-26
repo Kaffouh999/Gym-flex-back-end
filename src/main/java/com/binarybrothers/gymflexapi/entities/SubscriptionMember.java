@@ -28,7 +28,7 @@ public class SubscriptionMember implements Serializable {
     private ZonedDateTime startDate;
 
 
-    @Column(name = "start_end", nullable = true)
+    @Column(name = "start_end")
     private ZonedDateTime endDate;
 
     @Column(name = "code_subscription")

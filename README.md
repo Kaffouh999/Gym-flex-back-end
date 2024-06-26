@@ -61,6 +61,8 @@ spring.datasource.username=postgres
 spring.datasource.password=root
 # Static files location
 FILE_UPLOAD_DIRECTORY=C:\Users\myLaptop\Documents\GymFlexFiles
+# Nginx URL
+NGINX_URL=http://localhost:5051
 ```
 
 - Open ``nginx.conf`` file and configure the port and the root directory for the static files in the server block
