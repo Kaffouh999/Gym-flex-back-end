@@ -11,7 +11,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface EquipmentMapper extends EntityMapper<EquipmentDTO, Equipment> {
-    @Mapping(target = "subcategory", source = "subcategory", qualifiedByName = "subCategoryId")
+    @Mapping(target = "subCategory", source = "subCategory", qualifiedByName = "subCategoryId")
     EquipmentDTO toDto(Equipment s);
 
     @Named("subCategoryId")

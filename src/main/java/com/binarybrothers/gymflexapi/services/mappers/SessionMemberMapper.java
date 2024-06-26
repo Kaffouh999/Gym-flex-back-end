@@ -15,7 +15,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface SessionMemberMapper extends EntityMapper<SessionMemberDTO, SessionMember> {
-    @Mapping(target = "subscriptionmember", source = "subscriptionmember", qualifiedByName = "subscriptionMemberId")
+    @Mapping(target = "subscriptionMember", source = "subscriptionMember", qualifiedByName = "subscriptionMemberId")
     @Mapping(target = "gymBranch", source = "gymBranch", qualifiedByName = "gymBranchId")
     @Mapping(target = "managerAtTheTime", source = "managerAtTheTime", qualifiedByName = "memberId")
     SessionMemberDTO toDto(SessionMember s);

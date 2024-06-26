@@ -23,7 +23,7 @@ public interface EquipmentItemMapper extends EntityMapper<EquipmentItemDTO, Equi
     @Mapping(target = "name", source = "name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "imageUrl", source = "imageUrl")
-    @Mapping(target = "subcategory", source = "subcategory")
+    @Mapping(target = "subCategory", source = "subCategory")
     EquipmentDTO toDtoEquipmentId(Equipment equipment);
 
     @Named("gymBranchId")

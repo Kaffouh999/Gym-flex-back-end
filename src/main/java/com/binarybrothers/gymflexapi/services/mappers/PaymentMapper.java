@@ -13,7 +13,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface PaymentMapper extends EntityMapper<PaymentDTO, Payment> {
-    @Mapping(target = "subscriptionmember", source = "subscriptionmember", qualifiedByName = "subscriptionMemberId")
+    @Mapping(target = "subscriptionMember", source = "subscriptionMember", qualifiedByName = "subscriptionMemberId")
     @Mapping(target = "payedMember", source = "payedMember", qualifiedByName = "memberId")
     PaymentDTO toDto(Payment s);
 

@@ -11,7 +11,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper extends EntityMapper<ProductDTO, Product> {
-    @Mapping(target = "subcategory", source = "subcategory", qualifiedByName = "subCategoryId")
+    @Mapping(target = "subCategory", source = "subCategory", qualifiedByName = "subCategoryId")
     ProductDTO toDto(Product s);
 
     @Named("subCategoryId")
