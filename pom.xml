@@ -8,10 +8,10 @@
 		<version>3.0.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.soft</groupId>
-	<artifactId>GymInTheBack</artifactId>
+	<groupId>com.binarybrothers</groupId>
+	<artifactId>gym-flex-api</artifactId>
 	<version>1.0.0</version>
-	<name>GymInTheBack</name>
+	<name>gym-flex-api</name>
 	<description>The backend part of the project system gestion de salle de sport , api , data , and business ties , made by spring boot and postgres</description>
 	<properties>
 		<java.version>17</java.version>
