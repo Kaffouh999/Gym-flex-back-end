@@ -1,0 +1,26 @@
+package com.binarybrothers.gymflexapi.dtos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
+import com.binarybrothers.gymflexapi.dtos.category.CategoryDTO;
+import com.binarybrothers.gymflexapi.controllers.TestUtil;
+import org.junit.jupiter.api.Test;
+
+class CategoryDTOTest {
+
+    @Test
+    void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(CategoryDTO.class);
+        CategoryDTO categoryDTO1 = new CategoryDTO();
+        categoryDTO1.setId(1L);
+        CategoryDTO categoryDTO2 = new CategoryDTO();
+        assertThat(categoryDTO1).isNotEqualTo(categoryDTO2);
+        categoryDTO2.setId(categoryDTO1.getId());
+        assertThat(categoryDTO1).isEqualTo(categoryDTO2);
+        categoryDTO2.setId(2L);
+        assertThat(categoryDTO1).isNotEqualTo(categoryDTO2);
+        categoryDTO1.setId(null);
+        assertThat(categoryDTO1).isNotEqualTo(categoryDTO2);
+    }
+}
