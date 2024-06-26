@@ -48,7 +48,6 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
         log.debug("Request to save SubscriptionMember : {}", subscriptionMemberDTO);
         SubscriptionMember subscriptionMember = subscriptionMemberMapper.toEntity(subscriptionMemberDTO);
         String qrCode = QRCodeGenerator.generateUniqueCode();
-        System.out.println(qrCode.length());
         subscriptionMember.setCodeSubscription(qrCode);
         subscriptionMember = subscriptionMemberRepository.save(subscriptionMember);
         return subscriptionMemberMapper.toDto(subscriptionMember);
@@ -126,9 +125,6 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
          Long planId = subscriptionMember.getPlan() != null? subscriptionMember.getPlan().getId():null;
          Timestamp startDate = subscriptionMember.getStartDate() != null? Timestamp.from(subscriptionMember.getStartDate().toInstant()):null;
         Timestamp endDate = subscriptionMember.getEndDate() != null? Timestamp.from(subscriptionMember.getEndDate().toInstant()):null;
-
-        System.out.println(startDate);
-        System.out.println(endDate);
 
         return subscriptionMemberRepository.searchSubscriptions( membeId ,  planId , startDate,endDate).stream().map(subscriptionMemberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
