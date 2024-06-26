@@ -31,7 +31,7 @@ public class OrderResource {
     private static final String ENTITY_NAME = "order";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
     private final OrderService orderService;
     private final OrderRepository orderRepository;
 
@@ -53,7 +53,7 @@ public class OrderResource {
             throw new BadRequestAlertException("A new order should have a quantity", ENTITY_NAME, "quantityRequired");
         }
         OrderDTO result = orderService.save(orderDTO);
-        return ResponseEntity.created(new URI("/api/orders/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/orders/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
@@ -80,7 +80,7 @@ public class OrderResource {
         }
 
         OrderDTO result = orderService.update(orderDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, orderDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, orderDTO.getId().toString())).body(result);
     }
 
     /**
@@ -109,7 +109,7 @@ public class OrderResource {
 
         Optional<OrderDTO> result = orderService.partialUpdate(orderDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, orderDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, orderDTO.getId().toString()));
     }
 
     /**
@@ -146,6 +146,6 @@ public class OrderResource {
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         log.debug("REST request to delete Order : {}", id);
         orderService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

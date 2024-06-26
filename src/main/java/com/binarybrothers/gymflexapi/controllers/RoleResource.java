@@ -34,7 +34,7 @@ public class RoleResource {
     private static final String ENTITY_NAME = "role";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final RoleService roleService;
     private final RoleRepository roleRepository;
@@ -57,7 +57,7 @@ public class RoleResource {
         RoleDTO result = roleService.save(roleDTO);
         return ResponseEntity
                 .created(new URI("/api/roles/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -78,7 +78,7 @@ public class RoleResource {
         RoleDTO result = roleService.update(roleDTO);
         return ResponseEntity
                 .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, roleDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, roleDTO.getId().toString()))
                 .body(result);
     }
 
@@ -95,7 +95,7 @@ public class RoleResource {
 
         Optional<RoleDTO> result = roleService.partialUpdate(roleDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, roleDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, roleDTO.getId().toString()));
     }
 
     @GetMapping("/roles")
@@ -127,7 +127,7 @@ public class RoleResource {
         roleService.delete(id);
         return ResponseEntity
                 .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 }

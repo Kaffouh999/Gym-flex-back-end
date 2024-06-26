@@ -34,7 +34,7 @@ public class GymBranchResource {
     private static final String ENTITY_NAME = "gymBranch";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final GymBranchService gymBranchService;
     private final GymBranchRepository gymBranchRepository;
@@ -59,7 +59,7 @@ public class GymBranchResource {
 
         GymBranchDTO result = gymBranchService.save(gymBranchDTO);
         return ResponseEntity.created(new URI("/api/gym-branches/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -105,7 +105,7 @@ public class GymBranchResource {
 
         GymBranchDTO result = gymBranchService.update(gymBranchDTO);
         return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, gymBranchDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gymBranchDTO.getId().toString()))
                 .body(result);
     }
 
@@ -138,7 +138,7 @@ public class GymBranchResource {
         validateGymBranchId(id, gymBranchDTO);
 
         Optional<GymBranchDTO> result = gymBranchService.partialUpdate(gymBranchDTO);
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, gymBranchDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gymBranchDTO.getId().toString()));
     }
 
     /**
@@ -183,7 +183,7 @@ public class GymBranchResource {
         }
 
         gymBranchService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
     private boolean hasRelations(GymBranch gymBranch) {

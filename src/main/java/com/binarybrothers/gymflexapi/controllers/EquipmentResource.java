@@ -40,8 +40,8 @@ public class EquipmentResource {
     private static final String ENTITY_NAME = "equipment";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
-
+    private String applicationName;
+    private static final String FOLDER_URL = "/images/equipments/";
     private final EquipmentRepository equipmentRepository;
     private final EquipmentService equipmentService;
     private final EquipmentMapper equipmentMapper;
@@ -71,7 +71,7 @@ public class EquipmentResource {
             throw new BadRequestAlertException("A new equipment should have a name", ENTITY_NAME, "namerequired");
         }
         EquipmentDTO result = equipmentService.save(equipmentDTO);
-        return ResponseEntity.created(new URI("/api/equipment/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/equipment/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
@@ -103,7 +103,7 @@ public class EquipmentResource {
         }
 
         EquipmentDTO result = equipmentService.update(equipmentDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentDTO.getId().toString())).body(result);
     }
 
     /**
@@ -132,7 +132,7 @@ public class EquipmentResource {
 
         Optional<EquipmentDTO> result = equipmentService.partialUpdate(equipmentDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentDTO.getId().toString()));
     }
 
     /**
@@ -186,12 +186,12 @@ public class EquipmentResource {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
         }
 
-        String folderUrl = "/images/equipments/";
+
         String urlImage = equipment.get().getImageUrl();
-        uploadService.deleteDocument(folderUrl, urlImage);
+        uploadService.deleteDocument(FOLDER_URL, urlImage);
         equipmentService.delete(id);
 
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
     /**
@@ -203,22 +203,21 @@ public class EquipmentResource {
      */
     @PostMapping("/equipment/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
-        String folderUrl = "/images/equipments/";
         Map<String, String> response = new HashMap<>();
-
+        String msg = "message";
         try {
             if (file != null) {
-                String fileName = uploadService.handleFileUpload(name, folderUrl, file);
+                String fileName = uploadService.handleFileUpload(name, FOLDER_URL, file);
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
-                response.put("message", "/images/equipments/" + fileName);
+                response.put(msg, FOLDER_URL + fileName);
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -233,36 +232,36 @@ public class EquipmentResource {
     @PutMapping("/equipment/upload/{id}")
     public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
+        String msg = "message";
         Optional<Equipment> equipment = equipmentService.findById(id);
         String imageUrl = equipment.map(Equipment::getImageUrl).orElse(null);
-        String folderUrl = "/images/equipments/";
 
         try {
             if (file != null) {
-                uploadService.deleteDocument(folderUrl, imageUrl);
-                String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                uploadService.deleteDocument(FOLDER_URL, imageUrl);
+                String fileName;
 
                 if (imageUrl == null || imageUrl.isEmpty()) {
                     imageUrl = equipment.get().getName();
-                    fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
+                    fileName = uploadService.handleFileUpload(imageUrl, FOLDER_URL, file);
                 } else {
-                    fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                    fileName = uploadService.updateFileUpload(imageUrl, FOLDER_URL, file);
                 }
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 } else {
-                    equipment.get().setImageUrl(folderUrl + fileName);
+                    equipment.get().setImageUrl(FOLDER_URL + fileName);
                     equipmentService.save(equipmentMapper.toDto(equipment.get()));
                 }
-                response.put("message", folderUrl + fileName);
+                response.put(msg, FOLDER_URL + fileName);
 
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

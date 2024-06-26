@@ -33,7 +33,7 @@ public class ReformResource {
     private static final String ENTITY_NAME = "reform";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final ReformService reformService;
 
@@ -55,7 +55,7 @@ public class ReformResource {
         }
         ReformDTO result = reformService.save(reformDTO);
         if (result != null) {
-            return ResponseEntity.created(new URI("/api/reforms/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+            return ResponseEntity.created(new URI("/api/reforms/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
         } else {
             String errorMessage = "this equipment item is already reformed";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
@@ -87,7 +87,7 @@ public class ReformResource {
 
         ReformDTO result = reformService.update(reformDTO);
         if (result != null) {
-            return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, reformDTO.getId().toString())).body(result);
+            return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString())).body(result);
         } else {
             String errorMessage = "this equipment item is already gone to reformed";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
@@ -120,7 +120,7 @@ public class ReformResource {
 
         Optional<ReformDTO> result = reformService.partialUpdate(reformDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, reformDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reformDTO.getId().toString()));
     }
 
     /**
@@ -158,6 +158,6 @@ public class ReformResource {
     public ResponseEntity<Void> deleteReform(@PathVariable Long id) {
         log.debug("REST request to delete Reform : {}", id);
         reformService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

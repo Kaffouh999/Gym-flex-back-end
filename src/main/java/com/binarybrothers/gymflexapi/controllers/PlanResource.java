@@ -38,8 +38,8 @@ public class PlanResource {
     private static final String ENTITY_NAME = "plan";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
-
+    private String applicationName;
+    private String folderUrl = "/images/plans/";
     private final PlanService planService;
     private final UploadService uploadService;
     private final PlanRepository planRepository;
@@ -71,7 +71,7 @@ public class PlanResource {
             throw new BadRequestAlertException("A new plan must have name", ENTITY_NAME, "namerequired");
         }
         PlanDTO result = planService.save(planDTO);
-        return ResponseEntity.created(new URI("/api/plans/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/plans/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
@@ -103,7 +103,7 @@ public class PlanResource {
         }
 
         PlanDTO result = planService.update(planDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, planDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, planDTO.getId().toString())).body(result);
     }
 
     /**
@@ -132,7 +132,7 @@ public class PlanResource {
 
         Optional<PlanDTO> result = planService.partialUpdate(planDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, planDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, planDTO.getId().toString()));
     }
 
     /**
@@ -180,19 +180,18 @@ public class PlanResource {
         }
 
         if (plan != null) {
-            String folderUrl = "/images/plans/";
             String urlImage = plan.getImageAds();
             uploadService.deleteDocument(folderUrl, urlImage);
         }
 
         planService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
 
     @PostMapping("/plans/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
-        String folderUrl = "/images/plans/";
+        String msg = "message";
         Map<String, String> response = new HashMap<>();
 
         try {
@@ -201,13 +200,13 @@ public class PlanResource {
                 if (fileName == null) {
                     throw new IOException("Error uploading file");
                 }
-                response.put("message", "/images/plans/" + fileName);
+                response.put(msg, folderUrl + fileName);
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -217,15 +216,15 @@ public class PlanResource {
         Map<String, String> response = new HashMap<>();
         Optional<PlanDTO> plan = planService.findOne(id);
         String imageUrl = plan.get().getImageAds();
-        String folderUrl = "/images/plans/";
+        String msg = "message";
 
         try {
             if (file != null) {
                 uploadService.deleteDocument(folderUrl, imageUrl);
-                String fileName = uploadService.updateFileUpload(imageUrl, folderUrl, file);
+                String fileName;
 
                 //TODO
-                if (imageUrl == null || imageUrl.isEmpty()) {
+                if (imageUrl.isEmpty()) {
                     imageUrl = plan.get().getName();
                     fileName = uploadService.handleFileUpload(imageUrl, folderUrl, file);
                 } else {
@@ -237,15 +236,15 @@ public class PlanResource {
                     plan.get().setImageAds(folderUrl + fileName);
                     planService.save(plan.get());
                 }
-                response.put("message", folderUrl + fileName);
+                response.put(msg, folderUrl + fileName);
 
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

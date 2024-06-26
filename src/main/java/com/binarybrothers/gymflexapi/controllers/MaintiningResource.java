@@ -33,7 +33,7 @@ public class MaintiningResource {
     private static final String ENTITY_NAME = "maintining";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final MaintiningService maintiningService;
     private final MaintiningRepository maintiningRepository;
@@ -58,7 +58,7 @@ public class MaintiningResource {
         MaintiningDTO result = maintiningService.save(maintiningDTO);
         if (result != null) {
             return ResponseEntity.created(new URI("/api/maintinings/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                     .body(result);
         } else {
             String errorMessage = "This equipment item is already scheduled for maintenance in the specified period.";
@@ -90,7 +90,7 @@ public class MaintiningResource {
         MaintiningDTO result = maintiningService.save(maintiningDTO);
         if (result != null) {
             return ResponseEntity.ok()
-                    .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, maintiningDTO.getId().toString()))
+                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, maintiningDTO.getId().toString()))
                     .body(result);
         } else {
             String errorMessage = "This equipment item is already scheduled for maintenance in the specified period.";
@@ -121,7 +121,7 @@ public class MaintiningResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         Optional<MaintiningDTO> result = maintiningService.partialUpdate(maintiningDTO);
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, maintiningDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, maintiningDTO.getId().toString()));
     }
 
     /**
@@ -158,6 +158,6 @@ public class MaintiningResource {
     public ResponseEntity<Void> deleteMaintining(@PathVariable Long id) {
         log.debug("REST request to delete Maintining : {}", id);
         maintiningService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

@@ -22,7 +22,7 @@ public class NotificationResource {
     private static final String ENTITY_NAME = "notification";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final NotificationService notificationService;
 
@@ -48,7 +48,7 @@ public class NotificationResource {
         log.debug("REST request to delete Notification : {}", id);
         notificationService.delete(id);
         return ResponseEntity.noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 
@@ -62,7 +62,7 @@ public class NotificationResource {
         log.debug("REST request to mark all notifications as read");
         notificationService.markAsRead();
         return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, "all"))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, "all"))
                 .build();
     }
 }

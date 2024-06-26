@@ -39,7 +39,7 @@ public class MemberResource {
     private static final String ENTITY_NAME = "member";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final MemberService memberService;
     private final OnlineUserRepository onlineUserRepository;
@@ -65,7 +65,7 @@ public class MemberResource {
         try {
             MemberDTO result = memberService.saveMemberWithUser(memberDTO);
             return ResponseEntity.created(new URI("/api/members/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                     .body(result);
         } catch (DataIntegrityViolationException e) {
             String errorMessage = "Member with the same cin or email already exists.";
@@ -89,7 +89,7 @@ public class MemberResource {
 
         MemberDTO result = memberService.update(memberDTO);
         return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, memberDTO.getId().toString()))
                 .body(result);
     }
 
@@ -109,7 +109,7 @@ public class MemberResource {
 
         Optional<MemberDTO> result = memberService.partialUpdate(memberDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, memberDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, memberDTO.getId().toString()));
     }
 
     @GetMapping("/members")
@@ -167,6 +167,6 @@ public class MemberResource {
         String urlImage = member.get().getOnlineUser().getProfilePicture();
         uploadService.deleteDocument(folderUrl, urlImage);
         memberService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

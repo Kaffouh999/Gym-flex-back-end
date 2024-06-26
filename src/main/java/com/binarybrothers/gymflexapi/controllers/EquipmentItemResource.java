@@ -35,7 +35,7 @@ public class EquipmentItemResource {
     private static final String ENTITY_NAME = "equipmentItem";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final EquipmentItemService equipmentItemService;
     private final EquipmentItemRepository equipmentItemRepository;
@@ -60,7 +60,7 @@ public class EquipmentItemResource {
         EquipmentItemDTO result = equipmentItemService.save(equipmentItemDTO);
         return ResponseEntity
                 .created(new URI("/api/equipment-items/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -92,7 +92,7 @@ public class EquipmentItemResource {
         EquipmentItemDTO result = equipmentItemService.update(equipmentItemDTO);
         return ResponseEntity
                 .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentItemDTO.getId().toString()))
                 .body(result);
     }
 
@@ -126,7 +126,7 @@ public class EquipmentItemResource {
 
         return ResponseUtil.wrapOrNotFound(
                 result,
-                HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, equipmentItemDTO.getId().toString())
         );
     }
 
@@ -180,7 +180,7 @@ public class EquipmentItemResource {
         equipmentItemService.delete(id);
         return ResponseEntity
                 .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 }

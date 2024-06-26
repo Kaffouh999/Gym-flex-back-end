@@ -41,7 +41,7 @@ public class OnlineUserResource {
     private static final String ENTITY_NAME = "onlineUser";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final IUploadService uploadService;
     private final OnlineUserMapper onlineUserMapper;
@@ -64,7 +64,7 @@ public class OnlineUserResource {
         validateOnlineUser(onlineUserDTO);
         OnlineUserDTO result = onlineUserService.save(onlineUserDTO);
         return ResponseEntity.created(new URI("/api/online-users/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -93,7 +93,7 @@ public class OnlineUserResource {
 
         validateOnlineUser(onlineUserDTO);
         OnlineUserDTO result = onlineUserService.update(onlineUserDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, onlineUserDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, onlineUserDTO.getId().toString())).body(result);
     }
 
     /**
@@ -122,7 +122,7 @@ public class OnlineUserResource {
 
         Optional<OnlineUserDTO> result = onlineUserService.partialUpdate(onlineUserDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, onlineUserDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, onlineUserDTO.getId().toString()));
     }
 
     /**
@@ -159,7 +159,7 @@ public class OnlineUserResource {
     public ResponseEntity<Void> deleteOnlineUser(@PathVariable Long id) {
         log.debug("REST request to delete OnlineUser : {}", id);
         onlineUserService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
     /**
@@ -172,6 +172,7 @@ public class OnlineUserResource {
     @PostMapping("/online-users/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
         String folderUrl = "/images/membersProfile/";
+        String msg = "message";
         Map<String, String> response = new HashMap<>();
         try {
             if (file != null) {
@@ -180,13 +181,13 @@ public class OnlineUserResource {
                     throw new IOException("Error uploading file");
                 }
 
-                response.put("message", folderUrl + fileName);
+                response.put(msg, folderUrl + fileName);
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -202,6 +203,7 @@ public class OnlineUserResource {
     public ResponseEntity<Object> updateFileUpload(@PathVariable Long id, @RequestParam(value = "file", required = false) MultipartFile file) {
         Map<String, String> response = new HashMap<>();
         String fileName;
+        String msg = "message";
         Optional<OnlineUser> onlineUser = onlineUserService.findById(id);
         String imageUrl = onlineUser.get().getProfilePicture();
         String prodileImagefolders = "/images/membersProfile/";
@@ -223,15 +225,15 @@ public class OnlineUserResource {
                     onlineUserService.save(onlineUserMapper.toDto(onlineUser.get()));
                 }
 
-                response.put("message", prodileImagefolders + fileName);
+                response.put(msg, prodileImagefolders + fileName);
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
             response = new HashMap<>();
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -261,7 +263,7 @@ public class OnlineUserResource {
      * @param validationKey The validation key to verify email.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} if the email is verified successfully, or {@code 500 (Internal Server Error)} if an error occurs.
      */
-    @GetMapping("/web/verify/{validationkey}")
+    @GetMapping("/web/verify/{validationKey}")
     public ResponseEntity<Object> verifyEmail(@PathVariable String validationKey) {
         if (onlineUserService.validateMail(validationKey)) {
             return ResponseEntity.ok(true);

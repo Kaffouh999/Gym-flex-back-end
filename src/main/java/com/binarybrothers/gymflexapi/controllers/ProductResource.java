@@ -36,7 +36,7 @@ public class ProductResource {
     private static final String ENTITY_NAME = "product";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
     private final ProductMapper productMapper;
     private final IUploadService uploadService;
     private final ProductService productService;
@@ -63,7 +63,7 @@ public class ProductResource {
             throw new BadRequestAlertException("A new product should have a name", ENTITY_NAME, "namerequired");
         }
         ProductDTO result = productService.save(productDTO);
-        return ResponseEntity.created(new URI("/api/products/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/products/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
@@ -90,7 +90,7 @@ public class ProductResource {
         }
 
         ProductDTO result = productService.update(productDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, productDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, productDTO.getId().toString())).body(result);
     }
 
     /**
@@ -119,7 +119,7 @@ public class ProductResource {
 
         Optional<ProductDTO> result = productService.partialUpdate(productDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, productDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, productDTO.getId().toString()));
     }
 
     /**
@@ -156,13 +156,14 @@ public class ProductResource {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         log.debug("REST request to delete Product : {}", id);
         productService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
     @PostMapping("/products/upload/{name}")
     public ResponseEntity<Object> handleFileUpload(@PathVariable String name, @RequestParam(value = "file", required = false) MultipartFile file) {
         String folderUrl = "/images/productsPictures/";
         Map<String, String> response = new HashMap<>();
+        String msg= "message";
         try {
             if (file != null) {
                 String fileName = uploadService.handleFileUpload(name, folderUrl, file);
@@ -170,13 +171,13 @@ public class ProductResource {
                     throw new IOException("Error uploading file");
                 }
 
-                response.put("message", folderUrl + fileName);
+                response.put(msg, folderUrl + fileName);
             } else {
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -188,6 +189,7 @@ public class ProductResource {
         Optional<Product> product = productService.findById(id);
         String imageUrl = product.get().getImageUrl();
         String folderUrl = "/images/productsPictures/";
+        String msg = "message";
 
         try {
             if (file != null) {
@@ -207,16 +209,16 @@ public class ProductResource {
                     productService.save(productMapper.toDto(product.get()));
                 }
 
-                response.put("message", folderUrl + fileName);
+                response.put(msg, folderUrl + fileName);
             } else {
 
-                response.put("message", "");
+                response.put(msg, "");
             }
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
             response = new HashMap<>();
-            response.put("message", "Error uploading file: " + e.getMessage());
+            response.put(msg, "Error uploading file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
