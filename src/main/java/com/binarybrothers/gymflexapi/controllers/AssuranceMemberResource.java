@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.binarybrothers.gymflexapi.dtos.assurancemember.AssuranceMemberDTO;
 import com.binarybrothers.gymflexapi.repositories.AssuranceMemberRepository;
-import com.binarybrothers.gymflexapi.services.assuranceMember.AssuranceMemberService;
+import com.binarybrothers.gymflexapi.services.assurancemember.AssuranceMemberService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
 import com.binarybrothers.gymflexapi.utils.HeaderUtil;
 import com.binarybrothers.gymflexapi.utils.ResponseUtil;
@@ -35,7 +35,7 @@ public class AssuranceMemberResource {
     private static final String ENTITY_NAME = "assurancemember";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final AssuranceMemberService assuranceMemberService;
     private final AssuranceMemberRepository assuranceMemberRepository;
@@ -67,7 +67,7 @@ public class AssuranceMemberResource {
         validatePatchAssuranceMember(id, assuranceMemberDTO);
 
         Optional<AssuranceMemberDTO> result = assuranceMemberService.partialUpdate(assuranceMemberDTO);
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, assuranceMemberDTO.getId().toString()));
     }
 
     @GetMapping("/assurance-members")
@@ -87,7 +87,7 @@ public class AssuranceMemberResource {
     public ResponseEntity<Void> deleteAssuranceMember(@PathVariable Long id) {
         log.debug("REST request to delete AssuranceMember : {}", id);
         assuranceMemberService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 
     private void validateAssuranceMember(AssuranceMemberDTO assuranceMemberDTO, boolean isNew) {
@@ -120,7 +120,7 @@ public class AssuranceMemberResource {
     private ResponseEntity<Object> createResponse(AssuranceMemberDTO result, String path) throws URISyntaxException {
         if (result != null) {
             return ResponseEntity.created(new URI(path + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                     .body(result);
         } else {
             String errorMessage = "The period of time you specified is already covered by an assurance for the selected user";
@@ -131,7 +131,7 @@ public class AssuranceMemberResource {
     private ResponseEntity<Object> updateResponse(AssuranceMemberDTO result, Long id) {
         if (result != null) {
             return ResponseEntity.ok()
-                    .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                    .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
                     .body(result);
         } else {
             String errorMessage = "The period of time you specified is already covered by an assurance for the selected user";

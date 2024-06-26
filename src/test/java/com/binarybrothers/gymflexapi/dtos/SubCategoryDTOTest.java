@@ -2,7 +2,7 @@ package com.binarybrothers.gymflexapi.dtos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.controllers.TestUtil;
 import org.junit.jupiter.api.Test;
 

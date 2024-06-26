@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.services.subscriptionMember;
+package com.binarybrothers.gymflexapi.services.subscriptionmember;
 
 
 import java.security.NoSuchAlgorithmException;

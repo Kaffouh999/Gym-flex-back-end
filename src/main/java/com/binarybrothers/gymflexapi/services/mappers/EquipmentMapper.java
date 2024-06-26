@@ -2,7 +2,7 @@ package com.binarybrothers.gymflexapi.services.mappers;
 
 
 import com.binarybrothers.gymflexapi.dtos.equipment.EquipmentDTO;
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.entities.Equipment;
 import com.binarybrothers.gymflexapi.entities.SubCategory;
 import com.binarybrothers.gymflexapi.utils.EntityMapper;
@@ -11,7 +11,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface EquipmentMapper extends EntityMapper<EquipmentDTO, Equipment> {
-    @Mapping(target = "subCategory", source = "subCategory", qualifiedByName = "subCategoryId")
+    @Mapping(target = "subcategory", source = "subcategory", qualifiedByName = "subCategoryId")
     EquipmentDTO toDto(Equipment s);
 
     @Named("subCategoryId")

@@ -1,13 +1,13 @@
-package com.binarybrothers.gymflexapi.services.subCategory;
+package com.binarybrothers.gymflexapi.services.subcategory;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import java.util.List;
 import java.util.Optional;
 
 
 public interface SubCategoryService {
     /**
-     * Save a subCategory.
+     * Save a subcategory.
      *
      * @param subCategoryDTO the entity to save.
      * @return the persisted entity.
@@ -15,7 +15,7 @@ public interface SubCategoryService {
     SubCategoryDTO save(SubCategoryDTO subCategoryDTO);
 
     /**
-     * Updates a subCategory.
+     * Updates a subcategory.
      *
      * @param subCategoryDTO the entity to update.
      * @return the persisted entity.
@@ -23,7 +23,7 @@ public interface SubCategoryService {
     SubCategoryDTO update(SubCategoryDTO subCategoryDTO);
 
     /**
-     * Partially updates a subCategory.
+     * Partially updates a subcategory.
      *
      * @param subCategoryDTO the entity to update partially.
      * @return the persisted entity.
@@ -38,7 +38,7 @@ public interface SubCategoryService {
     List<SubCategoryDTO> findAll();
 
     /**
-     * Get the "id" subCategory.
+     * Get the "id" subcategory.
      *
      * @param id the id of the entity.
      * @return the entity.
@@ -46,7 +46,7 @@ public interface SubCategoryService {
     Optional<SubCategoryDTO> findOne(Long id);
 
     /**
-     * Delete the "id" subCategory.
+     * Delete the "id" subcategory.
      *
      * @param id the id of the entity.
      */

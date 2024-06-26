@@ -1,8 +1,8 @@
 package com.binarybrothers.gymflexapi.controllers;
 
-import com.binarybrothers.gymflexapi.dtos.sessionMember.SessionMemberDTO;
+import com.binarybrothers.gymflexapi.dtos.sessionmember.SessionMemberDTO;
 import com.binarybrothers.gymflexapi.repositories.SessionMemberRepository;
-import com.binarybrothers.gymflexapi.services.sessionMember.SessionMemberService;
+import com.binarybrothers.gymflexapi.services.sessionmember.SessionMemberService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
 import com.binarybrothers.gymflexapi.utils.HeaderUtil;
 import com.binarybrothers.gymflexapi.utils.ResponseUtil;
@@ -29,10 +29,10 @@ public class SessionMemberResource {
 
     private final Logger log = LoggerFactory.getLogger(SessionMemberResource.class);
 
-    private static final String ENTITY_NAME = "sessionMember";
+    private static final String ENTITY_NAME = "sessionmember";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final SessionMemberService sessionMemberService;
     private final SessionMemberRepository sessionMemberRepository;
@@ -42,14 +42,14 @@ public class SessionMemberResource {
     public ResponseEntity<SessionMemberDTO> createSessionMember(@Valid @RequestBody SessionMemberDTO sessionMemberDTO) throws URISyntaxException {
         log.debug("REST request to save SessionMember : {}", sessionMemberDTO);
         if (sessionMemberDTO.getId() != null) {
-            throw new BadRequestAlertException("A new sessionMember cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new sessionmember cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (sessionMemberDTO.getEnteringTime() == null) {
-            throw new BadRequestAlertException("A new sessionMember must have entering date", ENTITY_NAME, "enteringdaterequired");
+            throw new BadRequestAlertException("A new sessionmember must have entering date", ENTITY_NAME, "enteringdaterequired");
         }
         SessionMemberDTO result = sessionMemberService.save(sessionMemberDTO);
         return ResponseEntity.created(new URI("/api/session-members/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -69,7 +69,7 @@ public class SessionMemberResource {
 
         SessionMemberDTO result = sessionMemberService.update(sessionMemberDTO);
         return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, sessionMemberDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, sessionMemberDTO.getId().toString()))
                 .body(result);
     }
 
@@ -89,7 +89,7 @@ public class SessionMemberResource {
 
         Optional<SessionMemberDTO> result = sessionMemberService.partialUpdate(sessionMemberDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, sessionMemberDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, sessionMemberDTO.getId().toString()));
     }
 
     @GetMapping("/session-members")
@@ -123,7 +123,7 @@ public class SessionMemberResource {
         log.debug("REST request to delete SessionMember : {}", id);
         sessionMemberService.delete(id);
         return ResponseEntity.noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 }

@@ -17,7 +17,7 @@ import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionMemberDTO;
 import com.binarybrothers.gymflexapi.repositories.PaymentRepository;
 import com.binarybrothers.gymflexapi.services.payment.PaymentService;
 import com.binarybrothers.gymflexapi.services.statistics.StatisticsService;
-import com.binarybrothers.gymflexapi.services.subscriptionMember.SubscriptionMemberService;
+import com.binarybrothers.gymflexapi.services.subscriptionmember.SubscriptionMemberService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
 import com.binarybrothers.gymflexapi.utils.HeaderUtil;
 import com.binarybrothers.gymflexapi.utils.ResponseUtil;
@@ -41,7 +41,7 @@ public class PaymentResource {
     private static final String ENTITY_NAME = "payment";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
     private final StatisticsService statisticsService;
@@ -92,7 +92,7 @@ public class PaymentResource {
         subscriptionMemberService.save(subscriptionMemberDTO);
 
         PaymentDTO result = paymentService.save(paymentDTO);
-        return ResponseEntity.created(new URI("/api/payments/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString())).body(result);
+        return ResponseEntity.created(new URI("/api/payments/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);
     }
 
     /**
@@ -119,7 +119,7 @@ public class PaymentResource {
         }
 
         PaymentDTO result = paymentService.update(paymentDTO);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, paymentDTO.getId().toString())).body(result);
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, paymentDTO.getId().toString())).body(result);
     }
 
     /**
@@ -148,7 +148,7 @@ public class PaymentResource {
 
         Optional<PaymentDTO> result = paymentService.partialUpdate(paymentDTO);
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, paymentDTO.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, paymentDTO.getId().toString()));
     }
 
     /**
@@ -220,6 +220,6 @@ public class PaymentResource {
         subscriptionMemberDTO.setEndDate(updatedDate);
         subscriptionMemberService.save(subscriptionMemberDTO);
         paymentService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
 }

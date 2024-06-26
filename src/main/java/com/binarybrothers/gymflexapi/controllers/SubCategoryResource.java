@@ -1,10 +1,10 @@
 package com.binarybrothers.gymflexapi.controllers;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.entities.Equipment;
 import com.binarybrothers.gymflexapi.entities.SubCategory;
 import com.binarybrothers.gymflexapi.repositories.SubCategoryRepository;
-import com.binarybrothers.gymflexapi.services.subCategory.SubCategoryService;
+import com.binarybrothers.gymflexapi.services.subcategory.SubCategoryService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
 import com.binarybrothers.gymflexapi.utils.HeaderUtil;
 import com.binarybrothers.gymflexapi.utils.ResponseUtil;
@@ -32,10 +32,10 @@ public class SubCategoryResource {
 
     private final Logger log = LoggerFactory.getLogger(SubCategoryResource.class);
 
-    private static final String ENTITY_NAME = "subCategory";
+    private static final String ENTITY_NAME = "subcategory";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final SubCategoryService subCategoryService;
     private final SubCategoryRepository subCategoryRepository;
@@ -50,15 +50,15 @@ public class SubCategoryResource {
         }
 
         if (subCategoryDTO.getId() != null) {
-            throw new BadRequestAlertException("A new subCategory cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new subcategory cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (subCategoryDTO.getName() == null || subCategoryDTO.getName().trim().isEmpty()) {
-            throw new BadRequestAlertException("A new subCategory should have a name", ENTITY_NAME, "namerequired");
+            throw new BadRequestAlertException("A new subcategory should have a name", ENTITY_NAME, "namerequired");
         }
         SubCategoryDTO result = subCategoryService.save(subCategoryDTO);
         return ResponseEntity
                 .created(new URI("/api/sub-categories/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -88,7 +88,7 @@ public class SubCategoryResource {
         SubCategoryDTO result = subCategoryService.update(subCategoryDTO);
         return ResponseEntity
                 .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subCategoryDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subCategoryDTO.getId().toString()))
                 .body(result);
     }
 
@@ -113,7 +113,7 @@ public class SubCategoryResource {
 
         return ResponseUtil.wrapOrNotFound(
                 result,
-                HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subCategoryDTO.getId().toString())
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subCategoryDTO.getId().toString())
         );
     }
 
@@ -146,7 +146,7 @@ public class SubCategoryResource {
         subCategoryService.delete(id);
         return ResponseEntity
                 .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 }

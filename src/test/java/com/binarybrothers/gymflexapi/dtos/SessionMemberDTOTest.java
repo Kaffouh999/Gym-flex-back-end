@@ -3,7 +3,7 @@ package com.binarybrothers.gymflexapi.dtos;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import com.binarybrothers.gymflexapi.dtos.sessionMember.SessionMemberDTO;
+import com.binarybrothers.gymflexapi.dtos.sessionmember.SessionMemberDTO;
 import com.binarybrothers.gymflexapi.controllers.TestUtil;
 import org.junit.jupiter.api.Test;
 

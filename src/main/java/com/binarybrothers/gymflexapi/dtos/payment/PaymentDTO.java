@@ -103,7 +103,7 @@ public class PaymentDTO implements Serializable {
             "id=" + getId() +
             ", amountPayed=" + getAmountPayed() +
             ", paymentDate='" + getPaymentDate() + "'" +
-            ", subscriptionMember=" + getSubscriptionMember() +
+            ", subscriptionmember=" + getSubscriptionMember() +
             ", payedMember=" + getPayedMember() +
             "}";
     }

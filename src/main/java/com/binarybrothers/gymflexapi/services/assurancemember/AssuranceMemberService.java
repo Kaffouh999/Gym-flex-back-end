@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.services.assuranceMember;
+package com.binarybrothers.gymflexapi.services.assurancemember;
 
 import com.binarybrothers.gymflexapi.dtos.assurancemember.AssuranceMemberDTO;
 

@@ -1,7 +1,7 @@
-package com.binarybrothers.gymflexapi.services.sessionMember;
+package com.binarybrothers.gymflexapi.services.sessionmember;
 
 
-import com.binarybrothers.gymflexapi.dtos.sessionMember.SessionMemberDTO;
+import com.binarybrothers.gymflexapi.dtos.sessionmember.SessionMemberDTO;
 import com.binarybrothers.gymflexapi.dtos.statistics.EnteringTimeStatisticDTO;
 import com.binarybrothers.gymflexapi.entities.SessionMember;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface SessionMemberService {
     /**
-     * Save a sessionMember.
+     * Save a sessionmember.
      *
      * @param sessionMemberDTO the entity to save.
      * @return the persisted entity.
@@ -19,7 +19,7 @@ public interface SessionMemberService {
     SessionMemberDTO save(SessionMemberDTO sessionMemberDTO);
 
     /**
-     * Updates a sessionMember.
+     * Updates a sessionmember.
      *
      * @param sessionMemberDTO the entity to update.
      * @return the persisted entity.
@@ -27,7 +27,7 @@ public interface SessionMemberService {
     SessionMemberDTO update(SessionMemberDTO sessionMemberDTO);
 
     /**
-     * Partially updates a sessionMember.
+     * Partially updates a sessionmember.
      *
      * @param sessionMemberDTO the entity to update partially.
      * @return the persisted entity.
@@ -42,7 +42,7 @@ public interface SessionMemberService {
     List<SessionMemberDTO> findAll();
 
     /**
-     * Get the "id" sessionMember.
+     * Get the "id" sessionmember.
      *
      * @param id the id of the entity.
      * @return the entity.
@@ -50,7 +50,7 @@ public interface SessionMemberService {
     Optional<SessionMemberDTO> findOne(Long id);
 
     /**
-     * Delete the "id" sessionMember.
+     * Delete the "id" sessionmember.
      *
      * @param id the id of the entity.
      */

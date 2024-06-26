@@ -2,7 +2,7 @@ package com.binarybrothers.gymflexapi.services.mappers;
 
 
 import com.binarybrothers.gymflexapi.dtos.category.CategoryDTO;
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.entities.Category;
 import com.binarybrothers.gymflexapi.entities.SubCategory;
 import com.binarybrothers.gymflexapi.utils.EntityMapper;

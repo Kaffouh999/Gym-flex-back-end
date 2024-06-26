@@ -26,7 +26,7 @@ public interface OrderMapper extends EntityMapper<OrderDTO, Order> {
     @Mapping(target = "imageUrl", source = "imageUrl")
     @Mapping(target = "rating", source = "rating")
     @Mapping(target = "discount", source = "discount")
-    @Mapping(target = "subCategory", source = "subCategory")
+    @Mapping(target = "subcategory", source = "subcategory")
 
     ProductDTO toDtoProductId(Product product);
 

@@ -47,7 +47,7 @@ public class SubscriptionMember implements Serializable {
     private Plan plan;
 
     @OneToMany(mappedBy = "subscriptionMember")
-    @JsonIgnoreProperties(value = "subscriptionMember")
+    @JsonIgnoreProperties(value = "subscriptionmember")
     private List<Payment> paymentList;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

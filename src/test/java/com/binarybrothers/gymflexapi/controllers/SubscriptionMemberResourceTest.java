@@ -248,7 +248,7 @@ class SubscriptionMemberResourceTest {
         // Initialize the database
         subscriptionMemberRepository.saveAndFlush(subscriptionMember);
 
-        // Get the subscriptionMember
+        // Get the subscriptionmember
         restSubscriptionMemberMockMvc
             .perform(get(ENTITY_API_URL_ID, subscriptionMember.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
@@ -262,7 +262,7 @@ class SubscriptionMemberResourceTest {
     @Test
     @Transactional
     void getNonExistingSubscriptionMember() throws Exception {
-        // Get the subscriptionMember
+        // Get the subscriptionmember
         restSubscriptionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
@@ -274,7 +274,7 @@ class SubscriptionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = subscriptionMemberRepository.findAll().size();
 
-        // Update the subscriptionMember
+        // Update the subscriptionmember
         SubscriptionMember updatedSubscriptionMember = subscriptionMemberRepository.findById(subscriptionMember.getId()).get();
         // Disconnect from session so that the updates on updatedSubscriptionMember are not directly saved in db
         em.detach(updatedSubscriptionMember);
@@ -378,7 +378,7 @@ class SubscriptionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = subscriptionMemberRepository.findAll().size();
 
-        // Update the subscriptionMember using partial update
+        // Update the subscriptionmember using partial update
         SubscriptionMember partialUpdatedSubscriptionMember = new SubscriptionMember();
         partialUpdatedSubscriptionMember.setId(subscriptionMember.getId());
 
@@ -409,7 +409,7 @@ class SubscriptionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = subscriptionMemberRepository.findAll().size();
 
-        // Update the subscriptionMember using partial update
+        // Update the subscriptionmember using partial update
         SubscriptionMember partialUpdatedSubscriptionMember = new SubscriptionMember();
         partialUpdatedSubscriptionMember.setId(subscriptionMember.getId());
 
@@ -512,7 +512,7 @@ class SubscriptionMemberResourceTest {
 
         int databaseSizeBeforeDelete = subscriptionMemberRepository.findAll().size();
 
-        // Delete the subscriptionMember
+        // Delete the subscriptionmember
         restSubscriptionMemberMockMvc
             .perform(delete(ENTITY_API_URL_ID, subscriptionMember.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());

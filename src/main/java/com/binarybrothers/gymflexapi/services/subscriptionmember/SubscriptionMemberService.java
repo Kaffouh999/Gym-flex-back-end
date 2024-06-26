@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.services.subscriptionMember;
+package com.binarybrothers.gymflexapi.services.subscriptionmember;
 
 
 import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionMemberDTO;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface SubscriptionMemberService {
     /**
-     * Save a subscriptionMember.
+     * Save a subscriptionmember.
      *
      * @param subscriptionMemberDTO the entity to save.
      * @return the persisted entity.
@@ -21,7 +21,7 @@ public interface SubscriptionMemberService {
     SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO) throws WriterException, NoSuchAlgorithmException;
 
     /**
-     * Updates a subscriptionMember.
+     * Updates a subscriptionmember.
      *
      * @param subscriptionMemberDTO the entity to update.
      * @return the persisted entity.
@@ -29,7 +29,7 @@ public interface SubscriptionMemberService {
     SubscriptionMemberDTO update(SubscriptionMemberDTO subscriptionMemberDTO);
 
     /**
-     * Partially updates a subscriptionMember.
+     * Partially updates a subscriptionmember.
      *
      * @param subscriptionMemberDTO the entity to update partially.
      * @return the persisted entity.
@@ -44,7 +44,7 @@ public interface SubscriptionMemberService {
     List<SubscriptionMemberDTO> findAll();
 
     /**
-     * Get the "id" subscriptionMember.
+     * Get the "id" subscriptionmember.
      *
      * @param id the id of the entity.
      * @return the entity.
@@ -54,7 +54,7 @@ public interface SubscriptionMemberService {
     Optional<SubscriptionMemberDTO> findByCodeSubscription(String codeSubscription);
 
     /**
-     * Delete the "id" subscriptionMember.
+     * Delete the "id" subscriptionmember.
      *
      * @param id the id of the entity.
      */

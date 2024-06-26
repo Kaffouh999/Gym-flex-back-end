@@ -1,6 +1,6 @@
 package com.binarybrothers.gymflexapi.dtos.equipment;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -90,7 +90,7 @@ public class EquipmentDTO implements Serializable {
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
             ", imageUrl='" + getImageUrl() + "'" +
-            ", subCategory=" + getSubCategory() +
+            ", subcategory=" + getSubCategory() +
             "}";
     }
 }

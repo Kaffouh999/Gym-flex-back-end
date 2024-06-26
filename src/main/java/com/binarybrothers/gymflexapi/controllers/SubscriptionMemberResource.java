@@ -5,7 +5,7 @@ import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionWithPaymentsD
 import com.binarybrothers.gymflexapi.entities.Payment;
 import com.binarybrothers.gymflexapi.entities.SubscriptionMember;
 import com.binarybrothers.gymflexapi.repositories.SubscriptionMemberRepository;
-import com.binarybrothers.gymflexapi.services.subscriptionMember.SubscriptionMemberService;
+import com.binarybrothers.gymflexapi.services.subscriptionmember.SubscriptionMemberService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
 import com.binarybrothers.gymflexapi.utils.HeaderUtil;
 import com.binarybrothers.gymflexapi.utils.ResponseUtil;
@@ -36,10 +36,10 @@ public class SubscriptionMemberResource {
 
     private final Logger log = LoggerFactory.getLogger(SubscriptionMemberResource.class);
 
-    private static final String ENTITY_NAME = "subscriptionMember";
+    private static final String ENTITY_NAME = "subscriptionmember";
 
     @Value("${APPLICATION_NAME}")
-    private String APPLICATION_NAME;
+    private String applicationName;
 
     private final SubscriptionMemberService subscriptionMemberService;
     private final SubscriptionMemberRepository subscriptionMemberRepository;
@@ -49,19 +49,19 @@ public class SubscriptionMemberResource {
     public ResponseEntity<SubscriptionMemberDTO> createSubscriptionMember(@Valid @RequestBody SubscriptionMemberDTO subscriptionMemberDTO) throws NoSuchAlgorithmException, URISyntaxException, WriterException {
         log.debug("REST request to save SubscriptionMember : {}", subscriptionMemberDTO);
         if (subscriptionMemberDTO.getId() != null) {
-            throw new BadRequestAlertException("A new subscriptionMember cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new subscriptionmember cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (subscriptionMemberDTO.getStartDate() == null) {
-            throw new BadRequestAlertException("A new subscriptionMember must have date start", ENTITY_NAME, "datestartrequired");
+            throw new BadRequestAlertException("A new subscriptionmember must have date start", ENTITY_NAME, "datestartrequired");
         }
         if (subscriptionMemberDTO.getPlan() == null) {
-            throw new BadRequestAlertException("A new subscriptionMember must have plan", ENTITY_NAME, "planrequired");
+            throw new BadRequestAlertException("A new subscriptionmember must have plan", ENTITY_NAME, "planrequired");
         }
 
         SubscriptionMemberDTO result = subscriptionMemberService.save(subscriptionMemberDTO);
         return ResponseEntity
                 .created(new URI("/api/subscription-members/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(APPLICATION_NAME, true, ENTITY_NAME, result.getId().toString()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
                 .body(result);
     }
 
@@ -85,7 +85,7 @@ public class SubscriptionMemberResource {
         SubscriptionMemberDTO result = subscriptionMemberService.update(subscriptionMemberDTO);
         return ResponseEntity
                 .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString()))
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString()))
                 .body(result);
     }
 
@@ -110,7 +110,7 @@ public class SubscriptionMemberResource {
 
         return ResponseUtil.wrapOrNotFound(
                 result,
-                HeaderUtil.createEntityUpdateAlert(APPLICATION_NAME, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString())
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, subscriptionMemberDTO.getId().toString())
         );
     }
 
@@ -161,7 +161,7 @@ public class SubscriptionMemberResource {
         subscriptionMemberService.delete(id);
         return ResponseEntity
                 .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(APPLICATION_NAME, true, ENTITY_NAME, id.toString()))
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
     }
 

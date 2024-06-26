@@ -83,7 +83,7 @@ public class SubscriptionWithPaymentsDTO {
         this.plan = plan;
     }
 
-    @JsonIgnoreProperties(value = "subscriptionMember")
+    @JsonIgnoreProperties(value = "subscriptionmember")
     public List<Payment> getPaymentList() {
         return paymentList;
     }

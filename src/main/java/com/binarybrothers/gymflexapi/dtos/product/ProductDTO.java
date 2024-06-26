@@ -1,6 +1,6 @@
 package com.binarybrothers.gymflexapi.dtos.product;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -135,7 +135,7 @@ public class ProductDTO implements Serializable {
             ", rating=" + getRating() +
             ", qteinSTock=" + getQteinSTock() +
             ", discount=" + getDiscount() +
-            ", subCategory=" + getSubCategory() +
+            ", subcategory=" + getSubCategory() +
             "}";
     }
 }

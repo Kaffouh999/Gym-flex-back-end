@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.binarybrothers.gymflexapi.dtos.sessionMember.SessionMemberDTO;
+import com.binarybrothers.gymflexapi.dtos.sessionmember.SessionMemberDTO;
 import com.binarybrothers.gymflexapi.entities.GymBranch;
 import com.binarybrothers.gymflexapi.entities.Role;
 import com.binarybrothers.gymflexapi.entities.SessionMember;
@@ -221,7 +221,7 @@ class SessionMemberResourceTest {
         // Initialize the database
         sessionMemberRepository.saveAndFlush(sessionMember);
 
-        // Get the sessionMember
+        // Get the sessionmember
         restSessionMemberMockMvc
             .perform(get(ENTITY_API_URL_ID, sessionMember.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
@@ -234,7 +234,7 @@ class SessionMemberResourceTest {
     @Test
     @Transactional
     void getNonExistingSessionMember() throws Exception {
-        // Get the sessionMember
+        // Get the sessionmember
         restSessionMemberMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
@@ -246,7 +246,7 @@ class SessionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = sessionMemberRepository.findAll().size();
 
-        // Update the sessionMember
+        // Update the sessionmember
         SessionMember updatedSessionMember = sessionMemberRepository.findById(sessionMember.getId()).get();
         // Disconnect from session so that the updates on updatedSessionMember are not directly saved in db
         em.detach(updatedSessionMember);
@@ -344,7 +344,7 @@ class SessionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = sessionMemberRepository.findAll().size();
 
-        // Update the sessionMember using partial update
+        // Update the sessionmember using partial update
         SessionMember partialUpdatedSessionMember = new SessionMember();
         partialUpdatedSessionMember.setId(sessionMember.getId());
 
@@ -374,7 +374,7 @@ class SessionMemberResourceTest {
 
         int databaseSizeBeforeUpdate = sessionMemberRepository.findAll().size();
 
-        // Update the sessionMember using partial update
+        // Update the sessionmember using partial update
         SessionMember partialUpdatedSessionMember = new SessionMember();
         partialUpdatedSessionMember.setId(sessionMember.getId());
 
@@ -473,7 +473,7 @@ class SessionMemberResourceTest {
 
         int databaseSizeBeforeDelete = sessionMemberRepository.findAll().size();
 
-        // Delete the sessionMember
+        // Delete the sessionmember
         restSessionMemberMockMvc
             .perform(delete(ENTITY_API_URL_ID, sessionMember.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());

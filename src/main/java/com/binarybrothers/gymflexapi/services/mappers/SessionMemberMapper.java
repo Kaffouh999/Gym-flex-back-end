@@ -3,7 +3,7 @@ package com.binarybrothers.gymflexapi.services.mappers;
 
 import com.binarybrothers.gymflexapi.dtos.gymbranch.GymBranchDTO;
 import com.binarybrothers.gymflexapi.dtos.member.MemberDTO;
-import com.binarybrothers.gymflexapi.dtos.sessionMember.SessionMemberDTO;
+import com.binarybrothers.gymflexapi.dtos.sessionmember.SessionMemberDTO;
 import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionMemberDTO;
 import com.binarybrothers.gymflexapi.entities.GymBranch;
 import com.binarybrothers.gymflexapi.entities.Member;
@@ -15,7 +15,7 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface SessionMemberMapper extends EntityMapper<SessionMemberDTO, SessionMember> {
-    @Mapping(target = "subscriptionMember", source = "subscriptionMember", qualifiedByName = "subscriptionMemberId")
+    @Mapping(target = "subscriptionmember", source = "subscriptionmember", qualifiedByName = "subscriptionMemberId")
     @Mapping(target = "gymBranch", source = "gymBranch", qualifiedByName = "gymBranchId")
     @Mapping(target = "managerAtTheTime", source = "managerAtTheTime", qualifiedByName = "memberId")
     SessionMemberDTO toDto(SessionMember s);

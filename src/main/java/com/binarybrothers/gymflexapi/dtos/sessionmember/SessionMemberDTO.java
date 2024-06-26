@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.dtos.sessionMember;
+package com.binarybrothers.gymflexapi.dtos.sessionmember;
 
 import com.binarybrothers.gymflexapi.dtos.gymbranch.GymBranchDTO;
 import com.binarybrothers.gymflexapi.dtos.member.MemberDTO;
@@ -102,7 +102,7 @@ public class SessionMemberDTO implements Serializable {
             "id=" + getId() +
             ", enteringTime='" + getEnteringTime() + "'" +
             ", leavingTime='" + getLeavingTime() + "'" +
-            ", subscriptionMember=" + getSubscriptionMember() +
+            ", subscriptionmember=" + getSubscriptionMember() +
             ", gymBranch=" + getGymBranch() +
             ", managerAtTheTime=" + getManagerAtTheTime() +
             "}";

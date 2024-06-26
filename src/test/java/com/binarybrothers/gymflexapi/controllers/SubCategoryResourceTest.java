@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.entities.Category;
 import com.binarybrothers.gymflexapi.entities.Role;
 import com.binarybrothers.gymflexapi.entities.SubCategory;
@@ -203,7 +203,7 @@ class SubCategoryResourceTest {
         // Initialize the database
         subCategoryRepository.saveAndFlush(subCategory);
 
-        // Get the subCategory
+        // Get the subcategory
         restSubCategoryMockMvc
             .perform(get(ENTITY_API_URL_ID, subCategory.getId()).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
@@ -216,7 +216,7 @@ class SubCategoryResourceTest {
     @Test
     @Transactional
     void getNonExistingSubCategory() throws Exception {
-        // Get the subCategory
+        // Get the subcategory
         restSubCategoryMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE).header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
     }
 
@@ -228,7 +228,7 @@ class SubCategoryResourceTest {
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
-        // Update the subCategory
+        // Update the subcategory
         SubCategory updatedSubCategory = subCategoryRepository.findById(subCategory.getId()).get();
         // Disconnect from session so that the updates on updatedSubCategory are not directly saved in db
         em.detach(updatedSubCategory);
@@ -324,7 +324,7 @@ class SubCategoryResourceTest {
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
-        // Update the subCategory using partial update
+        // Update the subcategory using partial update
         SubCategory partialUpdatedSubCategory = new SubCategory();
         partialUpdatedSubCategory.setId(subCategory.getId());
 
@@ -354,7 +354,7 @@ class SubCategoryResourceTest {
 
         int databaseSizeBeforeUpdate = subCategoryRepository.findAll().size();
 
-        // Update the subCategory using partial update
+        // Update the subcategory using partial update
         SubCategory partialUpdatedSubCategory = new SubCategory();
         partialUpdatedSubCategory.setId(subCategory.getId());
 
@@ -451,7 +451,7 @@ class SubCategoryResourceTest {
 
         int databaseSizeBeforeDelete = subCategoryRepository.findAll().size();
 
-        // Delete the subCategory
+        // Delete the subcategory
         restSubCategoryMockMvc
             .perform(delete(ENTITY_API_URL_ID, subCategory.getId()).accept(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());

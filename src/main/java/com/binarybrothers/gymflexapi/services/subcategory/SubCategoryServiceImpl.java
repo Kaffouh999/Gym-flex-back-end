@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.services.subCategory;
+package com.binarybrothers.gymflexapi.services.subcategory;
 
 
 import java.util.LinkedList;
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.binarybrothers.gymflexapi.dtos.subCategory.SubCategoryDTO;
+import com.binarybrothers.gymflexapi.dtos.subcategory.SubCategoryDTO;
 import com.binarybrothers.gymflexapi.entities.SubCategory;
 import com.binarybrothers.gymflexapi.repositories.SubCategoryRepository;
 import com.binarybrothers.gymflexapi.services.mappers.SubCategoryMapper;
@@ -84,6 +84,6 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
     @Override
     public boolean existsByName(String name) {
-        return subCategoryRepository.findByName(name) != null ? true:false;
+        return subCategoryRepository.findByName(name) != null;
     }
 }

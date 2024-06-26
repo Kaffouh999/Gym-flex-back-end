@@ -1,4 +1,4 @@
-package com.binarybrothers.gymflexapi.dtos.subCategory;
+package com.binarybrothers.gymflexapi.dtos.subcategory;
 
 import com.binarybrothers.gymflexapi.dtos.category.CategoryDTO;
 
