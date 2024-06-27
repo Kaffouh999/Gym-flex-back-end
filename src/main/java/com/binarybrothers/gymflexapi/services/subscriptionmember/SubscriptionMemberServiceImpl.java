@@ -3,18 +3,20 @@ package com.binarybrothers.gymflexapi.services.subscriptionmember;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionMemberDTO;
 import com.binarybrothers.gymflexapi.dtos.subscription.SubscriptionWithPaymentsDTO;
+import com.binarybrothers.gymflexapi.entities.Member;
 import com.binarybrothers.gymflexapi.entities.SubscriptionMember;
 import com.binarybrothers.gymflexapi.repositories.SubscriptionMemberRepository;
 import com.binarybrothers.gymflexapi.services.mappers.SubscriptionMemberMapper;
 import com.binarybrothers.gymflexapi.services.mappers.SubscriptionMemberWithPaymentsMapper;
+import com.binarybrothers.gymflexapi.services.member.MemberService;
+import com.binarybrothers.gymflexapi.services.report.ReportService;
 import com.binarybrothers.gymflexapi.utils.QRCodeGenerator;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -24,24 +26,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SubscriptionMemberServiceImpl implements SubscriptionMemberService {
 
     private final Logger log = LoggerFactory.getLogger(SubscriptionMemberServiceImpl.class);
 
-    private final SubscriptionMemberRepository subscriptionMemberRepository;
-
-
+    private final ReportService reportService;
+    private final MemberService memberService;
     private final SubscriptionMemberMapper subscriptionMemberMapper;
+    private final SubscriptionMemberRepository subscriptionMemberRepository;
     private final SubscriptionMemberWithPaymentsMapper subscriptionMemberWithPaymentsMapper;
 
-    public SubscriptionMemberServiceImpl(
-            SubscriptionMemberRepository subscriptionMemberRepository,
-            SubscriptionMemberMapper subscriptionMemberMapper,
-            SubscriptionMemberWithPaymentsMapper subscriptionMemberWithPaymentsMapper) {
-        this.subscriptionMemberRepository = subscriptionMemberRepository;
-        this.subscriptionMemberMapper = subscriptionMemberMapper;
-        this.subscriptionMemberWithPaymentsMapper = subscriptionMemberWithPaymentsMapper;
-    }
 
     @Override
     public SubscriptionMemberDTO save(SubscriptionMemberDTO subscriptionMemberDTO) throws NoSuchAlgorithmException {
@@ -127,6 +122,16 @@ public class SubscriptionMemberServiceImpl implements SubscriptionMemberService 
         Timestamp endDate = subscriptionMember.getEndDate() != null? Timestamp.from(subscriptionMember.getEndDate().toInstant()):null;
 
         return subscriptionMemberRepository.searchSubscriptions( membeId ,  planId , startDate,endDate).stream().map(subscriptionMemberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    @Override
+    public byte[] generateMemberCardReport(Long id) throws Exception {
+        Optional<Member> optionalMember = memberService.findById(id);
+        if (optionalMember.isEmpty()) {
+            throw new NoSuchElementException("Member not found");
+        }
+
+        return reportService.generateMemberCardReport(optionalMember.get());
     }
 
 

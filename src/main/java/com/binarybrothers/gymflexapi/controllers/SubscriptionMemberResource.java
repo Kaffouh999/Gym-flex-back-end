@@ -174,4 +174,18 @@ public class SubscriptionMemberResource {
 
         return ResponseEntity.ok(searchData);
     }
+
+    @GetMapping("/subscription-members/printMemberCard/{id}")
+    public ResponseEntity<byte[]> printMemberCard(@PathVariable Long id) {
+        log.debug("REST request to print Member Card : {}", id);
+        try {
+            byte[] reportBytes = subscriptionMemberService.generateMemberCardReport(id);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=memberCard.pdf")
+                    .header("Content-Type", "application/pdf")
+                    .body(reportBytes);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

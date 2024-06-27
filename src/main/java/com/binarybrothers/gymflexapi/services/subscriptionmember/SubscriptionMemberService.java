@@ -66,4 +66,6 @@ public interface SubscriptionMemberService {
 
     List<SubscriptionMemberDTO> searchSubs(SubscriptionMemberDTO subscriptionMemberDTO);
 
+    byte[] generateMemberCardReport(Long id) throws Exception;
+
 }

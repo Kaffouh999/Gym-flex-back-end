@@ -2,6 +2,7 @@ package com.binarybrothers.gymflexapi.services.report;
 
 import com.binarybrothers.gymflexapi.entities.Member;
 import com.binarybrothers.gymflexapi.entities.SubscriptionMember;
+import com.binarybrothers.gymflexapi.services.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -22,6 +23,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Value("${NGINX_URL}")
     private String ngnixUrl;
+
+    private final MemberService memberService;
 
     public byte[] generateReport(List<Object> data, String nameFile, Map<String, Object> parameters, MediaType format) {
         JasperPrint jasperPrint;
@@ -56,15 +59,15 @@ public class ReportServiceImpl implements ReportService {
         return reportContent;
     }
 
-    public byte[] generateMemberCardReport(Member data) throws IOException {
+    public byte[] generateMemberCardReport(Member member) throws IOException {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("MEMBER_GYM_NAME", data.getGymBranch().getName());
-        parameters.put("MEMBER_NAME", data.getOnlineUser().getFirstName() + " " + data.getOnlineUser().getLastName());
-        parameters.put("MEMBER_CIN", data.getCin());
-        parameters.put("MEMBER_NBR", data.getId().toString());
-        parameters.put("MEMBER_PROFILE_PICTURE", data.getOnlineUser().getProfilePicture());
+        parameters.put("MEMBER_GYM_NAME", member.getGymBranch().getName());
+        parameters.put("MEMBER_NAME", member.getOnlineUser().getFirstName() + " " + member.getOnlineUser().getLastName());
+        parameters.put("MEMBER_CIN", member.getCin());
+        parameters.put("MEMBER_NBR", member.getId().toString());
+        parameters.put("MEMBER_PROFILE_PICTURE", member.getOnlineUser().getProfilePicture());
         parameters.put("NGINX_URL", ngnixUrl);
-        Optional<SubscriptionMember> maxIdSubscriptionMember = data.getSubscriptionMemberList().stream()
+        Optional<SubscriptionMember> maxIdSubscriptionMember = member.getSubscriptionMemberList().stream()
                 .max(Comparator.comparing(SubscriptionMember::getId));
 
         if(maxIdSubscriptionMember.isPresent()) {
