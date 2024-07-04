@@ -92,16 +92,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Transactional(rollbackFor =DataIntegrityViolationException.class )
+    @Transactional(rollbackFor = DataIntegrityViolationException.class)
     public MemberDTO saveMemberWithUser(MemberDTO memberDTO) throws DataIntegrityViolationException {
         OnlineUserDTO onlineUserDTO = memberDTO.getOnlineUser();
-
-        if (onlineUserDTO == null || onlineUserDTO.getId() == null || onlineUserService.findById(onlineUserDTO.getId()).isEmpty()){
-            onlineUserDTO = onlineUserService.save(onlineUserDTO);
+        onlineUserDTO = onlineUserService.save(onlineUserDTO);
         memberDTO.setOnlineUser(onlineUserDTO);
-    }
-            MemberDTO result = save(memberDTO);
-            return result;
+        return save(memberDTO);
 
 
     }
