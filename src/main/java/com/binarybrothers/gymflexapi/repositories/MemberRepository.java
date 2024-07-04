@@ -6,6 +6,8 @@ import com.binarybrothers.gymflexapi.entities.Member;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Spring Data JPA repository for the Member entity.
  */
@@ -22,4 +24,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "FROM Member m")
    MemberEquipmentStatistic getMemberEquipmentStatistics();//distinct key world is required
 
+    @Query("SELECT m FROM Member m WHERE m.onlineUser.role.coach = true")
+    Optional<Member> findAllCoachMembers();
 }

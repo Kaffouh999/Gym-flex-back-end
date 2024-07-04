@@ -58,4 +58,6 @@ public interface MemberService {
     public Optional<Member> findById(Long id);
 
     MemberDTO saveMemberWithUser(MemberDTO member);
+
+    List<MemberDTO> findAllCoachMembers();
 }

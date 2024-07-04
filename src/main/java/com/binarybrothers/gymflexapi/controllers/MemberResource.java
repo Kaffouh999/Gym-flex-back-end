@@ -118,6 +118,12 @@ public class MemberResource {
         return memberService.findAll();
     }
 
+    @GetMapping("/members/coach-members")
+    public List<MemberDTO> getAllCoachMembers() {
+        log.debug("REST request to get all Members");
+        return memberService.findAllCoachMembers();
+    }
+
     @GetMapping("/members/statistics")
     public MemberEquipmentStatistic getAllMembersEquipmentStatistic() {
         log.debug("REST request to get all Members");

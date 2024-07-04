@@ -101,5 +101,10 @@ public class MemberServiceImpl implements MemberService {
 
 
     }
+
+    @Override
+    public List<MemberDTO> findAllCoachMembers() {
+        return memberRepository.findAllCoachMembers().stream().map(memberMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
 }
 
