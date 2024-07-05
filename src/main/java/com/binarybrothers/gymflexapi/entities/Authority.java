@@ -8,5 +8,7 @@ public enum Authority {
     TRAINING,
     SETTINGS,
     PREFERENCES,
-    MANAGEWEBSITE
+    MANAGEWEBSITE,
+    BLOGS,
+    STORE
 }

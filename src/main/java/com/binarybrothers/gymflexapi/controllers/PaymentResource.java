@@ -71,25 +71,6 @@ public class PaymentResource {
             throw new BadRequestAlertException("A new payment should have  subscription", ENTITY_NAME, "subscriptionrequired");
         }
 
-        ZonedDateTime dateNow = ZonedDateTime.now();
-        SubscriptionMemberDTO subscriptionMemberDTO = paymentDTO.getSubscriptionMember();
-        if (subscriptionMemberDTO.getEndDate() != null) {
-
-            if (dateNow.isAfter(subscriptionMemberDTO.getEndDate())) {
-                subscriptionMemberDTO.setStartDate(dateNow);
-                ZonedDateTime endDate = dateNow.plusDays(subscriptionMemberDTO.getPlan().getDuration());
-                subscriptionMemberDTO.setEndDate(endDate);
-            } else {
-                ZonedDateTime endDate = subscriptionMemberDTO.getEndDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
-                subscriptionMemberDTO.setEndDate(endDate);
-            }
-
-        } else {
-            ZonedDateTime endDate = subscriptionMemberDTO.getStartDate().plusDays(subscriptionMemberDTO.getPlan().getDuration());
-            subscriptionMemberDTO.setEndDate(endDate);
-        }
-
-        subscriptionMemberService.save(subscriptionMemberDTO);
 
         PaymentDTO result = paymentService.save(paymentDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId())).headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString())).body(result);

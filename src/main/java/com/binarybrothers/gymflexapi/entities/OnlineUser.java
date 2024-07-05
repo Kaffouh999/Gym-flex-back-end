@@ -175,6 +175,12 @@ public class OnlineUser implements UserDetails {
             if (role.getManageWebSite() != null && role.getManageWebSite()) {
                 userauthorities.add(new SimpleGrantedAuthority(Authority.MANAGEWEBSITE.name()));
             }
+            if (role.getBlogs() != null && role.getBlogs()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.BLOGS.name()));
+            }
+            if (role.getStore() != null && role.getStore()) {
+                userauthorities.add(new SimpleGrantedAuthority(Authority.STORE.name()));
+            }
         }
 
         return userauthorities;

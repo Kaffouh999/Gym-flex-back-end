@@ -71,7 +71,7 @@ public class SubscriptionMemberResource {
             @Valid @RequestBody SubscriptionMemberDTO subscriptionMemberDTO
     ) {
         log.debug("REST request to update SubscriptionMember : {}, {}", id, subscriptionMemberDTO);
-        if (assertSubscriptionMemberIsNotNull(subscriptionMemberDTO)) {
+        if (!assertSubscriptionMemberIsNotNull(subscriptionMemberDTO)) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         if (!Objects.equals(id, subscriptionMemberDTO.getId())) {

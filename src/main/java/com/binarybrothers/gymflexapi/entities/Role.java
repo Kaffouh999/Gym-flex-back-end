@@ -2,13 +2,17 @@ package com.binarybrothers.gymflexapi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
 
 @Builder
 @Entity
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class Role implements Serializable {
 
   @Id
@@ -16,6 +20,7 @@ public class Role implements Serializable {
   private  Long id;
 
   private String name;
+
   private  String description;
 
   private Boolean analytics;
@@ -33,45 +38,17 @@ public class Role implements Serializable {
   private Boolean preferences;
 
   private Boolean manageWebSite;
+
   private Boolean coach;
+
+  private Boolean blogs;
+
+  private Boolean store;
 
   @OneToMany(mappedBy = "role")
   @JsonIgnore
   private List<OnlineUser> onlineUserList;
 
-  public Role() {
-  }
-
-  public Role(Long id, String name, String description, Boolean analytics, Boolean membership, Boolean payments, Boolean inventory, Boolean training, Boolean settings, Boolean preferences, Boolean manageWebSite,Boolean coach) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.analytics = analytics;
-    this.membership = membership;
-    this.payments = payments;
-    this.inventory = inventory;
-    this.training = training;
-    this.settings = settings;
-    this.preferences = preferences;
-    this.manageWebSite = manageWebSite;
-    this.coach=coach;
-  }
-
-  public Role(Long id, String name, String description, Boolean analytics, Boolean membership, Boolean payments, Boolean inventory, Boolean training, Boolean settings, Boolean preferences, Boolean manageWebSite, Boolean coach, List<OnlineUser> onlineUserList) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.analytics = analytics;
-    this.membership = membership;
-    this.payments = payments;
-    this.inventory = inventory;
-    this.training = training;
-    this.settings = settings;
-    this.preferences = preferences;
-    this.manageWebSite = manageWebSite;
-    this.coach = coach;
-    this.onlineUserList = onlineUserList;
-  }
 
   public Long getId() {
     return id;
@@ -167,6 +144,22 @@ public class Role implements Serializable {
 
   public void setCoach(Boolean coach) {
     this.coach = coach;
+  }
+
+  public Boolean getBlogs() {
+        return blogs;
+    }
+
+  public void setBlogs(Boolean blogs) {
+        this.blogs = blogs;
+  }
+
+  public Boolean getStore() {
+        return store;
+  }
+
+  public void setStore(Boolean store) {
+        this.store = store;
   }
 
   public List<OnlineUser> getOnlineUserList() {
