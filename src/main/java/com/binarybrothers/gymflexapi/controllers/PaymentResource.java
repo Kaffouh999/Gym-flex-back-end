@@ -56,7 +56,7 @@ public class PaymentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/payments")
-    public ResponseEntity<PaymentDTO> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) throws URISyntaxException, NoSuchAlgorithmException, WriterException {
+    public ResponseEntity<PaymentDTO> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
@@ -177,8 +177,11 @@ public class PaymentResource {
     @DeleteMapping("/payments/{id}")
     public ResponseEntity<Object> deletePayment(@PathVariable Long id) throws NoSuchAlgorithmException, WriterException {
         log.debug("REST request to delete Payment : {}", id);
-
-        PaymentDTO paymentDTO = paymentService.findOne(id).get();
+        Optional<PaymentDTO> paymentDTOOptional = paymentService.findOne(id);
+        if (paymentDTOOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        PaymentDTO paymentDTO = paymentDTOOptional.get();
         Long planDuration = paymentDTO.getSubscriptionMember().getPlan().getDuration();
 
         SubscriptionMemberDTO subscriptionMemberDTO = paymentDTO.getSubscriptionMember();
