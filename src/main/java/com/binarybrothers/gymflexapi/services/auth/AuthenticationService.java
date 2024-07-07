@@ -134,6 +134,8 @@ public class AuthenticationService {
                 .membership(true)
                 .preferences(true)
                 .manageWebSite(true)
+                .blogs(true)
+                .store(true)
                 .build();
     }
 }
