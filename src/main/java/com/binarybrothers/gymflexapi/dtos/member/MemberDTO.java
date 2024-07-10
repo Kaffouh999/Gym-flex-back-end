@@ -89,6 +89,13 @@ public class MemberDTO implements Serializable {
         this.onlineUser = onlineUser;
     }
 
+    public MemberDTO() {
+    }
+
+    public MemberDTO(OnlineUserDTO onlineUser) {
+        this.onlineUser = onlineUser;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

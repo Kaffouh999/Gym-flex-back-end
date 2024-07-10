@@ -15,6 +15,7 @@ import com.binarybrothers.gymflexapi.entities.*;
 import com.binarybrothers.gymflexapi.repositories.MemberRepository;
 import com.binarybrothers.gymflexapi.repositories.OnlineUserRepository;
 import com.binarybrothers.gymflexapi.services.mappers.MemberMapper;
+import com.binarybrothers.gymflexapi.services.mappers.OnlineUserMapper;
 import com.binarybrothers.gymflexapi.services.member.MemberService;
 import com.binarybrothers.gymflexapi.services.upload.IUploadService;
 import com.binarybrothers.gymflexapi.utils.BadRequestAlertException;
@@ -44,6 +45,7 @@ public class MemberController {
     private final MemberService memberService;
     private final OnlineUserRepository onlineUserRepository;
     private final MemberMapper memberMapper;
+    private final OnlineUserMapper onlineUserMapper;
     private final IUploadService uploadService;
     private final MemberRepository memberRepository;
 
@@ -141,8 +143,11 @@ public class MemberController {
     public ResponseEntity<MemberDTO> getMemberByUser(@PathVariable Long id) {
         log.debug("REST request to get Member : {}", id);
         Optional<OnlineUser> onlineUser = onlineUserRepository.findById(id);
-        Member member = onlineUser.get().getMember();
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(memberMapper.toDto(member)));
+        if (onlineUser.get().getMember() == null) {
+            return ResponseUtil.wrapOrNotFound(Optional.of(new MemberDTO(onlineUserMapper.toDto(onlineUser.get()))));
+        } else {
+            return ResponseUtil.wrapOrNotFound(Optional.ofNullable(memberMapper.toDto(onlineUser.get().getMember())));
+        }
     }
 
     @DeleteMapping("/members/{id}")
