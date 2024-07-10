@@ -42,6 +42,13 @@ public interface OnlineUserService {
     List<OnlineUserDTO> findAll();
 
     /**
+     * Get all the onlineUsers where Member is {@code null}.
+     *
+     * @return the list of entities.
+     */
+    List<OnlineUserDTO> findByMemberIsNull();
+
+    /**
      * Get the "id" onlineUser.
      *
      * @param id the id of the entity.

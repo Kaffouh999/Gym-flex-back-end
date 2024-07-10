@@ -84,6 +84,12 @@ public class OnlineUserServiceImpl implements OnlineUserService {
     }
 
     @Override
+    public List<OnlineUserDTO> findByMemberIsNull() {
+        log.debug("Request to get all OnlineUsers where Member is null");
+        return onlineUserRepository.findByMemberIsNull().stream().map(onlineUserMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<OnlineUserDTO> findOne(Long id) {
         log.debug("Request to get OnlineUser : {}", id);

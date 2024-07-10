@@ -137,6 +137,17 @@ public class OnlineUserController {
     }
 
     /**
+     * {@code GET  /online-users/member-is-null} : get all the onlineUsers where member is null.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of onlineUsers in body.
+     */
+    @GetMapping("/online-users/member-is-null")
+    public List<OnlineUserDTO> getAllOnlineUsersWhereMemberIsNull() {
+        log.debug("REST request to get all OnlineUsers where Member is null");
+        return onlineUserService.findByMemberIsNull();
+    }
+
+    /**
      * {@code GET  /online-users/:id} : get the "id" onlineUser.
      *
      * @param id the id of the onlineUserDTO to retrieve.

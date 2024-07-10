@@ -5,6 +5,7 @@ import com.binarybrothers.gymflexapi.entities.OnlineUser;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,4 +16,6 @@ import java.util.Optional;
 public interface OnlineUserRepository extends JpaRepository<OnlineUser, Long> {
 
     Optional<OnlineUser> findByEmailIsIgnoreCase(String email);
+
+    List<OnlineUser> findByMemberIsNull();
 }
